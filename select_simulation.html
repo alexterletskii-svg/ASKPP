@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Выбор симуляции</title>
+    <!-- Подключаем шрифт Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-page: #f4f6f8;
+            --card-bg: #ffffff;
+            --brand-blue: #0056a4;
+            --border-color: #d1d9e2;
+            --text-main: #333333;
+            --text-desc: #666666;
+            --accent: #f26522;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 500;
+            color: var(--brand-blue);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 15px;
+            color: var(--text-desc);
+        }
+
+        /* Сетка карточек симуляций */
+        .simulation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        /* Сброс стилей ссылок, чтобы они вели себя как блоки */
+        .card-link {
+            text-decoration: none;
+            display: block;
+        }
+
+        /* Дизайн карточки */
+        .sim-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            height: 100%; /* Чтобы все карточки в ряду были одной высоты */
+        }
+
+        .sim-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background-color: transparent;
+            transition: background-color 0.2s;
+        }
+
+        /* Эффекты при наведении (применяются к карточке, когда наводят на ссылку) */
+        .card-link:hover .sim-card {
+            border-color: var(--brand-blue);
+            box-shadow: 0 8px 20px rgba(0, 86, 164, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .card-link:hover .sim-card::before {
+            background-color: var(--accent);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #e8ecef;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: var(--brand-blue);
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .card-link:hover .card-icon {
+            background-color: var(--brand-blue);
+            color: white;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text-main);
+        }
+
+        .card-desc {
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text-desc);
+            margin-bottom: 25px;
+            flex: 1; /* Толкает кнопку вниз */
+        }
+
+        .card-action {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--brand-blue);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.2s ease;
+        }
+
+        .card-link:hover .card-action { 
+            color: var(--accent); 
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Выбор модуля симуляции</h1>
+            <div class="subtitle">Выберите конкретный сценарий для отработки практических навыков работы с терминалом.</div>
+        </div>
+
+        <div class="simulation-grid">
+            
+            <!-- Карточка 1 -->
+            <a href="simulator.html" target="main_player" class="card-link">
+                <div class="sim-card">
+                    <div class="card-icon">1</div>
+                    <div class="card-title">Оценка качества металла</div>
+                    <div class="card-desc">Базовый сценарий. Анализ рулона по выявленным дефектам. Работа с картой рулона и таблицей свойств.</div>
+                    <div class="card-action">Запустить сценарий →</div>
+                </div>
+            </a>
+
+            <!-- Карточка 2 -->
+            <a href="sim_cameras.html" target="main_player" class="card-link">
+                <div class="sim-card">
+                    <div class="card-icon">2</div>
+                    <div class="card-title">Работа с камерами</div>
+                    <div class="card-desc">Углубленная настройка фильтров. Сценарий по включению/отключению обзора специфических камер инспекции.</div>
+                    <div class="card-action">Запустить сценарий →</div>
+                </div>
+            </a>
+
+            <!-- Карточка 3 -->
+            <a href="sim_tables.html" target="main_player" class="card-link">
+                <div class="sim-card">
+                    <div class="card-icon">3</div>
+                    <div class="card-title">Работа с таблицами</div>
+                    <div class="card-desc">Сценарий сортировки и фильтрации данных инспектируемого рулона по статусу и классу дефектов.</div>
+                    <div class="card-action">Запустить сценарий →</div>
+                </div>
+            </a>
+
+            <!-- Карточка 4 -->
+            <a href="sim_defects.html" target="main_player" class="card-link">
+                <div class="sim-card">
+                    <div class="card-icon">4</div>
+                    <div class="card-title">Классификация дефектов</div>
+                    <div class="card-desc">Тренировка визуального распознавания. Сопоставление изображения дефекта с его техническим классом.</div>
+                    <div class="card-action">Запустить сценарий →</div>
+                </div>
+            </a>
+
+        </div>
+    </div>
+
+</body>
+</html>

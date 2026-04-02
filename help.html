@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Справка и инструкции</title>
+    <!-- Подключаем шрифт Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-page: #f4f6f8;
+            --brand-blue: #0056a4;
+            --text-main: #333333;
+            --text-desc: #666666;
+            --card-bg: #ffffff;
+            --border-light: #d1d9e2;
+            --accent: #f26522;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* --- ШАПКА --- */
+        .page-header {
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--border-light);
+            padding-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-icon {
+            width: 48px;
+            height: 48px;
+            background-color: var(--brand-blue);
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-icon svg { width: 28px; height: 28px; fill: currentColor; }
+
+        .header-text h1 {
+            font-size: 28px;
+            font-weight: 500;
+            color: var(--brand-blue);
+            margin-bottom: 4px;
+        }
+
+        .header-text .subtitle {
+            font-size: 15px;
+            color: var(--text-desc);
+        }
+
+        /* --- АККОРДЕОНЫ (Раскрывающиеся списки) --- */
+        .faq-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .faq-item {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+
+        .faq-question {
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-main);
+            transition: background-color 0.2s;
+            user-select: none;
+        }
+
+        .faq-question:hover {
+            background-color: #f8fafc;
+        }
+
+        /* Иконка стрелочки */
+        .arrow-icon {
+            width: 24px;
+            height: 24px;
+            fill: var(--brand-blue);
+            transition: transform 0.3s ease;
+        }
+
+        /* Состояние активного вопроса */
+        .faq-item.active .faq-question {
+            color: var(--brand-blue);
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .faq-item.active .arrow-icon {
+            transform: rotate(180deg);
+        }
+
+        /* Скрытый ответ */
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background-color: #ffffff;
+        }
+
+        .faq-answer-inner {
+            padding: 25px;
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text-desc);
+            border-left: 3px solid var(--accent);
+        }
+
+        /* Форматирование текста внутри ответов */
+        .faq-answer-inner p { margin-bottom: 15px; }
+        .faq-answer-inner p:last-child { margin-bottom: 0; }
+        
+        .faq-answer-inner ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .faq-answer-inner li {
+            margin-bottom: 8px;
+        }
+
+        .highlight {
+            font-weight: 700;
+            color: var(--text-main);
+            background-color: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .info-box {
+            background-color: #eef2f6;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-size: 14px;
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+        .info-box svg { fill: var(--brand-blue); width: 24px; height: 24px; flex-shrink: 0; }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div class="page-header">
+            <div class="header-icon">
+                <!-- SVG Иконка книги/справки -->
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+            </div>
+            <div class="header-text">
+                <h1>Руководство пользователя</h1>
+                <div class="subtitle">Ответы на частые вопросы по прохождению учебного курса и работе с симулятором</div>
+            </div>
+        </div>
+
+        <div class="faq-container">
+
+            <!-- Вопрос 1 -->
+            <div class="faq-item">
+                <div class="faq-question">
+                    Как правильно проходить обучение?
+                    <svg class="arrow-icon" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">
+                        <p>Обучение состоит из трех последовательных этапов. Рекомендуется проходить их по порядку для лучшего усвоения материала:</p>
+                        <ul>
+                            <li><span class="highlight">1. Видеоинструкция:</span> Изучите теоретическую базу и посмотрите, как эксперт работает в реальной системе.</li>
+                            <li><span class="highlight">2. Обучающий тренажер:</span> Самостоятельно изучите интерфейс. В этом режиме нет ограничений по времени, ошибки не фиксируются. Вы можете кликать по любым таблицам и кнопкам.</li>
+                            <li><span class="highlight">3. Закрепление навыков:</span> Итоговое тестирование. Вам будет выдано конкретное задание (например, найти 3 дефекта класса 022).</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Вопрос 2 -->
+            <div class="faq-item">
+                <div class="faq-question">
+                    Как работает "Обучающий тренажер" (Симулятор)?
+                    <svg class="arrow-icon" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">
+                        <p>Тренажер полностью копирует логику работы терминала <b>Offline AEIP4</b> системы ISRA VISION.</p>
+                        <ul>
+                            <li><b>Таблица рулонов (слева сверху):</b> Выбор конкретного рулона для анализа. При клике на строку обновляется карта дефектов.</li>
+                            <li><b>Панель фильтров (справа):</b> Позволяет включать и отключать отображение конкретных камер (например, только верхняя сторона) и классов дефектов.</li>
+                            <li><b>Таблица дефектов (снизу):</b> Список всех найденных аномалий. Клик по строке выделяет дефект на визуальной карте.</li>
+                        </ul>
+                        <p>Вы можете использовать панель инструментов сверху для изменения масштаба карты (лупа) или измерения расстояний (линейка).</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Вопрос 3 -->
+            <div class="faq-item">
+                <div class="faq-question">
+                    Как происходит оценка в режиме "Закрепление навыков"?
+                    <svg class="arrow-icon" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">
+                        <p>В режиме экзамена вам дается <b>практическая задача</b>. Система автоматически фиксирует ваши клики.</p>
+                        <p>Оценивается правильность последовательности действий:</p>
+                        <ul>
+                            <li>Верно ли выбран класс дефекта в фильтре.</li>
+                            <li>Правильно ли отсортирована таблица.</li>
+                            <li>Верно ли идентифицирован дефект по заданным координатам.</li>
+                        </ul>
+                        <div class="info-box">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                            <div><b>Важно:</b> Результаты тестирования автоматически передаются в Корпоративную систему дистанционного обучения (СДО). Проходной балл для успешной сдачи — <b>80%</b>.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Вопрос 4 -->
+            <div class="faq-item">
+                <div class="faq-question">
+                    Что делать, если тренажер завис или отображается некорректно?
+                    <svg class="arrow-icon" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">
+                        <p>Тренажер оптимизирован для современных браузеров (Google Chrome, Microsoft Edge). Если элементы интерфейса не нажимаются:</p>
+                        <ul>
+                            <li>Проверьте масштаб страницы в браузере (он должен быть 100%). Для сброса нажмите <span class="highlight">Ctrl + 0</span>.</li>
+                            <li>Попробуйте нажать кнопку <b>«Выход в меню»</b> (на верхней серой панели) и запустить симуляцию заново. Ваш прогресс в режиме практики не потеряется.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Скрипт для работы аккордеона
+        const faqItems = document.querySelectorAll('.faq-item');
+
+        faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+            const answer = item.querySelector('.faq-answer');
+
+            question.addEventListener('click', () => {
+                const isActive = item.classList.contains('active');
+
+                // Закрываем все остальные открытые вкладки (по желанию, можно убрать этот блок, если хотите, чтобы можно было открыть сразу все)
+                faqItems.forEach(otherItem => {
+                    otherItem.classList.remove('active');
+                    otherItem.querySelector('.faq-answer').style.maxHeight = null;
+                });
+
+                // Если вкладка не была активна, открываем её
+                if (!isActive) {
+                    item.classList.add('active');
+                    // Устанавливаем высоту равной реальной высоте контента для плавной анимации
+                    answer.style.maxHeight = answer.scrollHeight + "px";
+                }
+            });
+        });
+    </script>
+</body>
+</html>

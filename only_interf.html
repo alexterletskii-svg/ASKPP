@@ -1,0 +1,2215 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Терминал-Режим Offline AEIP4</title>
+    <style>
+        /* CSS Variables & Global Styles */
+        :root {
+            --sys-gray: #ece9d8;
+            --sys-gray-dark: #d4d0c8;
+            --sys-border: #808080;
+            --sys-border-light: #ffffff;
+            --sys-blue-select: #0a246a;
+            --sys-blue-header: #3d6a9d;
+            --sys-blue-header-light: #7693b6;
+            --sys-text: #000000;
+            --font-main: 'Tahoma', sans-serif;
+            --font-size: 11px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-main);
+            font-size: var(--font-size);
+            user-select: none;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #a0a0a0;
+            overflow: hidden;
+        }
+
+        /* --- Window Header --- */
+        .os-header {
+            background-color: #f0f4f9;
+            color: #000;
+            padding: 4px 6px;
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            border-bottom: 1px solid var(--sys-border);
+        }
+        .os-header-icon {
+            width: 16px; height: 16px;
+            background-color: #1c5280;
+            border-radius: 50%; margin-right: 6px;
+            box-shadow: inset -2px -2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* --- Menu Bar --- */
+        .menu-bar { display: flex; padding: 2px 0; background-color: #f0f4f9; }
+        .menu-item { position: relative; padding: 4px 8px; cursor: pointer; color: #000; }
+        .menu-item:hover, .menu-item.active { background-color: #e5f1fb; border: 1px solid #99c1e2; padding: 3px 7px; }
+
+        /* --- TOOLBAR --- */
+        .toolbar {
+            display: flex; align-items: center; padding: 2px 4px; gap: 2px;
+            background-color: var(--sys-gray);
+            border-bottom: 1px solid #c0c0c0;
+            height: 28px;
+        }
+        .tb-group {
+            display: flex; gap: 1px; padding: 1px;
+            border-top: 1px solid var(--sys-border); border-left: 1px solid var(--sys-border);
+            border-bottom: 1px solid white; border-right: 1px solid white;
+            background-color: #e0dfd5; margin-right: 4px;
+        }
+        .tb-btn {
+            width: 20px; height: 20px; background-color: #c0c0c0;
+            display: flex; align-items: center; justify-content: center;
+            border-top: 1px solid white; border-left: 1px solid white;
+            border-bottom: 1px solid var(--sys-border); border-right: 1px solid var(--sys-border);
+            cursor: pointer;
+        }
+        .tb-btn:active {
+            border-bottom: 1px solid white; border-right: 1px solid white;
+            border-top: 1px solid var(--sys-border); border-left: 1px solid var(--sys-border);
+        }
+        .icon-pixel { width: 14px; height: 14px; background-color: #000; display: flex; }
+        .i-roll1 { background: repeating-linear-gradient(90deg, #000, #000 2px, #fff 2px, #fff 4px); border-radius: 50%; }
+        .i-map1 { background: #000; border-right: 4px solid #fff; position: relative; }
+        .i-map1::after { content: ''; position:absolute; width:2px; height:2px; background:white; top:2px; left:4px; box-shadow: 4px 6px white, 2px 10px white; }
+        .i-map2 { background: #000; border-left: 6px solid #fff; border-right: 6px solid #fff; position: relative; }
+        .i-map2::after { content: ''; position:absolute; width:2px; height:2px; background:black; top:3px; left:-4px; box-shadow: 10px 4px black; }
+        .i-map3 { background: #000; border-left: 4px solid #fff; border-bottom: 4px solid #fff; }
+        .i-light1 { background: #000; position: relative; }
+        .i-light1::after { content: ''; position:absolute; width:4px; height:4px; background:red; top:1px; left:1px; box-shadow: 4px 4px yellow, 8px 8px green; }
+        .i-light2 { background: #000; display: flex; }
+        .i-light2::before { content: ''; width: 50%; height: 100%; background: linear-gradient(to bottom, yellow 50%, red 50%); border-right: 1px solid #fff; }
+        .i-light2::after { content: ''; width: 50%; height: 100%; background: linear-gradient(to bottom, green 30%, #000 30%); }
+        .i-grid1 { background: repeating-linear-gradient(0deg, transparent, transparent 2px, #555 2px, #555 3px), repeating-linear-gradient(90deg, transparent, transparent 2px, #555 2px, #555 3px); }
+        .i-grid2 { border: 1px solid #000; display:flex; background:#fff;}
+        .i-grid2::after { content:''; width:50%; border-right:1px solid #000; }
+        .i-tool1 { background: #fff; border: 1px solid #000; border-bottom: 4px solid #000; }
+        .i-tool2 { color: #000; font-size: 10px; font-weight: bold; background: #fff; line-height: 14px; text-align: center; width: 100%; }
+        .i-tool3 { background: repeating-linear-gradient(0deg, #000, #000 1px, #fff 1px, #fff 3px); }
+        .i-spot1 { background: #000; position:relative; }
+        .i-spot1::after { content:''; position:absolute; width:2px; height:2px; background:#fff; top:5px; left:5px; box-shadow: 4px -2px #fff; }
+        .i-spot2 { background: #fff; border-radius: 50%; border: 2px dashed #000; }
+        .i-spot3 { background: #fff; border-radius: 50%; border: 1px solid #000; background-image: radial-gradient(#000 1px, transparent 1px); background-size: 3px 3px; }
+        .i-spot4 { background: #000; border-radius: 50%; border: 1px solid #000; background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 3px 3px; }
+        .i-wave { background: #000; position: relative; }
+        .i-wave::after { content: '~'; color: red; position: absolute; font-size: 18px; top: -5px; left: 2px; transform: rotate(90deg); }
+        .i-layer1 { background: #fff; border: 1px solid #000; position:relative; }
+        .i-layer1::after { content:''; position:absolute; width:100%; height:100%; border: 1px solid #000; top:2px; left:2px; background:rgba(255,255,255,0.8); }
+        .i-layer2 { background: repeating-linear-gradient(45deg, #ccc, #ccc 2px, #fff 2px, #fff 4px); border-radius: 50%; border: 1px solid #000;}
+
+        /* --- Workspace --- */
+        .workspace { display: flex; flex: 1; padding: 2px; gap: 4px; overflow: hidden; margin-bottom: 2px; }
+        .panel-left { width: 28%; display: flex; flex-direction: column; gap: 4px; }
+        .panel-right { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+
+        .box {
+            background-color: #ffffff;
+            border-top: 1px solid var(--sys-border); border-left: 1px solid var(--sys-border);
+            border-bottom: 1px solid white; border-right: 1px solid white;
+            display: flex; flex-direction: column;
+        }
+        .box-title {
+            background-color: var(--sys-gray-dark); padding: 2px 5px; font-weight: bold;
+            border-bottom: 1px solid var(--sys-border); display: flex; align-items: center;
+        }
+        .box-content { flex: 1; overflow: auto; position: relative; }
+        .h-35 { height: 35%; } .h-40 { height: 40%; } .h-25 { height: 25%; }
+
+        /* --- Tables --- */
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        th, td { border: 1px solid #d0d0d0; padding: 2px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        th {
+            background-color: var(--sys-gray); font-weight: normal; text-align: center;
+            border-top: 1px solid white; border-left: 1px solid white;
+            border-bottom: 1px solid var(--sys-border); border-right: 1px solid var(--sys-border);
+            position: sticky; top: 0; z-index: 10; cursor: pointer;
+        }
+        th:active { border-top: 1px solid var(--sys-border); border-left: 1px solid var(--sys-border); background-color: #d0c8c0; }
+        .table-rolls td:nth-child(n+8) { text-align: right; }
+        .table-defects td:nth-child(n+7) { text-align: right; }
+        tr { cursor: pointer; }
+        tr:nth-child(even) { background-color: #f8f8f8; }
+        tr.selected { background-color: var(--sys-blue-select) !important; color: white; }
+        .prop-grid td { border: 1px solid var(--sys-border); }
+        .prop-grid td:first-child { background-color: #e8e8e8; font-weight: bold; width: 45%; }
+        .prop-grid tr:nth-child(even) { background-color: #ffffff; }
+
+        /* --- Filters --- */
+        .filter-group { display: flex; flex-direction: column; }
+        .filter-row {
+            display: flex; align-items: center; background-color: var(--sys-gray);
+            border: 1px solid var(--sys-border); padding: 2px 5px; gap: 6px;
+        }
+        .filter-content {
+            background-color: #fff; border-left: 1px solid var(--sys-border);
+            border-right: 1px solid var(--sys-border); border-bottom: 1px solid var(--sys-border);
+            padding: 2px; display: none;
+        }
+        .filter-content.active { display: block; }
+
+        .filter-actions { margin-left: auto; display: flex; gap: 4px; }
+        .filter-row button {
+            padding: 1px 8px; background-color: var(--sys-gray); cursor: pointer;
+            border-top: 1px solid white; border-left: 1px solid white;
+            border-bottom: 1px solid var(--sys-border); border-right: 1px solid var(--sys-border);
+        }
+        .filter-row button:active { border-top: 1px solid var(--sys-border); border-left: 1px solid var(--sys-border); background-color: #d0c8c0; }
+
+        .classes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(135px, 1fr)); gap: 1px; }
+        .camera-row { display: flex; justify-content: space-between; margin-bottom: 1px; }
+        .camera-row-left { display: flex; gap: 1px; }
+        .camera-row-right { display: flex; }
+        .cam-block { width: 85px; }
+
+        .filter-block {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1px 4px; font-size: 10px; cursor: pointer;
+            border: 1px solid #fff; box-sizing: border-box;
+            user-select: none; font-weight: bold; height: 18px;
+        }
+        .filter-block.active { background-color: #00cc00; color: black; }
+        .filter-block.inactive { background-color: #cc0000; color: white; }
+        .filter-block.yellow { background-color: #ffcc00; color: black; }
+        .filter-block:hover { filter: brightness(1.1); }
+        .fb-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .fb-count { margin-left: 4px; white-space: nowrap; }
+
+        .arrow-toggle { font-size: 10px; cursor: pointer; padding: 0 4px; display: inline-block; transition: transform 0.2s; }
+        .arrow-toggle.open { transform: rotate(90deg); }
+
+        .blue-header-container { display: flex; color: white; }
+        .blue-header-main { flex: 1; background-color: var(--sys-blue-header-light); padding: 3px 5px; border-right: 1px solid white; transition: all 0.3s; }
+        .blue-header-sub { background-color: var(--sys-blue-header); padding: 3px 10px; transition: all 0.3s; }
+
+        /* --- Стили для нижней панели (Status Bar) --- */
+        .status-bar {
+    display: flex;
+    background-color: #ece9d8;
+    height: 22px;
+    width: 100%;
+    box-sizing: border-box;
+    border-top: 1px solid #fff;
+    position: relative;
+}
+
+        .sb-section {
+            display: flex;
+            height: 100%;
+        }
+
+       .sb-left-section {
+    width: 28%;
+    min-width: 28%;
+    border-right: 2px groove #d4d0c8;
+    padding-right: 2px;
+}
+
+       .sb-right-section {
+    flex: 1; /* Занимает оставшееся пространство */
+    display: flex;
+    position: relative;
+}
+
+
+/* Кнопки правой секции */
+.sb-right-section .sb-panel {
+    flex-shrink: 0; /* Не сжимать кнопки */
+}
+
+/* Пустое пространство в правой секции */
+.sb-right-section .sb-spacer {
+    flex-grow: 1;
+}
+
+/* Последняя кнопка "Маленький" прижата вправо */
+.sb-right-section .sb-panel:last-child {
+    margin-left: auto; /* Автоматический отступ слева */
+}
+
+        .sb-panel {
+            font-family: 'Tahoma', sans-serif;
+            font-size: 10px;
+            color: #000;
+            border-top: 1px solid #fff;
+            border-left: 1px solid #fff;
+            border-bottom: 1px solid #808080;
+            border-right: 1px solid #808080;
+            padding: 0 4px;
+            margin: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            box-sizing: border-box;
+            cursor: pointer;
+            flex-shrink: 0;
+            background-color: #ece9d8;
+        }
+
+        .sb-panel:active:not(.sb-spacer):not(.disabled) {
+            border-top: 1px solid #808080;
+            border-left: 1px solid #808080;
+            border-bottom: 1px solid #fff;
+            border-right: 1px solid #fff;
+            background-color: #d4d0c8;
+        }
+
+        .sb-spacer {
+            flex-grow: 1;
+            border-top: 1px solid #808080;
+            border-left: 1px solid #808080;
+            border-bottom: 1px solid #fff;
+            border-right: 1px solid #fff;
+            margin: 1px;
+            cursor: default;
+            background-color: #ece9d8;
+        }
+
+        .sb-panel.active-tab {
+            border-top: 1px solid #808080;
+            border-left: 1px solid #808080;
+            border-bottom: 1px solid #fff;
+            border-right: 1px solid #fff;
+            background-color: #d4d0c8;
+            font-weight: bold;
+        }
+
+        .sb-panel.disabled {
+            color: #a0a0a0;
+            text-shadow: 1px 1px 0px #fff;
+            cursor: default;
+        }
+
+        /* --- КАРТА РУЛONА --- */
+        .map-overlay-container {
+            display: none; flex: 1; flex-direction: column; background-color: #8b8c91;
+            border: 1px solid var(--sys-border); min-width: 0; position: relative;
+            font-family: Tahoma, sans-serif; overflow: hidden;
+        }
+        .map-unified-scroll { flex: 1; overflow-y: scroll; overflow-x: hidden; background-color: #8b8c91; }
+
+        .map-unified-grid {
+            display: grid; grid-template-columns: 1.2fr 3.5fr 1.2fr 130px 35px 1.2fr 3.5fr 1.2fr;
+            grid-template-rows: 28px 2500px;
+            width: 100%; box-sizing: border-box;
+        }
+
+        .h-cell {
+            position: sticky; top: 0; z-index: 100;
+            display: flex; flex-direction: column;
+            border-right: 1px solid #000; border-bottom: 1px solid #000;
+            box-sizing: border-box; background-color: #ffffff;
+        }
+        .h-cell.bold-border { border-right: 2px solid #000; }
+        .h-cell.no-border { border-right: none; }
+
+        .h-title {
+            background-color: var(--sys-gray);
+            height: 16px;
+            display: flex; align-items: center;
+            padding: 0 4px;
+            font-size: 10px; font-weight: bold; color: black;
+            border-bottom: 1px solid #a0a0a0;
+        }
+        .h-scale {
+            background-color: #ffffff;
+            height: 11px;
+            display: flex; align-items: center;
+            padding: 0 2px;
+            font-size: 8px; color: #000;
+        }
+
+        .t-left { justify-content: flex-start; }
+        .t-center { justify-content: center; text-align: center; }
+        .t-right { justify-content: flex-end; }
+
+        .s-flex { display: flex; justify-content: space-between; width: 100%; }
+        .s-right { justify-content: flex-end; width: 100%; display: flex; }
+        .s-left { justify-content: flex-start; width: 100%; display: flex; }
+
+        .h-cell.col-len { background-color: var(--sys-gray); }
+        .h-cell.col-len .h-title { height: 100%; border-bottom: none; flex-direction: column; justify-content: center; }
+        .h-cell.col-scale { background-color: #ffffff; }
+        .h-cell.col-scale .h-title { height: 100%; border-bottom: none; flex-direction: column; background-color: #ffffff; justify-content: center; }
+
+        .b-cell { position: relative; box-sizing: border-box; border-right: 1px solid #000; background-color: #8b8c91; }
+        .b-cell.bold-border { border-right: 2px solid #000; }
+        .b-cell.no-border { border-right: none; }
+        .b-cell.col-scale { background-color: #ffffff; }
+        .b-cell.col-len { background-color: #5a5a5a; }
+
+        .red-guide { position: absolute; width: 1px; background-color: rgba(255, 100, 100, 0.5); top: 0; bottom: 0; left: 50%; z-index: 1; }
+
+        .defect-lbl {
+            position: absolute; font-size: 10px; font-weight: bold; text-align: center;
+            padding: 1px 3px; z-index: 10; cursor: pointer;
+            transform: translate(-50%, -50%);
+            min-width: 40px;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+            white-space: nowrap;
+            display: none;
+        }
+        .md-red { background-color: #cc0000; color: white; border: 1px solid #700000; }
+        .md-white-group {
+            background-color: white; color: #cc0000; border: 1px solid #cc0000;
+        }
+        .md-hatched {
+            background: repeating-linear-gradient(45deg, #ffffff, #ffffff 2px, #cc0000 2px, #cc0000 4px);
+            color: black; border: 1px solid #700000;
+            text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff;
+        }
+
+        .track-border { position: absolute; width: 1px; background-color: #ff9900; top:0; bottom:0; z-index: 20; }
+        .track-border-l { left: 0; }
+        .track-border-r { right: 0; }
+
+        .minimap-dot { position: absolute; height: 2px; z-index: 5; pointer-events: none; }
+        .minimap-dot.face { background-color: #ffff00; }
+        .minimap-dot.back { background-color: #00ff00; }
+
+        .g-line-green { position: absolute; left: 1px; right: 1px; height: 1px; background-color: #00ff00; z-index: 10; pointer-events: none; }
+
+        .map-segment-overlay {
+            position: absolute; width: 100%; left: 0; z-index: 30; cursor: pointer;
+            box-sizing: border-box;
+        }
+
+        .g-line-w { position: absolute; width: 100%; height: 1px; border-top: 1px dashed rgba(255,255,255,0.8); z-index: 2; }
+        .g-txt-w { position: absolute; color: white; font-size: 10px; transform: translateY(-50%); z-index: 2; white-space: nowrap; }
+        .g-line-b { position: absolute; width: 100%; height: 1px; background-color: #222; z-index: 1; }
+        .scale-num { position: absolute; width: 100%; text-align: center; font-size: 10px; color: black; transform: translateY(-50%); margin-top: -6px; z-index: 5; }
+
+        #defect-popup {
+            display: none; position: absolute; background: white; border: 1px solid #808080;
+            padding: 2px; z-index: 1000; font-size: 11px; box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+            min-width: 90px;
+        }
+        .popup-item { padding: 2px 6px; cursor: pointer; color: black; }
+        .popup-item:hover { background-color: var(--sys-blue-select); color: white; }
+
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.2); z-index: 2000;
+            justify-content: center; align-items: center;
+        }
+        .modal-window {
+            background-color: var(--sys-gray);
+            border-top: 1px solid white; border-left: 1px solid white;
+            border-bottom: 2px solid #404040; border-right: 2px solid #404040;
+            width: 650px; display: flex; flex-direction: column;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+        }
+        .modal-header {
+            background-color: var(--sys-blue-select); color: white;
+            padding: 2px 4px; font-weight: bold; display: flex; justify-content: space-between;
+            align-items: center; margin: 2px;
+        }
+        .modal-close {
+            background: var(--sys-gray); border-top: 1px solid white; border-left: 1px solid white;
+            border-bottom: 1px solid #404040; border-right: 1px solid #404040;
+            cursor: pointer; font-weight: bold; padding: 0 4px; height: 16px; display: flex; align-items: center; justify-content: center; color: black;
+        }
+        .modal-close:active { border-top: 1px solid #404040; border-left: 1px solid #404040; border-bottom: 1px solid white; border-right: 1px solid white; }
+        .modal-body { padding: 10px; display: flex; flex-direction: column; gap: 15px; }
+        .modal-table-container {
+            height: 250px; overflow: auto; background: white;
+            border-top: 2px solid #808080; border-left: 2px solid #808080;
+            border-bottom: 1px solid white; border-right: 1px solid white;
+        }
+        .modal-controls { display: flex; align-items: center; position: relative; }
+        .modal-controls label { margin-right: 5px; }
+        .modal-controls input {
+            width: 150px; padding: 2px;
+            border-top: 2px solid #808080; border-left: 2px solid #808080;
+            border-bottom: 1px solid white; border-right: 1px solid white;
+            outline: none;
+        }
+        .modal-buttons { margin-left: auto; display: flex; gap: 8px; }
+        .modal-buttons button {
+            padding: 3px 20px; background: var(--sys-gray); cursor: pointer; color: black;
+            border-top: 1px solid white; border-left: 1px solid white;
+            border-bottom: 2px solid #404040; border-right: 2px solid #404040;
+        }
+        .modal-buttons button:active {
+            border-top: 2px solid #404040; border-left: 2px solid #404040;
+            border-bottom: 1px solid white; border-right: 1px solid white;
+            padding: 4px 19px 2px 21px;
+        }
+
+        /* --- Стили для РЕАЛЬНОГО режима карты --- */
+        .defect-real-block {
+            position: absolute;
+            cursor: pointer;
+            box-sizing: border-box;
+            background-color: #cc0000;
+        }
+        .defect-real-block.hatched-bg {
+            /* Используем прозрачный цвет между штрихами, чтобы было видно нижние дефекты */
+            background: repeating-linear-gradient(45deg, #cc0000, #cc0000 2px, transparent 2px, transparent 4px);
+            background-color: transparent;
+        }
+        .defect-real-block:hover {
+            border: 1px solid #fff;
+            filter: brightness(1.2);
+        }
+
+        .defect-real-cross {
+            position: absolute;
+            font-size: 13px;
+            font-family: inherit;
+            line-height: 1;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            color: #cc0000;
+        }
+        .defect-real-cross:hover {
+            font-weight: bold;
+            transform: translate(-50%, -50%) scale(1.2);
+        }
+/* Выпадающие меню */
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #ffffff;
+    border: 1px solid #808080;
+    border-top: 1px solid #ffffff;
+    border-left: 1px solid #ffffff;
+    border-bottom: 2px solid #404040;
+    border-right: 2px solid #404040;
+    min-width: 220px;
+    z-index: 1000;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+    padding: 2px 0;
+}
+
+.menu-item {
+    position: relative;
+}
+
+/* Показываем меню только когда родитель активен ИЛИ при наведении на активный родитель */
+.menu-item.active .dropdown-menu {
+    display: block;
+}
+
+.dropdown-item {
+    position: relative;          /* Важно для позиционирования галочки */
+    padding: 4px 10px 4px 24px;  /* Увеличен левый padding (24px) для колонки с галочкой */
+    cursor: pointer;
+    color: #000;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.dropdown-item:hover {
+    background-color: #e5f1fb;
+    border: 1px solid #99c1e2;
+    padding: 3px 9px 3px 23px;
+}
+
+.dropdown-item.disabled:hover {
+    background-color: transparent;
+    border: none;
+    padding: 4px 10px 4px 24px;
+}
+
+.dropdown-item.disabled:hover {
+    background-color: transparent;
+    border: none;
+    padding: 4px 10px;
+}
+
+/* Галочки для пунктов меню "Изображение дефекта" */
+.dropdown-item.checked::before {
+    content: "✓";
+    position: absolute;
+    left: 8px;                   /* Строго фиксируем положение слева */
+    top: 50%;                    /* Центруем по вертикали */
+    transform: translateY(-50%); /* Сдвигаем на половину собственной высоты для ровного центра */
+    color: #000;
+    font-weight: bold;
+}
+
+/* Активное меню (открыто по клику) */
+.menu-item.active {
+    background-color: #e5f1fb;
+    border: 1px solid #99c1e2;
+    padding: 3px 7px;
+}
+
+/* Для неактивных пунктов меню */
+.menu-item.disabled {
+    color: #a0a0a0;
+    cursor: default;
+    text-shadow: 1px 1px 0 #fff;
+}
+
+.menu-item.disabled:hover {
+    background-color: transparent;
+    border: none;
+    padding: 4px 8px;
+}
+
+
+
+        /* --- Стили для вложенных подменю (Submenu) --- */
+.dropdown-item.has-submenu {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.submenu-arrow {
+    font-size: 9px;
+    margin-left: 15px;
+}
+
+.submenu {
+    display: none;
+    position: absolute;
+    top: -2px; /* Выравнивание по высоте текущего пункта */
+    left: 100%; /* Появление справа от родителя */
+    background-color: #ffffff;
+    border: 1px solid #808080;
+    border-top: 1px solid #ffffff;
+    border-left: 1px solid #ffffff;
+    border-bottom: 2px solid #404040;
+    border-right: 2px solid #404040;
+    min-width: 150px;
+    z-index: 1001;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+    padding: 2px 0;
+}
+
+/* Открываем подменю при наведении на пункт родителя */
+.dropdown-item.has-submenu:hover > .submenu {
+    display: block;
+}
+
+/* Разделитель в меню */
+.menu-separator {
+    border: none;
+    border-top: 1px solid #808080;
+    border-bottom: 1px solid #ffffff;
+    margin: 3px 2px;
+}
+    </style>
+</head>
+<body>
+
+    <div class="os-header">
+        <div class="os-header-icon"></div>
+        <div>Терминал-Режим Offline AEIP4</div>
+    </div>
+
+    <div class="app-top">
+<!--        <div class="menu-bar" id="main-menu">-->
+<!--            <div class="menu-item">Файл</div>-->
+<!--            <div class="menu-item">Редактировать</div>-->
+<!--            <div class="menu-item">Обзор</div>-->
+<!--            <div class="menu-item">Карта рулона</div>-->
+<!--            <div class="menu-item">Изображение дефекта</div>-->
+<!--            <div class="menu-item">Режим</div>-->
+<!--            <div class="menu-item">Система</div>-->
+<!--            <div class="menu-item">Утилиты</div>-->
+<!--            <div class="menu-item">Пользователь</div>-->
+<!--            <div class="menu-item">Установки</div>-->
+<!--            <div class="menu-item">Информация</div>-->
+
+
+
+
+
+        <div class="menu-bar" id="main-menu">
+    <div class="menu-item" data-menu="file">
+        Файл
+        <div class="dropdown-menu" id="file-menu">
+            <div class="dropdown-item" onclick="selectSystem()">Выбор системы</div>
+            <div class="dropdown-item" onclick="selectDatabase()">Выбор базы данных</div>
+            <div class="dropdown-item" onclick="loadCoil()">Загрузить рулон</div>
+            <div class="dropdown-item" onclick="reloadCoilList()">Перезагрузить список рулонов</div>
+            <div class="dropdown-item disabled" onclick="printCoilMap()">Распечатать карту рулонов</div>
+            <div class="dropdown-item" onclick="printDefectImage()">Распечатать изображение дефекта</div>
+            <div class="dropdown-item" onclick="saveDefectImage()">Сохранить изображение дефекта</div>
+            <div class="dropdown-item" onclick="printProtocol()">Напечатать протокол</div>
+            <div class="dropdown-item" onclick="exitApp()">Выход</div>
+        </div>
+    </div>
+
+    <div class="menu-item">Редактировать</div>
+    <div class="menu-item">Обзор</div>
+    <div class="menu-item" data-menu="coil-map">
+        Карта рулона
+        <div class="dropdown-menu" id="coil-map-menu">
+
+            <div class="dropdown-item has-submenu">
+                <span>Детальный размер</span> <span class="submenu-arrow">▶</span>
+                <div class="submenu">
+                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">0.1 Meter</div>
+                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">1 Meter</div>
+                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">10 Meter</div>
+                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">50 Meter</div>
+                    <div class="dropdown-item checked" onclick="toggleRadioMenu(this)">100 Meter</div>
+                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">200 Meter</div>
+                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">500 Meter</div>
+                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">1000 Meter</div>
+                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">2500 Meter</div>
+                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">5000 Meter</div>
+                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">10000 Meter</div>
+                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">100000 Meter</div>
+                </div>
+            </div>
+
+            <div class="dropdown-item has-submenu">
+                <span>Стороны рулона</span> <span class="submenu-arrow">▶</span>
+                <div class="submenu">
+                    <div class="dropdown-item checked" onclick="toggleRadioMenu(this)">Обе стороны</div>
+                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">Верхняя сторона</div>
+                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">Нижняя сторона</div>
+                </div>
+            </div>
+
+            <div class="dropdown-item has-submenu">
+                <span>Обзор дефекта</span> <span class="submenu-arrow">▶</span>
+                <div class="submenu">
+                    <div class="dropdown-item checked" onclick="toggleRadioMenu(this)">Ярлык</div>
+                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">Реальный</div>
+                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">Таблица</div>
+                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">Статистика</div>
+                </div>
+            </div>
+
+            <div class="dropdown-item has-submenu">
+                <span>Размер ярлыка</span> <span class="submenu-arrow">▶</span>
+                <div class="submenu">
+                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">1 (маленький)</div>
+                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">2</div>
+                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">3</div>
+                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">4</div>
+                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">5</div>
+                    <div class="dropdown-item checked" onclick="toggleRadioMenu(this)">6</div>
+                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">7</div>
+                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">8 (большой)</div>
+                </div>
+            </div>
+
+            <hr class="menu-separator">
+
+            <div class="dropdown-item" onclick="mapMenuAction('Выбрать класс')">Выбрать класс дефектов...</div>
+            <div class="dropdown-item" onclick="mapMenuAction('Выбрать камеры')">Выбрать камеры ...</div>
+            <div class="dropdown-item" onclick="mapMenuAction('Выбор градации')">Выбор градации ...</div>
+            <div class="dropdown-item" onclick="mapMenuAction('Только дефекты')">Only Defects CLASS&lt;&gt;Тестовые классы</div>
+            <div class="dropdown-item" onclick="mapMenuAction('Сброс')">Сбросить выбранное</div>
+            <div class="dropdown-item" onclick="mapMenuAction('Очевидные')">Очевидные дефекты</div>
+
+        </div>
+    </div>
+
+    <div class="menu-item" data-menu="defect-image">
+        Изображение дефекта
+        <div class="dropdown-menu" id="defect-image-menu">
+            <div class="dropdown-item" onclick="toggleDefectView('original')">Первоначальное</div>
+            <div class="dropdown-item" onclick="toggleDefectView('aligned')">Выровненное</div>
+            <div class="dropdown-item" onclick="toggleDefectView('stretched')">Растянутое</div>
+            <div class="dropdown-item" onclick="toggleDefectView('3d')">Трехмерный фильтр</div>
+            <div class="dropdown-item" onclick="toggleDefectView('roi')">Показатель "регион интересов" (Rol)</div>
+        </div>
+    </div>
+
+    <div class="menu-item">Режим</div>
+    <div class="menu-item">Система</div>
+    <div class="menu-item">Утилиты</div>
+    <div class="menu-item">Пользователь</div>
+    <div class="menu-item">Установки</div>
+
+    <div class="menu-item" data-menu="info">
+        Информация
+        <div class="dropdown-menu" id="info-menu">
+            <div class="dropdown-item" onclick="showAbout()">O ODIS</div>
+        </div>
+    </div>
+</div>
+        </div>
+
+      <div class="toolbar">
+    <div class="tb-group">
+        <div class="tb-btn" title="Поиск рулона" onclick="openRollModal()">
+            <img src="picture\ico\ico_1.png" alt="Рулон" style="width:14px;height:14px;">
+        </div>
+        <div class="tb-btn" title="Только верхняя сторона" onclick="openRollModal()">
+            <img src="picture\ico\ico_2.png" alt="Открыть" style="width:14px;height:14px;">
+        </div>
+        <div class="tb-btn" title="Две стороны" onclick="saveCoil()">
+            <img src="picture\ico\ico_3.png" alt="Сохранить" style="width:14px;height:14px;">
+        </div>
+    </div>
+
+    <div class="tb-group">
+        <div class="tb-btn" title="Только нижняя сторона" onclick="toggleMap(true)">
+            <img src="picture\ico\ico_4.png" alt="Карта 1" style="width:14px;height:14px;">
+        </div>
+        <div class="tb-btn" title="Показать дефекты в виде ярлыков" onclick="toggleMap(true)">
+            <img src="picture\ico\ico_5.png" alt="Карта 2" style="width:14px;height:14px;">
+        </div>
+        <div class="tb-btn" title="Показать точный размер и позицию дефектов" onclick="toggleMap(true)">
+            <img src="picture\ico\ico_6.png" alt="Карта 3" style="width:14px;height:14px;">
+        </div>
+    </div>
+
+    <div class="tb-group">
+        <div class="tb-btn" title="Показать таблицу дефектов" onclick="showStatus()">
+            <img src="picture\ico\ico_7.png" alt="Статус" style="width:14px;height:14px;">
+        </div>
+        <div class="tb-btn" title="Показать данные рулона" onclick="showChart()">
+            <img src="picture\ico\ico_8.png" alt="График" style="width:14px;height:14px;">
+        </div>
+        <div class="tb-btn" title="Перезагрузка данных рулона" onclick="toggleGrid()">
+            <img src="picture\ico\ico_9.png" alt="Сетка" style="width:14px;height:14px;">
+        </div>
+        <div class="tb-btn" title="Выбрать класс дефекта" onclick="toggleSplit()">
+            <img src="picture\ico\ico_10.png" alt="Разделение" style="width:14px;height:14px;">
+        </div>
+    </div>
+
+    <div class="tb-group">
+        <div class="tb-btn" title="Выбор камеры" onclick="showTools()">
+            <img src="picture\ico\ico_11.png" alt="Инструмент" style="width:14px;height:14px;">
+        </div>
+        <div class="tb-btn" title="Исходное изображение дефекта" onclick="showHelp()">
+            <img src="picture\ico\ico_12.png" alt="Вопрос" style="width:14px;height:14px;">
+        </div>
+        <div class="tb-btn" title="Выровнять изображение дефекта" onclick="toggleScale()">
+            <img src="picture\ico\ico_13.png" alt="Шкала" style="width:14px;height:14px;">
+        </div>
+    </div>
+
+    <div class="tb-group">
+        <div class="tb-btn" title="Растянуть изображение дефекта" onclick="selectTool('point')">
+            <img src="picture\ico\ico_14.png" alt="Точка" style="width:14px;height:14px;">
+        </div>
+        <div class="tb-btn" title="Фильтр трехмерного изображения дефекта" onclick="selectTool('area')">
+            <img src="picture\ico\ico_15.png" alt="Область" style="width:14px;height:14px;">
+        </div>
+        <div class="tb-btn" title="Rol в изображении дефектов включен/выключен" onclick="selectTool('spot1')">
+            <img src="picture\ico\ico_16.png" alt="Пятно 1" style="width:14px;height:14px;">
+        </div>
+        <div class="tb-btn" title="Карта рулона большая/маленькая" onclick="selectTool('spot2')">
+            <img src="picture\ico\ico_17.png" alt="Пятно 2" style="width:14px;height:14px;">
+        </div>
+    </div>
+
+    <div class="tb-group">
+        <div class="tb-btn" title="Напечатать протокол" onclick="selectTool('wave')">
+            <img src="picture\ico\ico_18.png" alt="Волна" style="width:14px;height:14px;">
+        </div>
+    </div>
+</div>
+    </div>
+
+    <div class="workspace">
+        <div class="panel-left">
+            <div class="box h-35">
+                <div class="box-title">Данные инспектируемого рулона</div>
+                <div class="box-content">
+                    <table class="table-rolls">
+                        <thead>
+                            <tr>
+                                <th style="width: 55px;">ID</th><th style="width: 60px;">N рулона</th>
+                                <th style="width: 40px;">Статус</th><th style="width: 60px;">Плавка</th>
+                                <th style="width: 50px;">Партия</th><th style="width: 45px;">Рулон</th>
+                                <th style="width: 45px;">Матер...</th><th style="width: 55px;">Толщ...</th>
+                                <th style="width: 50px;">Длина</th><th style="width: 50px;">Ширина</th>
+                                <th style="width: 100px;">Начало</th><th style="width: 100px;">Oкончание</th>
+                                <th style="width: 45px;">Деф...</th>
+                            </tr>
+                        </thead>
+                        <tbody id="coil-tbody">
+                            <!-- Данные генерируются скриптом -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="box h-40">
+                <div class="box-title">Описание дефекта</div>
+                <div class="box-content">
+                    <table class="prop-grid">
+                        <tbody id="prop-tbody">
+                            <tr><td>ID дефекта</td><td id="p-id"></td></tr>
+                            <tr><td>Класс</td><td id="p-class"></td></tr>
+                            <tr><td>Prod. Class / Test Class</td><td id="p-prod"></td></tr>
+                            <tr><td>Уверенность</td><td id="p-conf"></td></tr>
+                            <tr><td>Расстояние от лиц.стороны</td><td id="p-dist-os"></td></tr>
+                            <tr><td>Расстояние от обрат.стороны</td><td id="p-dist-ds"></td></tr>
+                            <tr><td>Расстояние от начала</td><td id="p-dist-fro"></td></tr>
+                            <tr><td>Ширина</td><td></td></tr>
+                            <tr><td>Длина</td><td id="p-len"></td></tr>
+                            <tr><td>Высота волны</td><td></td></tr>
+                            <tr><td>Длина периода</td><td></td></tr>
+                            <tr><td>Камера</td><td id="p-cam"></td></tr>
+                            <tr><td>ID изображения</td><td id="p-img"></td></tr>
+                            <tr><td>Сторона</td><td id="p-side"></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="box h-25">
+                <div class="box-title">Изображение дефекта</div>
+                <div class="box-content" style="background-color: white;" id="defect-image-box"></div>
+            </div>
+        </div>
+
+        <div class="panel-right">
+            <!-- ФИЛЬТРЫ КЛАССОВ -->
+            <div class="filter-group">
+                <div class="filter-row">
+                    <span class="arrow-toggle open" onclick="toggleFilter(this, 'content-classes')">▶</span>
+                    <b style="cursor:pointer" onclick="toggleFilter(this.previousElementSibling, 'content-classes')">КЛАССЫ <span id="class-counter-header">0 / 0</span></b>
+                    <div class="filter-actions">
+                        <button onclick="setAllFilters('content-classes', true)">Все вкл.</button>
+                        <button onclick="setAllFilters('content-classes', false)">Все выкл.</button>
+                        <button onclick="activateTop5()">ТОП 5</button>
+                    </div>
+                </div>
+                <div class="filter-content active" id="content-classes">
+                    <div class="classes-grid" id="classes-grid-container">
+                        <!-- Блоки классов генерируются JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ФИЛЬТРЫ КАМЕР -->
+            <div class="filter-group">
+                <div class="filter-row">
+                    <span class="arrow-toggle open" onclick="toggleFilter(this, 'content-cameras')">▶</span>
+                    <b style="cursor:pointer" onclick="toggleFilter(this.previousElementSibling, 'content-cameras')">КАМЕРЫ</b>
+                    <div class="filter-actions">
+                        <button onclick="setAllFilters('content-cameras', true)">Все вкл.</button>
+                        <button onclick="setAllFilters('content-cameras', false)">Все выкл.</button>
+                    </div>
+                </div>
+                <div class="filter-content active" id="content-cameras" style="padding: 2px 4px;">
+                    <!-- Камеры генерируются JS построчно -->
+                </div>
+            </div>
+
+            <div class="blue-header-container">
+                <div class="blue-header-main" id="map-header-title">Карта рулона - Выберите рулон</div>
+                <div class="blue-header-sub" id="map-header-defects">Дефекты: 0(0)</div>
+            </div>
+
+            <div class="map-overlay-container" id="map-view-panel">
+                <div class="map-unified-scroll">
+                    <div class="map-unified-grid" id="map-lanes-inner">
+                        <!-- HEADER ROW -->
+                        <div class="h-cell">
+                            <div class="h-title t-left">Левая кромка</div>
+                            <div class="h-scale s-right"><span>1000</span></div>
+                        </div>
+                        <div class="h-cell">
+                            <div class="h-title t-center">Лицевая сторона</div>
+                            <div class="h-scale s-flex">
+                                <span>900</span><span>800</span><span>700</span><span>600</span><span>500</span><span>400</span><span>300</span><span>200</span><span>100</span>
+                            </div>
+                        </div>
+                        <div class="h-cell bold-border">
+                            <div class="h-title t-right">Правая кромка</div>
+                            <div class="h-scale s-left"><span>0 mm</span></div>
+                        </div>
+
+                        <div class="h-cell col-len">
+                            <div class="h-title t-center" id="header-length">Длина<br>0 m</div>
+                        </div>
+                        <div class="h-cell bold-border col-scale">
+                            <div class="h-title t-center">10<br>m</div>
+                        </div>
+
+                        <div class="h-cell">
+                            <div class="h-title t-left">Правая кромка</div>
+                            <div class="h-scale s-flex"><span>0 mm</span><span>100</span><span>200</span></div>
+                        </div>
+                        <div class="h-cell">
+                            <div class="h-title t-center">Обратная сторона</div>
+                            <div class="h-scale s-flex">
+                                <span>300</span><span>400</span><span>500</span><span>600</span><span>700</span><span>800</span><span>900</span>
+                            </div>
+                        </div>
+                        <div class="h-cell no-border">
+                            <div class="h-title t-right">Левая кромка</div>
+                            <div class="h-scale s-left"><span>1000</span></div>
+                        </div>
+
+
+                        <!-- BODY ROW -->
+                        <div class="b-cell" id="mc1"></div>
+                        <div class="b-cell" id="mc2"></div>
+                        <div class="b-cell bold-border" id="mc3"></div>
+                        <div class="b-cell col-len" id="mc4"></div>
+                        <div class="b-cell col-scale" id="mc5"></div>
+                        <div class="b-cell" id="mc6"></div>
+                        <div class="b-cell" id="mc7"></div>
+                        <div class="b-cell no-border" id="mc8"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="box-content" id="table-view-panel" style="background: white; display: none;">
+                <table class="table-defects">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">ID</th>
+                            <th style="width: 70px;">Status</th>
+                            <th style="width: 60px;">Coil Side</th>
+                            <th style="width: 90px;">Class</th>
+                            <th style="width: 80px;">Production</th>
+                            <th style="width: 35px;">Conf</th>
+                            <th style="width: 70px;">Dist. fro...</th>
+                            <th style="width: 80px;">Dist. from OS</th>
+                            <th style="width: 80px;">Dist. from DS</th>
+                            <th style="width: 70px;">Dist. from bo...</th>
+                            <th style="width: 70px;">Dist. from top</th>
+                            <th style="width: 50px;">Length</th>
+                            <th style="width: 60px;">Area</th>
+                            <th style="width: 80px;">Camera</th>
+                            <th style="width: 55px;">Image ID</th>
+                        </tr>
+                    </thead>
+                    <tbody id="defects-tbody">
+                        <!-- Данные генерируются скриптом -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+        <!-- Нижняя панель (Status Bar) -->
+    <div class="status-bar">
+        <!-- Левая секция (под панелью дефектов) -->
+        <div class="sb-section sb-left-section">
+            <div class="sb-panel">Первичный</div>
+            <div class="sb-panel">уровненн</div>
+            <div class="sb-panel">астянуты</div>
+            <div class="sb-panel">размерны</div>
+            <div class="sb-panel">Rol</div>
+
+            <!-- Пустое пространство, отодвигающее кнопки вправо -->
+            <div class="sb-spacer"></div>
+
+            <div class="sb-panel">M</div>
+            <div class="sb-panel">◀</div>
+            <div class="sb-panel">▶</div>
+            <div class="sb-panel">Большой</div>
+        </div>
+
+        <!-- Правая секция (под картой рулона) -->
+        <div class="sb-section sb-right-section">
+    <div class="sb-panel" id="btn-real">реальный</div>
+    <div class="sb-panel toggle-btn active-tab">Ярлык</div>
+    <div class="sb-panel toggle-btn">Таблица</div>
+    <div class="sb-panel">Стат</div>
+    <div class="sb-panel">Отчет</div>
+    <div class="sb-panel">Ч.дефекты</div>
+    <div class="sb-panel">3 периоди</div>
+    <div class="sb-panel disabled">естовый к</div>
+    <div class="sb-panel">с изображ</div>
+
+    <!-- Пустое пространство до последней кнопки -->
+    <div class="sb-spacer"></div>
+
+    <!-- Добавлен класс для последней кнопки -->
+    <div class="sb-panel sb-last-btn">Маленький</div>
+</div>
+    </div>
+
+    <!-- Всплывающее меню для белых и заштрихованных ярлыков -->
+    <div id="defect-popup"></div>
+
+    <!-- Модальное окно поиска рулона -->
+    <div id="roll-search-modal" class="modal-overlay">
+        <div class="modal-window">
+            <div class="modal-header">
+                <span>Выбрать и загрузить рулон</span>
+                <button class="modal-close" onclick="closeRollModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-table-container">
+                    <table class="table-rolls">
+                        <thead>
+                            <tr>
+                                <th>ID</th><th>В рулоне</th><th>Статус</th><th>Планка</th><th>Партия</th><th>Рулон</th><th>Матер...</th><th>Толщ...</th><th>Длина</th><th>Ширина</th><th>Начало</th><th>Окончание</th><th>Деф...</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modal-roll-table-body">
+                            <!-- Сюда динамически скопируются строки -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-controls">
+                    <label for="roll-search-input">Номер рулона:</label>
+                    <input type="text" id="roll-search-input">
+                    <div class="modal-buttons">
+                        <button onclick="confirmRollSelection()">ОК</button>
+                        <button onclick="closeRollModal()">Выход</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<script>
+    const ALL_CLASSES = [
+        "Сквозной разр", "Кромочный де", "Складка", "Неоднородный", "Окисление",
+        "Смятая повер", "Слиточная пл", "Царапина", "Пятно ржавчи", "Пятно слипов",
+        "Сварные швы", "Pseudo", "System", "Пятно загряз", "Отпечаток",
+        "Нарушение по", "Неплоскостно", "Несмытая MgCO", "Утолщение эл", "Электроизол",
+        "Крайчатость", "Вдавлины", "Волна", "Излом", "Перегибы", "Все другие"
+    ];
+
+    const TOP_5_CLASSES = ["Сквозной разр", "Кромочный де", "Складка", "Сварные швы", "Крайчатость"];
+
+    const CAMERA_STRUCTURE = [
+        { group: "Верх BF", cams: ["11 Верх BF", "10 Верх BF", "09 Верх BF"] },
+        { group: "Верх LF", cams: ["06 Верх LF", "05 Верх LF"] },
+        { group: "Низ LF",  cams: ["01 Низ LF", "02 Низ LF"] },
+        { group: "Верх RF", cams: ["08 Верх RF", "07 Верх RF"] },
+        { group: "Низ RF",  cams: ["03 Низ RF", "04 Низ RF"] }
+    ];
+
+    const ALL_CAMERAS = CAMERA_STRUCTURE.flatMap(row => row.cams);
+
+    let currentTotalDefects = 0;
+    let currentVisibleDefects = 0;
+    let isMapOpen = false;
+
+    // --- ПЕРЕМЕННЫЕ ДЛЯ РЕАЛЬНОГО РЕЖИМА ---
+    let isRealMode = false;
+    let currentActiveCoilData = null;
+
+    // --- НАСТРОЙКИ ОТОБРАЖЕНИЯ ЯРЛЫКОВ ---
+    // В режиме ярлыка показываем ВСЕ ярлыки без ограничения по зоне
+    // Это значение больше не используется для ограничения, но оставим для совместимости
+    const LABEL_BLOCKS_VISIBLE = 100;
+
+    let activeMinTop = 0;
+    let activeMaxTop = 100; // Показываем всю длину рулона
+
+    // --- НАСТРОЙКИ ГЕНЕРАЦИИ ДЕФЕКТОВ ---
+    const DEFECT_MIN = 150; // Минимальное количество дефектов на рулон
+    const DEFECT_MAX = 350; // Максимальное количество дефектов на рулон
+
+    document.addEventListener('click', function(e) {
+        const popup = document.getElementById('defect-popup');
+        if (popup.style.display === 'block' && !e.target.closest('.defect-lbl') && !e.target.closest('.defect-real-block') && !e.target.closest('.defect-real-cross')) {
+            popup.style.display = 'none';
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        renderFilterBlocks();
+        initCoilsTable();
+
+        const mapBtn = document.querySelector('.tb-group:nth-child(2) .tb-btn:nth-child(1)');
+        if(mapBtn) mapBtn.addEventListener('click', () => toggleMap(!isMapOpen));
+
+        setupTableSelection('coil-tbody', false);
+    });
+
+    function toggleMap(show) {
+        isMapOpen = show;
+        document.getElementById('map-view-panel').style.display = isMapOpen ? 'flex' : 'none';
+        document.getElementById('table-view-panel').style.display = isMapOpen ? 'none' : 'block';
+    }
+
+    function toggleFilter(arrowElement, contentId) {
+        arrowElement.classList.toggle('open');
+        const content = document.getElementById(contentId);
+        content.style.display = content.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function renderFilterBlocks() {
+        const classContainer = document.getElementById('classes-grid-container');
+        const camContainer = document.getElementById('content-cameras');
+
+        classContainer.innerHTML = '';
+        ALL_CLASSES.forEach(cls => {
+            const isYellow = cls === "Электроизол";
+            const stateClass = isYellow ? "yellow" : (TOP_5_CLASSES.includes(cls) ? "active" : "inactive");
+            classContainer.innerHTML += `
+                <div class="filter-block ${stateClass}" data-type="class" data-value="${cls}" onclick="toggleBlock(this)">
+                    <span class="fb-name">${cls}</span>
+                    <span class="fb-count" id="count-${cls.replace(/\s+/g, '')}">0/ 0</span>
+                </div>
+            `;
+        });
+
+        camContainer.innerHTML = '';
+        CAMERA_STRUCTURE.forEach(row => {
+            let html = `<div class="camera-row">`;
+            html += `<div class="camera-row-left">`;
+            row.cams.forEach(cam => {
+                html += `<div class="filter-block active cam-block" data-type="camera" data-value="${cam}" onclick="toggleBlock(this)">
+                            <span class="fb-name">${cam}</span>
+                         </div>`;
+            });
+            html += `</div>`;
+            html += `<div class="camera-row-right">`;
+            html += `<div class="filter-block active cam-block" onclick="toggleCameraGroup(this, '${row.group}')">
+                        <span class="fb-name">${row.group}</span>
+                     </div>`;
+            html += `</div></div>`;
+            camContainer.innerHTML += html;
+        });
+    }
+
+    function toggleBlock(block) {
+        if (block.classList.contains('active') || block.classList.contains('yellow')) {
+            block.classList.remove('active', 'yellow');
+            block.classList.add('inactive');
+        } else {
+            block.classList.remove('inactive');
+            if(block.dataset.value === "Электроизол") block.classList.add('yellow');
+            else block.classList.add('active');
+        }
+        applyFilters();
+    }
+
+    function setAllFilters(containerId, isActive) {
+        document.querySelectorAll(`#${containerId} .filter-block`).forEach(block => {
+            block.classList.remove('active', 'inactive', 'yellow');
+            if (isActive) {
+                if(block.dataset.value === "Электроизол") block.classList.add('yellow');
+                else block.classList.add('active');
+            } else {
+                block.classList.add('inactive');
+            }
+        });
+        applyFilters();
+    }
+
+    function activateTop5() {
+        document.querySelectorAll('#content-classes .filter-block').forEach(block => {
+            block.classList.remove('active', 'inactive', 'yellow');
+            if (TOP_5_CLASSES.includes(block.dataset.value)) block.classList.add('active');
+            else block.classList.add('inactive');
+        });
+        applyFilters();
+    }
+
+    function toggleCameraGroup(btn, groupName) {
+        const cams = document.querySelectorAll(`#content-cameras .filter-block[data-type="camera"]`);
+        let anyInactive = false;
+
+        cams.forEach(cam => {
+            if(cam.dataset.value.includes(groupName)) {
+                if(cam.classList.contains('inactive')) anyInactive = true;
+            }
+        });
+
+        cams.forEach(cam => {
+            if(cam.dataset.value.includes(groupName)) {
+                cam.classList.remove('active', 'inactive');
+                cam.classList.add(anyInactive ? 'active' : 'inactive');
+            }
+        });
+
+        btn.classList.remove('active', 'inactive');
+        btn.classList.add(anyInactive ? 'active' : 'inactive');
+
+        applyFilters();
+    }
+
+    function toggleSegment(percent) {
+        // При клике на сегмент карты показываем N блоков, начиная с этого сегмента
+        const activeCoilRow = document.querySelector('#coil-tbody tr.selected');
+        if (activeCoilRow) {
+            const length = Number(activeCoilRow.dataset.length || 5000);
+            const blockPercent = (LABEL_BLOCKS_VISIBLE * 10) / length * 100;
+
+            activeMinTop = percent;
+            activeMaxTop = Math.min(100, percent + blockPercent);
+        } else {
+            activeMinTop = percent;
+            activeMaxTop = percent + 3;
+        }
+
+        const scrollContainer = document.querySelector('.map-unified-scroll');
+        if(scrollContainer) {
+            const containerHeight = scrollContainer.clientHeight;
+            const scrollHeight = scrollContainer.scrollHeight;
+            const targetY = (scrollHeight * (percent / 100)) - (containerHeight / 2);
+            scrollContainer.scrollTo({ top: targetY, behavior: 'smooth' });
+        }
+
+        applyFilters();
+    }
+
+    function applyFilters() {
+        const activeClasses = Array.from(document.querySelectorAll('#content-classes .filter-block:not(.inactive)')).map(b => b.dataset.value);
+        const activeCameras = Array.from(document.querySelectorAll('#content-cameras .filter-block[data-type="camera"]:not(.inactive)')).map(b => b.dataset.value);
+
+        currentVisibleDefects = 0;
+        const classCounts = {};
+        ALL_CLASSES.forEach(c => classCounts[c] = { visible: 0, total: 0 });
+
+        // 1. Фильтрация таблицы
+        document.querySelectorAll('#defects-tbody tr').forEach(tr => {
+            const cls = tr.cells[3].innerText.trim();
+            const cam = tr.cells[13].innerText.trim();
+
+            if(classCounts[cls]) classCounts[cls].total++;
+
+            if (activeClasses.includes(cls) && activeCameras.includes(cam)) {
+                tr.style.display = '';
+                currentVisibleDefects++;
+                if(classCounts[cls]) classCounts[cls].visible++;
+            } else {
+                tr.style.display = 'none';
+            }
+        });
+
+        // 2. Точки на мини-карте (видны всегда)
+        document.querySelectorAll('.minimap-dot').forEach(el => {
+            const defectClass = el.dataset.classCode;
+            const defectCamera = el.dataset.camera;
+
+            if (activeClasses.includes(defectClass) && activeCameras.includes(defectCamera)) {
+                el.style.display = 'block';
+            } else {
+                el.style.display = 'none';
+            }
+        });
+
+        // 3. Обычные ярлыки (фильтруются только по классам и камерам, без ограничения по зоне)
+        // В режиме ярлыка показываем ВСЕ ярлыки, соответствующие фильтрам
+        document.querySelectorAll('.defect-lbl').forEach(el => {
+            const defectClass = el.dataset.classCode;
+            const defectCamera = el.dataset.camera;
+
+            if (activeClasses.includes(defectClass) && activeCameras.includes(defectCamera)) {
+                el.style.display = 'block';
+            } else {
+                el.style.display = 'none';
+            }
+        });
+
+        // 4. Крестики и блоки реального режима видны ВЕЗДЕ (без привязки к зоне)
+        document.querySelectorAll('.defect-real-block, .defect-real-cross').forEach(el => {
+            const defectClass = el.dataset.classCode;
+            const defectCamera = el.dataset.camera;
+
+            if (activeClasses.includes(defectClass) && activeCameras.includes(defectCamera)) {
+                el.style.display = 'block';
+            } else {
+                el.style.display = 'none';
+            }
+        });
+
+        ALL_CLASSES.forEach(cls => {
+            const countSpan = document.getElementById(`count-${cls.replace(/\s+/g, '')}`);
+            if(countSpan) countSpan.innerText = `${classCounts[cls].visible}/ ${classCounts[cls].total}`;
+        });
+
+        document.getElementById('class-counter-header').innerText = `${currentVisibleDefects} / ${currentTotalDefects}`;
+
+        const activeCoilRow = document.querySelector('#coil-tbody tr.selected');
+        if (activeCoilRow) {
+            const coilNum = activeCoilRow.cells[1].innerText;
+            document.getElementById('map-header-title').innerText = `Карта рулона - Название изображения: ${coilNum}`;
+        }
+        document.getElementById('map-header-defects').innerText = `Дефекты: ${currentVisibleDefects}(${currentTotalDefects})`;
+    }
+
+//  количество рулонов в таблицах
+    function initCoilsTable() {
+        const coilTbody = document.getElementById('coil-tbody');
+        for(let i = 0; i < 50; i++) {
+            const coilId = 4041770 + i;
+            const length = 4753 + (i*15);
+            coilTbody.innerHTML += `<tr data-coil-id="${coilId}" data-coil-index="${i}" data-length="${length}"><td>${coilId}</td><td>${9796770 - i}</td><td>F</td><td>2528085</td><td>413673</td><td>2</td><td>E3A</td><td>0.27 mm</td><td>${length} m</td><td>1045 mm</td><td>20.01.26 17:02</td><td>20.01.26 19:08</td><td>3579</td></tr>`;
+        }
+    }
+
+    const coilDataStore = {};
+    function mulberry32(a) {
+        return function() {
+            let t = a += 0x6D2B79F5;
+            t = Math.imul(t ^ t >>> 15, t | 1);
+            t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+            return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        };
+    }
+
+    function getOrCreateCoilData(coilId, coilIndex = 0, length = 5000) {
+        if (coilDataStore[coilId]) return coilDataStore[coilId];
+
+        const seed = Number(String(coilId).slice(-6)) + coilIndex + 1;
+        const rand = mulberry32(seed);
+
+        const zonePool = ['left-edge', 'left-mid', 'center', 'right-mid', 'right-edge'];
+
+        // Генерируем случайное количество дефектов в заданном диапазоне
+        const defectsCount = DEFECT_MIN + Math.floor(rand() * (DEFECT_MAX - DEFECT_MIN));
+
+        const defects = [];
+        let defectIdCounter = 40000;
+
+        // Рассчитываем количество кластеров на основе общего количества дефектов
+        // В среднем в кластере 2-6 дефектов, поэтому делим на среднее (4)
+        const avgDefectsPerCluster = 4;
+        const clusterCount = Math.max(5, Math.ceil(defectsCount / avgDefectsPerCluster));
+
+        for (let cluster = 0; cluster < clusterCount; cluster++) {
+            const clusterTop = 1 + rand() * 98;
+            const clusterZone = zonePool[Math.floor(rand() * zonePool.length)];
+            const clusterSize = 2 + Math.floor(rand() * 5);
+
+            for (let i = 0; i < clusterSize; i++) {
+                // Если достигли нужного количества дефектов - выходим
+                if (defects.length >= defectsCount) break;
+
+                let classCode = ALL_CLASSES[Math.floor(rand() * ALL_CLASSES.length)];
+                let camera = ALL_CAMERAS[Math.floor(rand() * ALL_CAMERAS.length)];
+                let top = Math.max(0.5, Math.min(99.5, clusterTop + (rand() - 0.5) * 2));
+
+                let realLengthMeters = (5 + Math.floor(rand() * 20)) / 1000;
+                let isHuge = false;
+
+                // Длинные полосы для реального режима
+                if (rand() < 0.3) {
+                    realLengthMeters = (50 + Math.floor(rand() * 300));
+                    isHuge = true;
+                }
+
+                const shortCode = Math.floor(100 + rand() * 899).toString();
+
+                let mapStyle = 'md-red';
+                let isGroup = false;
+                let isHatched = false;
+                let groupItems = [];
+
+                const typeRand = rand();
+                if (typeRand < 0.1 && !isHuge) {
+                    mapStyle = 'md-white-group';
+                    isGroup = true;
+                    const groupSize = 2 + Math.floor(rand() * 3);
+                    for(let j=0; j<groupSize; j++) {
+                        groupItems.push({ id: defectIdCounter++, classCode: shortCode });
+                    }
+                } else if (typeRand < 0.2 && !isHuge) {
+                    mapStyle = 'md-hatched';
+                    isHatched = true;
+                    const groupSize = 3 + Math.floor(rand() * 5);
+                    for(let j=0; j<groupSize; j++) {
+                        groupItems.push({ id: defectIdCounter++, classCode: shortCode });
+                    }
+                }
+
+                if (isHuge) {
+                    isGroup = true;
+                    const groupSize = 2 + Math.floor(rand() * 4);
+                    for(let j=0; j<groupSize; j++) {
+                        groupItems.push({ id: defectIdCounter++, classCode: Math.floor(100 + rand() * 899).toString() });
+                    }
+                    // Даем большой шанс быть заштрихованным для наглядности
+                    if (rand() < 0.5) isHatched = true;
+                }
+
+                const isScratch = rand() > 0.5;
+                const linesCount = 1 + Math.floor(rand() * 5);
+                const baseLeft = 5 + Math.floor(rand() * 70);
+                const minimapLines = [];
+
+                for(let k=0; k<linesCount; k++) {
+                    minimapLines.push({
+                        topOffset: (rand() - 0.5) * 0.5,
+                        leftOffset: (rand() - 0.5) * 5,
+                        width: isScratch ? (5 + Math.floor(rand() * 25)) : (2 + Math.floor(rand() * 6))
+                    });
+                }
+
+                defects.push({
+                    id: defectIdCounter++,
+                    productSide: camera.includes('Верх') ? 'Лицевая ст...' : 'Обратная ст...',
+                    classCode,
+                    confirmClass: `СИСТЕМА`,
+                    conf: '5',
+                    distFromStart: `${(10 + rand() * length).toFixed(1)} m`,
+                    pos1: `${Math.floor(rand() * 1000)} mm`,
+                    pos2: `${Math.floor(rand() * 1000)} mm`,
+                    len: isHuge ? `${Math.floor(realLengthMeters * 1000)} mm` : `${10 + Math.floor(rand() * 30)} mm`,
+                    realLength: realLengthMeters,
+                    isHuge: isHuge,
+                    pos3: `${Math.floor(rand() * 1000)} mm`,
+                    width: `${20 + Math.floor(rand() * 50)} mm`,
+                    camera: camera,
+                    score: `${100 + Math.floor(rand() * 10000)}`,
+                    label: shortCode,
+                    mapZone: clusterZone,
+                    mapStyle,
+                    isGroup,
+                    isHatched,
+                    groupItems,
+                    top: top,
+                    baseLeft: baseLeft,
+                    minimapLines: minimapLines,
+                    imgBgGradient: rand() > 0.5 ? 'linear-gradient(to right, #4a4a4a, #888888, #555555)' : 'linear-gradient(135deg, #333, #777, #444)',
+                    imgSpotWidth: 20 + Math.floor(rand() * 80),
+                    imgSpotHeight: 15 + Math.floor(rand() * 60),
+                    imgSpotTop: 15 + Math.floor(rand() * 50),
+                    imgSpotLeft: 15 + Math.floor(rand() * 50)
+                });
+            }
+        }
+
+        // ====== ГЕНЕРАЦИЯ ЭКСТРА ДЛИННЫХ ДЕФЕКТОВ ДЛЯ НАЛОЖЕНИЯ ======
+        // Добавляем дополнительные длинные дефекты, но не больше, чем нужно до DEFECT_MAX
+        const extraDefects = Math.min(10, DEFECT_MAX - defects.length);
+        for (let i = 0; i < extraDefects; i++) {
+            let classCode = ALL_CLASSES[Math.floor(rand() * ALL_CLASSES.length)];
+            let camera = ALL_CAMERAS[Math.floor(rand() * ALL_CAMERAS.length)];
+            let mapZone = zonePool[Math.floor(rand() * 2) === 0 ? 0 : 4]; // Форсируем кромки, чтобы наслаивались
+
+            let top = rand() * 40; // Старт в верхней половине
+            let realLengthMeters = length * (0.3 + rand() * 0.5); // От 30% до 80% всего рулона
+            let isHuge = true;
+            let isHatched = rand() > 0.4;
+            const shortCode = Math.floor(100 + rand() * 899).toString();
+
+            let groupItems = [];
+            const groupSize = 2 + Math.floor(rand() * 4);
+            for(let j=0; j<groupSize; j++) {
+                groupItems.push({ id: defectIdCounter++, classCode: Math.floor(100 + rand() * 899).toString() });
+            }
+
+            defects.push({
+                id: defectIdCounter++, productSide: camera.includes('Верх') ? 'Лицевая ст...' : 'Обратная ст...',
+                classCode, confirmClass: `СИСТЕМА`, conf: '5', distFromStart: `${(10 + rand() * length).toFixed(1)} m`,
+                pos1: `0 mm`, pos2: `0 mm`, len: `${Math.floor(realLengthMeters * 1000)} mm`, realLength: realLengthMeters,
+                isHuge: isHuge, pos3: `0 mm`, width: `100 mm`, camera: camera, score: `5000`, label: shortCode, mapZone,
+                mapStyle: 'md-red', isGroup: true, isHatched, groupItems, top, baseLeft: 10, minimapLines: [],
+                imgBgGradient: 'linear-gradient(to right, #4a4a4a, #888888, #555555)', imgSpotWidth: 50, imgSpotHeight: 50, imgSpotTop: 25, imgSpotLeft: 25
+            });
+        }
+
+        coilDataStore[coilId] = { coilId, length, defects };
+        return coilDataStore[coilId];
+    }
+
+    function fillDefectProps(defect) {
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+        set('p-id', defect.id); set('p-class', defect.classCode); set('p-prod', defect.label);
+        set('p-conf', defect.confirmClass); set('p-dist-fro', defect.distFromStart); set('p-dist-os', defect.pos1);
+        set('p-dist-ds', defect.pos2); set('p-len', defect.len); set('p-cam', defect.camera);
+        set('p-img', defect.id); set('p-side', defect.productSide);
+
+        const imgBox = document.getElementById('defect-image-box');
+        if (imgBox) {
+            imgBox.innerHTML = `
+                <div style="width:100%; height:100%; background: ${defect.imgBgGradient}; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;">
+                    <div style="position:absolute; width:100%; height:100%; opacity:0.1; background-image: repeating-linear-gradient(0deg, transparent, transparent 1px, #000 1px, #000 2px), repeating-linear-gradient(90deg, transparent, transparent 1px, #fff 1px, #fff 2px);"></div>
+                    <div style="position:absolute; width:${defect.imgSpotWidth}px; height:${defect.imgSpotHeight}px; background:radial-gradient(ellipse at center, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 70%); border-radius:50%; top:${defect.imgSpotTop}%; left:${defect.imgSpotLeft}%;"></div>
+                    <div style="position:absolute; width:${defect.imgSpotWidth + 6}px; height:${defect.imgSpotHeight + 6}px; border:1px solid red; z-index:2; top:calc(${defect.imgSpotTop}% - 3px); left:calc(${defect.imgSpotLeft}% - 3px);"></div>
+                    <div style="position:absolute; top:2px; left:2px; color:white; font-size:9px; z-index:3;">Camera: ${defect.camera}<br>ID: ${defect.id}</div>
+                    <div style="position:absolute; bottom:5px; background:rgba(255,255,255,0.8); color:black; font-size:11px; padding:2px 5px; z-index:3; font-weight:bold;">Класс: ${defect.classCode}</div>
+                </div>`;
+        }
+    }
+
+    function renderDefectsTable(coilData) {
+        const defectsTbody = document.getElementById('defects-tbody');
+        if (!defectsTbody) return;
+
+        defectsTbody.innerHTML = '';
+        currentTotalDefects = coilData.defects.length;
+
+        coilData.defects.forEach((defect) => {
+            const tr = document.createElement('tr');
+            tr.dataset.defectId = defect.id;
+            tr.innerHTML = `
+                <td>${defect.id}</td>
+                <td></td>
+                <td>${defect.productSide}</td>
+                <td>${defect.classCode}</td>
+                <td>${defect.classCode}</td>
+                <td>${defect.confirmClass}</td>
+                <td>${defect.conf}</td>
+                <td>${defect.distFromStart}</td>
+                <td>${defect.pos1}</td>
+                <td>${defect.pos2}</td>
+                <td>${defect.len}</td>
+                <td>${defect.pos3}</td>
+                <td>${defect.width}</td>
+                <td>${defect.camera}</td>
+                <td>${defect.score}</td>
+            `;
+
+            tr.addEventListener('click', () => {
+                document.querySelectorAll('#defects-tbody tr').forEach(r => r.classList.remove('selected'));
+                tr.classList.add('selected');
+                fillDefectProps(defect);
+            });
+
+            defectsTbody.appendChild(tr);
+        });
+
+        const firstRow = defectsTbody.querySelector('tr');
+        if (firstRow) firstRow.click();
+    }
+
+    function setupTableSelection(tbodyId, isDefectsTable) {
+        const tbody = document.getElementById(tbodyId);
+        if(!tbody) return;
+        tbody.addEventListener('click', (e) => {
+            const row = e.target.closest('tr');
+            if (!row) return;
+
+            if (!isDefectsTable) {
+                Array.from(tbody.children).forEach(r => r.classList.remove('selected'));
+                row.classList.add('selected');
+
+                const coilId = row.dataset.coilId;
+                const coilIndex = Number(row.dataset.coilIndex || 0);
+                const length = Number(row.dataset.length || 5000);
+                const coilData = getOrCreateCoilData(coilId, coilIndex, length);
+
+                currentActiveCoilData = coilData;
+
+                document.getElementById('map-header-title').innerText = `Карта рулона - Название изображения: ${9796770 - coilIndex}`;
+                document.getElementById('header-length').innerHTML = `Длина<br>${length} m`;
+
+                renderDefectsTable(coilData);
+                generateMapData(coilData);
+                applyFilters();
+
+                toggleMap(true);
+            }
+        });
+    }
+
+    function showDefectPopup(e, defect) {
+    e.stopPropagation();
+    const popup = document.getElementById('defect-popup');
+    popup.innerHTML = '';
+
+    defect.groupItems.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'popup-item';
+        let txt = `* ${item.id} - ${item.classCode}`;
+        if (defect.isHatched && idx === defect.groupItems.length - 1) txt += ' x';
+        div.innerText = txt;
+        div.onclick = (ev) => {
+            ev.stopPropagation();
+            fillDefectProps({...defect, id: item.id, classCode: item.classCode});
+            popup.style.display = 'none';
+        };
+        popup.appendChild(div);
+    });
+
+    popup.style.display = 'block';
+
+    // Используем clientX/clientY для правильного позиционирования
+    let left = e.clientX + 2;
+    let top = e.clientY + 2;
+
+    // Проверяем, не выходит ли меню за правый край экрана
+    const popupRect = popup.getBoundingClientRect();
+    if (left + popupRect.width > window.innerWidth) {
+        left = e.clientX - popupRect.width - 2;
+    }
+
+    // Проверяем, не выходит ли меню за нижний край экрана
+    if (top + popupRect.height > window.innerHeight) {
+        top = window.innerHeight - popupRect.height - 2;
+    }
+
+    popup.style.left = left + 'px';
+    popup.style.top = top + 'px';
+}
+
+    function showRealModePopup(e, defect) {
+    e.stopPropagation();
+    const popup = document.getElementById('defect-popup');
+    popup.innerHTML = '';
+
+    // Для длинных дефектов с группами показываем меню
+    if (defect.groupItems && defect.groupItems.length > 0) {
+        defect.groupItems.forEach((item, idx) => {
+            const div = document.createElement('div');
+            div.className = 'popup-item';
+            let txt = `* ${item.id} - ${item.classCode}`;
+            if (defect.isHatched && idx === defect.groupItems.length - 1) txt += ' x';
+            div.innerText = txt;
+            div.onclick = (ev) => {
+                ev.stopPropagation();
+                fillDefectProps({...defect, id: item.id, classCode: item.classCode});
+                popup.style.display = 'none';
+            };
+            popup.appendChild(div);
+        });
+
+        popup.style.display = 'block';
+
+        // Используем clientX/clientY для правильного позиционирования
+        let left = e.clientX + 2;
+        let top = e.clientY + 2;
+
+        // Проверяем, не выходит ли меню за правый край экрана
+        const popupRect = popup.getBoundingClientRect();
+        if (left + popupRect.width > window.innerWidth) {
+            left = e.clientX - popupRect.width - 2;
+        }
+
+        // Проверяем, не выходит ли меню за нижний край экрана
+        if (top + popupRect.height > window.innerHeight) {
+            top = window.innerHeight - popupRect.height - 2;
+        }
+
+        popup.style.left = left + 'px';
+        popup.style.top = top + 'px';
+    }
+    // Для крестиков (точечных дефектов) меню не показываем - просто заполняем свойства
+    else {
+        fillDefectProps(defect);
+        popup.style.display = 'none';
+    }
+}
+
+    function generateMapData(coilData) {
+        if (!coilData) return;
+        const c1 = document.getElementById('mc1'); const c2 = document.getElementById('mc2');
+        const c3 = document.getElementById('mc3'); const c4 = document.getElementById('mc4');
+        const c5 = document.getElementById('mc5'); const c6 = document.getElementById('mc6');
+        const c7 = document.getElementById('mc7'); const c8 = document.getElementById('mc8');
+
+        let html1 = '<div class="red-guide"></div>';
+        let html2 = '';
+        let html3 = '<div class="red-guide"></div>';
+        let html4 = '<div class="track-border track-border-l"></div><div class="track-border track-border-r"></div>';
+        let html5 = '';
+        let html6 = '<div class="red-guide"></div>';
+        let html7 = '';
+        let html8 = '<div class="red-guide"></div>';
+
+        let startM = 0; let totalLines = 150; let stepPct = 100 / totalLines;
+
+        for(let i=0; i<=totalLines; i++) {
+            let topP = i * stepPct;
+
+            if(i < totalLines) {
+                html4 += `<div class="map-segment-overlay" style="top:${topP}%; height:${stepPct}%;" onclick="toggleSegment(${topP + (stepPct/2)})" title="Показать дефекты в районе ${i*10}m"></div>`;
+            }
+
+            if(i > 0) {
+                html4 += `<div class="g-line-green" style="top:${topP}%;"></div>`;
+                html5 += `<div class="g-line-b" style="top:${topP}%;"></div>`;
+                html5 += `<div class="scale-num" style="top:${topP}%;">${i*10}</div>`;
+            } else {
+                html5 += `<div class="scale-num" style="top:0%; transform:none; margin-top:0;">0</div>`;
+            }
+
+            if(i % 5 === 0 && i > 0) {
+                let mVal = startM + (i/5)*10;
+                html2 += `<div class="g-line-w" style="top:${topP}%;"></div>`;
+                html1 += `<div class="g-txt-w" style="top:${topP}%; right:2px;">-${mVal} m-</div>`;
+                html3 += `<div class="g-txt-w" style="top:${topP}%; left:2px;">-${mVal} m-</div>`;
+                html7 += `<div class="g-line-w" style="top:${topP}%;"></div>`;
+                html6 += `<div class="g-txt-w" style="top:${topP}%; right:2px;">-${mVal} m-</div>`;
+                html8 += `<div class="g-txt-w" style="top:${topP}%; left:2px;">-${mVal} m-</div>`;
+            }
+        }
+
+        coilData.defects.forEach(defect => {
+            const isFace = defect.camera.includes('Верх');
+            const dotClass = isFace ? 'face' : 'back';
+
+            defect.minimapLines.forEach(line => {
+                const lineTop = defect.top + line.topOffset;
+                const lineLeft = defect.baseLeft + line.leftOffset;
+
+                if(lineTop >= 0 && lineTop <= 100 && lineLeft >= 0 && (lineLeft + line.width) <= 100) {
+                    html4 += `<div class="minimap-dot ${dotClass}" style="top:${lineTop}%; left:${lineLeft}%; width:${line.width}%;" data-class-code="${defect.classCode}" data-camera="${defect.camera}"></div>`;
+                }
+            });
+        });
+
+        c1.innerHTML = html1; c2.innerHTML = html2; c3.innerHTML = html3; c4.innerHTML = html4;
+        c5.innerHTML = html5; c6.innerHTML = html6; c7.innerHTML = html7; c8.innerHTML = html8;
+
+        const mkDefect = (parent, defect) => {
+            const d = document.createElement('div');
+
+            if (isRealMode) {
+                // РЕАЛЬНЫЙ РЕЖИМ
+                if (defect.isHuge || defect.realLength > 10) {
+                    d.className = 'defect-real-block class-filter-target';
+
+                    // Z-index: заштрихованные поверх сплошных
+                    if (defect.isHatched) {
+                        d.classList.add('hatched-bg');
+                        d.style.zIndex = '12';
+                    } else {
+                        d.style.zIndex = '11';
+                    }
+
+                    d.style.top = defect.top + '%';
+
+                    // Высота в рамках колонки. Ограничиваем, чтобы не вылезло за 100%
+                    let heightPct = (defect.realLength / coilData.length) * 100;
+                    if (defect.top + heightPct > 100) {
+                        heightPct = 100 - defect.top;
+                    }
+                    d.style.height = heightPct + '%';
+                    d.style.width = '7%'; // Широкий блок
+
+                    // Позиционирование по ширине с прижатием к краям
+                    if (defect.mapZone.includes('left')) d.style.left = '0%';
+                    else if (defect.mapZone.includes('right')) d.style.left = '93%';
+                    else d.style.left = '46.5%';
+
+                } else {
+                    // Точечные дефекты (крестики) на самом верхнем слое
+                    d.className = 'defect-real-cross class-filter-target';
+                    d.style.zIndex = '15';
+                    d.style.top = defect.top + '%';
+                    d.innerText = '+';
+
+                    // Точное позиционирование крестиков
+                    switch(defect.mapZone) {
+                        case 'left-edge': d.style.left = '5%'; break;
+                        case 'left-mid': d.style.left = '25%'; break;
+                        case 'center': d.style.left = '50%'; break;
+                        case 'right-mid': d.style.left = '75%'; break;
+                        case 'right-edge': d.style.left = '95%'; break;
+                    }
+                }
+            } else {
+                // РЕЖИМ ЯРЛЫКОВ
+                d.className = `defect-lbl class-filter-target ${defect.mapStyle}`;
+                let labelText = defect.label;
+                if (defect.isHatched) labelText += ' (x)';
+                d.innerText = labelText;
+                d.style.top = defect.top + '%';
+
+                switch(defect.mapZone) {
+                    case 'left-edge': d.style.left = '15%'; break;
+                    case 'left-mid': d.style.left = '35%'; break;
+                    case 'center': d.style.left = '50%'; break;
+                    case 'right-mid': d.style.left = '65%'; break;
+                    case 'right-edge': d.style.left = '85%'; break;
+                }
+            }
+
+            d.dataset.top = defect.top;
+            d.dataset.classCode = defect.classCode;
+            d.dataset.camera = defect.camera;
+            d.title = `* ${defect.id} - ${defect.classCode}`;
+
+            d.addEventListener('click', function(e) {
+    e.stopPropagation();
+
+    if (isRealMode) {
+        // В реальном режиме для крестиков (точечных дефектов) сразу заполняем свойства
+        // Для длинных дефектов с группами показываем меню
+        if (defect.isHuge || defect.realLength > 10) {
+            // Это длинный дефект - показываем меню если есть группы
+            if (defect.groupItems && defect.groupItems.length > 0) {
+                showRealModePopup(e, defect);
+            } else {
+                fillDefectProps(defect);
+                document.getElementById('defect-popup').style.display = 'none';
+            }
+        } else {
+            // Это крестик (точечный дефект) - сразу заполняем свойства
+            fillDefectProps(defect);
+            document.getElementById('defect-popup').style.display = 'none';
+        }
+    } else {
+        // В режиме ярлыков
+        if (defect.isGroup || defect.isHatched) {
+            showDefectPopup(e, defect);
+        } else {
+            document.getElementById('defect-popup').style.display = 'none';
+        }
+        fillDefectProps(defect);
+    }
+
+    if (!isRealMode) {
+        document.querySelectorAll('.defect-lbl').forEach(el => el.style.boxShadow = '1px 1px 3px rgba(0,0,0,0.5)');
+        this.style.boxShadow = '0 0 0 2px #0a246a, 0 0 10px #0a246a';
+    }
+
+    const tr = document.querySelector(`#defects-tbody tr[data-defect-id="${defect.id}"]`);
+    if(tr) {
+        document.querySelectorAll('#defects-tbody tr').forEach(r => r.classList.remove('selected'));
+        tr.classList.add('selected');
+        tr.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+});
+            parent.appendChild(d);
+        };
+
+        // Генерируем дефекты на обеих сторонах
+        coilData.defects.forEach(defect => {
+            const isFace = defect.camera.includes('Верх');
+            if (isFace) {
+                mkDefect(c2, defect);  // Лицевая сторона
+            } else {
+                mkDefect(c7, defect);  // Обратная сторона
+            }
+        });
+    }
+
+    function openRollModal() {
+        const modal = document.getElementById('roll-search-modal');
+        modal.style.display = 'flex';
+
+        const mainTableBody = document.querySelector('.panel-left .table-rolls tbody');
+        const modalTableBody = document.getElementById('modal-roll-table-body');
+
+        modalTableBody.innerHTML = mainTableBody.innerHTML;
+
+        const rows = modalTableBody.querySelectorAll('tr');
+        rows.forEach(row => {
+            row.classList.remove('selected');
+            row.addEventListener('click', function() {
+                rows.forEach(r => r.classList.remove('selected'));
+                this.classList.add('selected');
+
+                const rollId = this.cells[0].innerText;
+                document.getElementById('roll-search-input').value = rollId;
+            });
+        });
+
+        const searchInput = document.getElementById('roll-search-input');
+        searchInput.value = '';
+        searchInput.focus();
+
+        searchInput.onkeyup = function(e) {
+            if (e.key === 'Enter') {
+                confirmRollSelection();
+            } else {
+                const val = this.value.trim().toLowerCase();
+                rows.forEach(row => {
+                    if (row.cells[0].innerText.toLowerCase().includes(val) ||
+                        row.cells[1].innerText.toLowerCase().includes(val)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
+        };
+    }
+
+    function closeRollModal() {
+        document.getElementById('roll-search-modal').style.display = 'none';
+    }
+
+    function confirmRollSelection() {
+        const searchValue = document.getElementById('roll-search-input').value.trim().toLowerCase();
+        if (!searchValue) return;
+
+        const mainRows = document.querySelector('.panel-left .table-rolls tbody').querySelectorAll('tr');
+        let foundRow = null;
+
+        for (let row of mainRows) {
+            if (row.cells[0].innerText.toLowerCase() === searchValue ||
+                row.cells[1].innerText.toLowerCase() === searchValue) {
+                foundRow = row;
+                break;
+            }
+        }
+
+        if (foundRow) {
+            foundRow.click();
+            foundRow.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            closeRollModal();
+        } else {
+            alert('Рулон с таким номером не найден!');
+        }
+    }
+
+    document.querySelectorAll('.sb-panel').forEach(btn => {
+        const btnText = btn.innerText.trim();
+
+        if (btnText === 'реальный') {
+            btn.addEventListener('click', function() {
+                isRealMode = !isRealMode;
+
+                if (isRealMode) {
+                    this.classList.add('active-tab');
+                    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active-tab'));
+                } else {
+                    this.classList.remove('active-tab');
+                    document.querySelector('.toggle-btn').classList.add('active-tab');
+                }
+
+                if (currentActiveCoilData) {
+                    generateMapData(currentActiveCoilData);
+                    applyFilters();
+                }
+            });
+        } else if (btn.classList.contains('toggle-btn')) {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active-tab'));
+                this.classList.add('active-tab');
+
+                document.getElementById('btn-real').classList.remove('active-tab');
+                isRealMode = false;
+
+                if (btnText === 'Ярлык') toggleMap(true);
+                else if (btnText === 'Таблица') toggleMap(false);
+
+                if (currentActiveCoilData) {
+                    generateMapData(currentActiveCoilData);
+                    applyFilters();
+                }
+            });
+        } else if (!btn.classList.contains('sb-spacer') && !btn.classList.contains('disabled')) {
+            btn.addEventListener('click', function() {
+                console.log('Нажата кнопка:', btnText);
+            });
+        }
+    });
+
+
+    // Инициализация меню
+document.addEventListener('DOMContentLoaded', function() {
+    const menuItems = document.querySelectorAll('.menu-item[data-menu]');
+    let menuOpen = false;
+
+    // Обработчик клика для открытия меню
+    menuItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.stopPropagation();
+
+            // Если меню уже открыто - закрываем его
+            if (this.classList.contains('active')) {
+                this.classList.remove('active');
+                menuOpen = false;
+                return;
+            }
+
+            // Закрываем все меню
+            menuItems.forEach(menuItem => {
+                menuItem.classList.remove('active');
+            });
+
+            // Открываем текущее меню
+            this.classList.add('active');
+            menuOpen = true;
+        });
+
+        // Обработчик наведения для переключения между меню
+        item.addEventListener('mouseenter', function(e) {
+            if (menuOpen) {
+                // Если меню уже открыто, то при наведении на другой пункт
+                // закрываем текущее и открываем новое
+                menuItems.forEach(menuItem => {
+                    menuItem.classList.remove('active');
+                });
+                this.classList.add('active');
+            }
+        });
+    });
+
+    // Закрытие меню при клике вне его
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.menu-bar')) {
+            menuItems.forEach(item => {
+                item.classList.remove('active');
+            });
+            menuOpen = false;
+        }
+    });
+
+    // Предотвращаем всплытие клика по пунктам подменю
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    });
+
+    // Устанавливаем начальные состояния для меню "Изображение дефекта"
+    const defectImageMenuItems = document.querySelectorAll('#defect-image-menu .dropdown-item');
+    defectImageMenuItems.forEach(item => {
+        // Устанавливаем галочку для "Первоначальное" по умолчанию
+        if (item.innerText.trim() === 'Первоначальное') {
+            defectViewStates.original = true;
+            item.classList.add('checked');
+        }
+    });
+});
+
+// Функции для меню "Файл"
+function selectSystem() {
+    console.log('Выбор системы');
+    closeAllMenus();
+    // Ваш код для выбора системы
+}
+
+function selectDatabase() {
+    console.log('Выбор базы данных');
+    closeAllMenus();
+    // Ваш код для выбора базы данных
+}
+
+function loadCoil() {
+    console.log('Загрузить рулон');
+    closeAllMenus();
+    openRollModal();
+}
+
+function reloadCoilList() {
+    console.log('Перезагрузить список рулонов');
+    closeAllMenus();
+    // Ваш код для перезагрузки списка
+}
+
+function printCoilMap() {
+    // Неактивная функция
+    console.log('Распечатать карту рулонов - недоступно');
+    closeAllMenus();
+}
+
+function printDefectImage() {
+    console.log('Распечатать изображение дефекта');
+    closeAllMenus();
+    // Ваш код для печати
+}
+
+function saveDefectImage() {
+    console.log('Сохранить изображение дефекта');
+    closeAllMenus();
+    // Ваш код для сохранения
+}
+
+function printProtocol() {
+    console.log('Напечатать протокол');
+    closeAllMenus();
+    // Ваш код для печати протокола
+}
+
+function exitApp() {
+    console.log('Выход');
+    closeAllMenus();
+    if (confirm('Вы действительно хотите выйти?')) {
+        window.close();
+    }
+}
+
+// Функции для меню "Изображение дефекта"
+const defectViewStates = {
+    original: false,
+    aligned: false,
+    stretched: false,
+    '3d': false,
+    roi: false
+};
+
+function toggleDefectView(viewType) {
+    defectViewStates[viewType] = !defectViewStates[viewType];
+
+    // Обновляем галочки в меню
+    const menuItems = document.querySelectorAll('#defect-image-menu .dropdown-item');
+    menuItems.forEach(item => {
+        const itemText = item.innerText.trim();
+        let viewTypeKey = '';
+
+        switch(itemText) {
+            case 'Первоначальное': viewTypeKey = 'original'; break;
+            case 'Выровненное': viewTypeKey = 'aligned'; break;
+            case 'Растянутое': viewTypeKey = 'stretched'; break;
+            case 'Трехмерный фильтр': viewTypeKey = '3d'; break;
+            case 'Показатель "регион интересов" (Rol)': viewTypeKey = 'roi'; break;
+        }
+
+        if (defectViewStates[vertexType]) {
+            item.classList.add('checked');
+        } else {
+            item.classList.remove('checked');
+        }
+    });
+
+    // Применяем настройки отображения
+    applyDefectViewSettings();
+
+    // Не закрываем меню, чтобы можно было выбрать несколько опций
+}
+
+function applyDefectViewSettings() {
+    const imgBox = document.getElementById('defect-image-box');
+    if (!imgBox) return;
+
+    // Пример применения настроек (настройте под свои нужды)
+    if (defectViewStates.original) {
+        imgBox.style.filter = 'none';
+    } else if (defectViewStates.aligned) {
+        imgBox.style.filter = 'none'; // Добавьте свои стили
+    } else if (defectViewStates.stretched) {
+        imgBox.style.filter = 'none'; // Добавьте свои стили
+    } else if (defectViewStates['3d']) {
+        imgBox.style.filter = 'none'; // Добавьте свои стили
+    } else if (defectViewStates.roi) {
+        imgBox.style.filter = 'none'; // Добавьте свои стили
+    }
+}
+
+// Функции для меню "Информация"
+function showAbout() {
+    alert('ODIS v2.0\nСистема инспекции рулонов\n© 2024');
+    closeAllMenus();
+}
+
+// Вспомогательная функция для закрытия всех меню
+function closeAllMenus() {
+    document.querySelectorAll('.menu-item').forEach(item => {
+        item.classList.remove('active');
+    });
+}
+
+
+    // Переключатель галочек (радио-режим) для подменю "Карта рулона"
+function toggleRadioMenu(clickedElement) {
+    // 1. Находим блок подменю (родительский контейнер .submenu)
+    const submenuBlock = clickedElement.parentElement;
+
+    // 2. Убираем класс 'checked' у всех элементов внутри этого подменю
+    const items = submenuBlock.querySelectorAll('.dropdown-item');
+    items.forEach(item => item.classList.remove('checked'));
+
+    // 3. Добавляем класс 'checked' тому элементу, по которому кликнули
+    clickedElement.classList.add('checked');
+
+    // Здесь можно вызывать логику приложения в зависимости от того, что мы выбрали
+    console.log('Выбрана опция:', clickedElement.innerText.replace('✓ ', '').trim());
+}
+
+// Заглушка для выполнения действий из одиночных пунктов меню "Карта рулона"
+function mapMenuAction(actionName) {
+    console.log('Выполняется действие:', actionName);
+    closeAllMenus(); // Закрываем все открытые меню (уже есть в вашем коде)
+}
+</script>
+
+
+
+</body>
+</html>

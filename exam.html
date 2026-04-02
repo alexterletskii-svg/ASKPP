@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Закрепление навыков</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+
+        :root {
+            --bg-page: #f4f6f8;
+            --card-bg: #ffffff;
+            --brand-blue: #0056a4;
+            --border-color: #d1d9e2;
+            --text-main: #333333;
+            --text-desc: #666666;
+            --accent: #f26522;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 500;
+            color: var(--brand-blue);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 15px;
+            color: var(--text-desc);
+        }
+
+        /* Сетка карточек симуляций */
+        .simulation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        /* Сброс стилей ссылок, чтобы они вели себя как блоки */
+        .card-link {
+            text-decoration: none;
+            display: block;
+        }
+
+        /* Дизайн карточки */
+        .sim-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            height: 100%; /* Чтобы все карточки в ряду были одной высоты */
+        }
+
+        .sim-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background-color: transparent;
+            transition: background-color 0.2s;
+        }
+
+        /* Эффекты при наведении (применяются к карточке, когда наводят на ссылку) */
+        .card-link:hover .sim-card {
+            border-color: var(--brand-blue);
+            box-shadow: 0 8px 20px rgba(0, 86, 164, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .card-link:hover .sim-card::before {
+            background-color: var(--accent);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #e8ecef;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: var(--brand-blue);
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .card-link:hover .card-icon {
+            background-color: var(--brand-blue);
+            color: white;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text-main);
+        }
+
+        .card-desc {
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text-desc);
+            margin-bottom: 25px;
+            flex: 1; /* Толкает кнопку вниз */
+        }
+
+        .card-action {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--brand-blue);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.2s ease;
+        }
+
+        .card-link:hover .card-action { 
+            color: var(--accent); 
+        }
+
+    
+        .exam-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-left: 5px solid #ffeeba;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1>Закрепление навыков (Экзамен)</h1>
+            <div class="subtitle">Итоговое тестирование без подсказок. Результаты будут отправлены в систему обучения для оценки. Время на выполнение ограничено.</div>
+        </div>
+
+        <div class="exam-warning">
+            <strong>Внимание:</strong> В режиме закрепления навыков обучающие подсказки и подсветки отключены. Вам предстоит самостоятельно проанализировать рулоны, найти критические дефекты и принять решение о дальнейшей судьбе металла. У вас будет только 1 попытка.
+        </div>
+
+        <div class="simulation-grid">
+
+            <!-- Экзамен 1 -->
+            <a href="exam_simulator.html?mode=exam" target="main_player" class="card-link">
+                <div class="sim-card">
+                    <div class="card-icon" style="background-color: #f26522;">!</div>
+                    <div class="card-title">Итоговая аттестация: Анализ рулонов</div>
+                    <div class="card-desc">Комплексная проверка навыков. Вам предоставлено 5 рулонов с различными типами дефектов. Необходимо найти все критические дефекты 1970 и 022, и отправить рулоны в изолятор.</div>
+                    <div class="card-action" style="color: #f26522;">Начать экзамен →</div>
+                </div>
+            </a>
+
+            <!-- Экзамен 2 -->
+            <a href="sim_cameras.html?mode=exam" target="main_player" class="card-link">
+                <div class="sim-card">
+                    <div class="card-icon" style="background-color: #f26522;">!</div>
+                    <div class="card-title">Задание на время: Классификация</div>
+                    <div class="card-desc">За 5 минут необходимо просмотреть ленту дефектов и вручную изменить некорректно определенные системой классы (СИСТЕМА -> ИНСПЕКТОР).</div>
+                    <div class="card-action" style="color: #f26522;">Начать экзамен →</div>
+                </div>
+            </a>
+
+        </div>
+    </div>
+</body>
+</html>

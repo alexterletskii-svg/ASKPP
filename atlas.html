@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Атлас дефектов</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 30px;
+            background-color: #ffffff;
+            font-family: 'Roboto', sans-serif;
+            color: #333;
+        }
+
+        .header {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #0056a4;
+        }
+
+        .header h1 {
+            margin: 0 0 5px 0;
+            font-size: 22px;
+            color: #0056a4;
+        }
+
+        .header p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #d1d9e2;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,40,80,0.1);
+        }
+
+        /* Область картинки с эффектом наведения */
+        .card-img {
+            width: 100%;
+            height: 160px;
+            background-color: #e8ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 13px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .card-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* Подсказка "Увеличить" при наведении */
+        .card-img::after {
+            content: '🔍 Увеличить';
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 86, 164, 0.9);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 2;
+        }
+
+        .card-img:hover::after {
+            opacity: 1;
+        }
+
+        .card-content {
+            padding: 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .defect-class {
+            display: inline-block;
+            background: #0056a4;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            align-self: flex-start;
+        }
+
+        .defect-class.critical {
+            background: #d32f2f;
+        }
+
+        .defect-class.warning {
+            background: #f57c00;
+        }
+
+        .card-title {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .card-desc {
+            margin: 0;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        /* Стили модального окна (Lightbox) */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.85);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.show {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+        }
+
+        .modal-content {
+            max-width: 90%;
+            max-height: 80vh;
+            border-radius: 4px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+        }
+
+        .modal-placeholder {
+            width: 80%;
+            max-width: 600px;
+            height: 300px;
+            background-color: #333;
+            color: #888;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            border-radius: 4px;
+            border: 2px dashed #555;
+        }
+
+        #modal-caption {
+            margin-top: 20px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: #ccc;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-modal:hover {
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Атлас дефектов продукции</h1>
+        <p>Визуальный справочник для изучения классов брака в системе ISRA VISION</p>
+    </div>
+
+    <div class="grid">
+        <!-- КАРТОЧКА 1 -->
+        <div class="card">
+            <div class="card-img">
+                <span>Нет фото</span>
+                <!-- <img src="images/scratch.jpg" alt="Продольная царапина"> -->
+            </div>
+            <div class="card-content">
+                <span class="defect-class">Класс 4517</span>
+                <h3 class="card-title">Продольная царапина</h3>
+                <p class="card-desc">Механическое повреждение поверхности в виде длинной полосы. Возникает при трении полосы о валки или проводки.</p>
+            </div>
+        </div>
+
+        <!-- КАРТОЧКА 2 -->
+        <div class="card">
+            <div class="card-img">
+                <span>Нет фото</span>
+                <!-- <img src="images/scale.jpg" alt="Вкатанная окалина"> -->
+            </div>
+            <div class="card-content">
+                <span class="defect-class">Класс 4520</span>
+                <h3 class="card-title">Вкатанная окалина</h3>
+                <p class="card-desc">Темные шероховатые пятна на поверхности. Появляются при нарушении работы систем гидросбива.</p>
+            </div>
+        </div>
+
+        <!-- КАРТОЧКА 3 -->
+        <div class="card">
+            <div class="card-img">
+                <span>Нет фото</span>
+                <!-- <img src="images/dent.jpg" alt="Вмятина"> -->
+            </div>
+            <div class="card-content">
+                <span class="defect-class">Класс 4505</span>
+                <h3 class="card-title">Вмятина (Отпечаток)</h3>
+                <p class="card-desc">Локальное углубление без нарушения целостности металла. Зачастую имеет циклически повторяющийся характер.</p>
+            </div>
+        </div>
+
+        <!-- КАРТОЧКА 4 -->
+        <div class="card">
+            <div class="card-img">
+                <span>Нет фото</span>
+                <!-- <img src="images/rust.jpg" alt="Ржавчина"> -->
+            </div>
+            <div class="card-content">
+                <span class="defect-class warning">Класс 4601</span>
+                <h3 class="card-title">Ржавчина / Окисление</h3>
+                <p class="card-desc">Окисление поверхности металла из-за нарушения условий транспортировки или обильного попадания эмульсии.</p>
+            </div>
+        </div>
+
+        <!-- КАРТОЧКА 5 -->
+        <div class="card">
+            <div class="card-img">
+                <span>Нет фото</span>
+                <!-- <img src="images/hole.jpg" alt="Сквозной разрыв"> -->
+            </div>
+            <div class="card-content">
+                <span class="defect-class critical">Класс 4599 (Критич.)</span>
+                <h3 class="card-title">Сквозной разрыв</h3>
+                <p class="card-desc">Нарушение сплошности полосы металла. Срочный дефект, требующий немедленной остановки агрегата во избежание аварии.</p>
+            </div>
+        </div>
+
+        <!-- КАРТОЧКА 6 -->
+        <div class="card">
+            <div class="card-img">
+                <span>Нет фото</span>
+                <!-- <img src="images/edge_crack.jpg" alt="Рваная кромка"> -->
+            </div>
+            <div class="card-content">
+                <span class="defect-class warning">Класс 4550</span>
+                <h3 class="card-title">Рваная кромка</h3>
+                <p class="card-desc">Механическое разрушение краев полосы. Возникает при неправильной настройке дисковых ножниц или избыточном натяжении.</p>
+            </div>
+        </div>
+
+        <!-- КАРТОЧКА 7 -->
+        <div class="card">
+            <div class="card-img">
+                <span>Нет фото</span>
+                <!-- <img src="images/oil.jpg" alt="Пятно масла"> -->
+            </div>
+            <div class="card-content">
+                <span class="defect-class">Класс 4610</span>
+                <h3 class="card-title">Пятно масла</h3>
+                <p class="card-desc">Загрязнение поверхности смазочно-охлаждающей жидкостью или гидравлическим маслом из систем прокатного стана.</p>
+            </div>
+        </div>
+
+        <!-- КАРТОЧКА 8 -->
+        <div class="card">
+            <div class="card-img">
+                <span>Нет фото</span>
+                <!-- <img src="images/fold.jpg" alt="Складка / Залом"> -->
+            </div>
+            <div class="card-content">
+                <span class="defect-class critical">Класс 4532 (Критич.)</span>
+                <h3 class="card-title">Складка / Залом</h3>
+                <p class="card-desc">Деформация полосы с образованием нахлеста металла. Часто приводит к повреждению рабочих валков клети.</p>
+            </div>
+        </div>
+
+        <!-- КАРТОЧКА 9 -->
+        <div class="card">
+            <div class="card-img">
+                <span>Нет фото</span>
+                <!-- <img src="images/blister.jpg" alt="Вздутие / Пузырь"> -->
+            </div>
+            <div class="card-content">
+                <span class="defect-class">Класс 4540</span>
+                <h3 class="card-title">Вздутие / Пузырь</h3>
+                <p class="card-desc">Локальное расслоение металла из-за скопления газов или скрытых неметаллических включений внутри заготовки.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО -->
+    <div id="image-modal" class="modal">
+        <span class="close-modal">&times;</span>
+        <img class="modal-content" id="modal-img" src="" alt="Увеличенное фото">
+        <div class="modal-placeholder" id="modal-placeholder">Фото временно отсутствует</div>
+        <div id="modal-caption"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const modal = document.getElementById("image-modal");
+            const modalImg = document.getElementById("modal-img");
+            const modalPlaceholder = document.getElementById("modal-placeholder");
+            const captionText = document.getElementById("modal-caption");
+            const closeBtn = document.querySelector(".close-modal");
+
+            document.querySelectorAll('.card-img').forEach(container => {
+                container.addEventListener('click', function() {
+                    const img = this.querySelector('img');
+                    const title = this.nextElementSibling.querySelector('.card-title').innerText;
+                    const defectClassElement = this.nextElementSibling.querySelector('.defect-class');
+
+                    // Извлекаем текст класса без "(Критич.)" для чистоты заголовка
+                    const defectClassText = defectClassElement.innerText.split('(')[0].trim();
+
+                    if (img) {
+                        modalImg.style.display = 'block';
+                        modalPlaceholder.style.display = 'none';
+                        modalImg.src = img.src;
+                    } else {
+                        modalImg.style.display = 'none';
+                        modalPlaceholder.style.display = 'flex';
+                    }
+
+                    captionText.innerText = `${defectClassText} — ${title}`;
+
+                    modal.style.display = "flex";
+                    setTimeout(() => modal.classList.add('show'), 10);
+                });
+            });
+
+            const closeModal = () => {
+                modal.classList.remove('show');
+                setTimeout(() => modal.style.display = "none", 300);
+            };
+
+            closeBtn.addEventListener('click', closeModal);
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal.classList.contains('show')) {
+                    closeModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Видеоинструкции</title>
+    <!-- Подключаем шрифт Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-page: #f4f6f8;
+            --brand-blue: #0056a4;
+            --text-main: #333333;
+            --text-desc: #666666;
+            --card-bg: #ffffff;
+            --border-light: #e0e6ed;
+            --accent: #f26522;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--border-light);
+            padding-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 500;
+            color: var(--brand-blue);
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 15px;
+            color: var(--text-desc);
+        }
+
+        /* --- СЕТКА ВИДЕО-КАРТОЧЕК --- */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .video-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid var(--border-light);
+        }
+
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 86, 164, 0.15);
+        }
+
+        /* Заглушка (превьюшка) видео */
+        .video-thumbnail {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background-color: #2c3e50;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Иконка Play на карточке */
+        .play-icon {
+            width: 50px;
+            height: 50px;
+            background-color: rgba(242, 101, 34, 0.9); /* Оранжевый с прозрачностью */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        
+        .play-icon svg { width: 24px; height: 24px; fill: white; margin-left: 4px; }
+        
+        .video-card:hover .play-icon {
+            background-color: var(--accent);
+            transform: scale(1.1);
+        }
+
+        .time-badge {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: rgba(0,0,0,0.8);
+            color: white;
+            font-size: 12px;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .video-info { padding: 20px; }
+
+        .video-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .video-desc {
+            font-size: 13px;
+            color: var(--text-desc);
+            line-height: 1.5;
+        }
+
+        /* --- МОДАЛЬНОЕ ОКНО ПЛЕЕРА --- */
+        .modal-overlay {
+            display: none; /* Скрыто по умолчанию */
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            width: 100%;
+            max-width: 900px;
+            background-color: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .modal-header {
+            background-color: #1a1a1a;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            border-bottom: 1px solid #333;
+        }
+
+        .modal-title { font-size: 16px; font-weight: 500; }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 28px;
+            line-height: 1;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .close-btn:hover { color: white; }
+
+        /* Сам плеер внутри окна */
+        .actual-video {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background-color: #000;
+            display: block;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Видеоинструкции и теория</h1>
+            <div class="subtitle">Изучите базовые принципы работы с системой ISRA VISION перед переходом к практической отработке.</div>
+        </div>
+
+        <!-- Сетка карточек -->
+        <div class="video-grid">
+            
+            <!-- Урок 1 -->
+            <!-- Атрибут data-vid-src хранит ссылку на видеофайл -->
+            <div class="video-card" onclick="openVideo('Урок 1. Работа с картой рулона', 'https://www.w3schools.com/html/mov_bbb.mp4')">
+                <div class="video-thumbnail" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+                    <div class="play-icon">
+                        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    </div>
+                    <div class="time-badge">02:15</div>
+                </div>
+                <div class="video-info">
+                    <div class="video-title">Урок 1. Работа с картой рулона</div>
+                    <div class="video-desc">Как читать координаты дефектов, масштабировать вид и понимать цветовую индикацию.</div>
+                </div>
+            </div>
+
+            <!-- Урок 2 -->
+            <div class="video-card" onclick="openVideo('Урок 2. Настройка фильтров камер', 'https://www.w3schools.com/html/mov_bbb.mp4')">
+                <div class="video-thumbnail" style="background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);">
+                    <div class="play-icon">
+                        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    </div>
+                    <div class="time-badge">03:40</div>
+                </div>
+                <div class="video-info">
+                    <div class="video-title">Урок 2. Настройка фильтров камер</div>
+                    <div class="video-desc">Отключение и включение конкретных камер для изоляции дефектов верхней и нижней стороны.</div>
+                </div>
+            </div>
+
+            <!-- Урок 3 -->
+            <div class="video-card" onclick="openVideo('Урок 3. Классификация дефектов', 'https://www.w3schools.com/html/mov_bbb.mp4')">
+                <div class="video-thumbnail" style="background: linear-gradient(135deg, #232526 0%, #414345 100%);">
+                    <div class="play-icon">
+                        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    </div>
+                    <div class="time-badge">05:10</div>
+                </div>
+                <div class="video-info">
+                    <div class="video-title">Урок 3. Классификация дефектов</div>
+                    <div class="video-desc">Обзор панели классов дефектов. Использование быстрых кнопок и чекбоксов для сортировки.</div>
+                </div>
+            </div>
+
+            <!-- Урок 4 -->
+            <div class="video-card" onclick="openVideo('Урок 4. Анализ свойств в таблице', 'https://www.w3schools.com/html/mov_bbb.mp4')">
+                <div class="video-thumbnail" style="background: linear-gradient(135deg, #141e30 0%, #243b55 100%);">
+                    <div class="play-icon">
+                        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    </div>
+                    <div class="time-badge">01:50</div>
+                </div>
+                <div class="video-info">
+                    <div class="video-title">Урок 4. Анализ свойств в таблице</div>
+                    <div class="video-desc">Разбор детальных характеристик каждого дефекта: длина, площадь, расстояние от кромки.</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ТЕМНАЯ ОБЛОЖКА И ПЛЕЕР (Скрыто по умолчанию) -->
+    <div class="modal-overlay" id="videoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle">Название видео</div>
+                <button class="close-btn" onclick="closeVideo()">&times;</button>
+            </div>
+            
+            <!-- Сам тег видео (запускается нативно браузером) -->
+            <video id="mainVideoPlayer" class="actual-video" controls controlsList="nodownload">
+                Ваш браузер не поддерживает видео.
+            </video>
+
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById('videoModal');
+        const videoPlayer = document.getElementById('mainVideoPlayer');
+        const modalTitle = document.getElementById('modalTitle');
+
+        // Функция открытия видео
+        function openVideo(title, videoUrl) {
+            modalTitle.innerText = title;
+            videoPlayer.src = videoUrl; // Подставляем путь к видеофайлу
+            modal.style.display = 'flex'; // Показываем окно
+            videoPlayer.play(); // Автоматически начинаем воспроизведение
+        }
+
+        // Функция закрытия видео
+        function closeVideo() {
+            videoPlayer.pause(); // Ставим на паузу
+            videoPlayer.currentTime = 0; // Перематываем в начало
+            videoPlayer.src = ""; // Очищаем источник (чтобы видео не качалось в фоне)
+            modal.style.display = 'none'; // Скрываем окно
+        }
+
+        // Закрытие при клике на темный фон вокруг видео
+        modal.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                closeVideo();
+            }
+        });
+    </script>
+</body>
+</html>

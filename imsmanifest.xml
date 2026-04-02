@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest identifier="com.nlmk.isra_simulator" version="1.0"
+          xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
+          xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd
+                              http://www.imsglobal.org/xsd/imsmd_rootv1p2p1 imsmd_rootv1p2p1.xsd
+                              http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
+  <organizations default="ISRA_ORG">
+    <organization identifier="ISRA_ORG">
+      <title>Симулятор контроля качества ISRA VISION</title>
+      <item identifier="ITEM1" identifierref="RESOURCE1">
+        <title>Обучающий комплекс</title>
+      </item>
+    </organization>
+  </organizations>
+  <resources>
+    <resource identifier="RESOURCE1" type="webcontent" adlcp:scormtype="sco" href="index.html">
+      <!-- Базовые системные файлы -->
+      <file href="index.html" />
+      <file href="SCORM_API_wrapper.js" />
+      
+      <!-- Файлы модулей (на основе вашего скриншота) -->
+      <file href="help.html" />
+      <file href="video.html" />
+      <file href="select_simulation.html" />
+      <file href="simulator.html" />
+      
+      <!-- Если в будущем вы добавите новые файлы, например exam.html или картинки, их нужно будет вписать сюда же -->
+    </resource>
+  </resources>
+</manifest>

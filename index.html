@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Симулятор контроля качества</title>
+    <!-- Подключаем шрифт Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <script src="SCORM_API_wrapper.js"></script>
+    <style>
+        :root {
+            --bg-page: #e8ecef;        /* Фон за окном программы */
+            --window-bg: #ffffff;      /* Фон самого окна */
+            --header-bg: #0056a4;      /* Синяя шапка окна */
+            --border-color: #d1d9e2;   /* Линии-разделители */
+            --menu-hover: #f0f5fa;     /* Подсветка меню */
+            --menu-active: #e3edf7;    /* Активный пункт меню */
+            --text-main: #333333;      /* Основной текст */
+            --text-desc: #666666;      /* Текст описания */
+            --accent: #f26522;         /* Оранжевая кнопка */
+            --accent-hover: #e05512;
+        }
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Roboto', Tahoma, Arial, sans-serif; 
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            /* Легкий технический паттерн фона */
+            background-image: linear-gradient(var(--border-color) 1px, transparent 1px),
+                              linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* --- ЭКРАН 1: ЦЕНТРАЛЬНОЕ ОКНО ЗАПУСКА --- */
+        #menu-screen {
+            width: 760px;
+            background-color: var(--window-bg);
+            border-radius: 6px;
+            box-shadow: 0 15px 35px rgba(0, 40, 80, 0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #c2cdd8;
+        }
+
+        /* Синяя строгая шапка */
+        .launcher-header {
+            background-color: var(--header-bg);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-icon {
+            width: 24px;
+            height: 24px;
+            background-color: transparent;
+            border: 2px solid rgba(255,255,255,0.8);
+            border-radius: 3px;
+            position: relative;
+        }
+        .header-icon::after {
+            content: '';
+            position: absolute;
+            top: 4px; left: 4px; right: 4px; bottom: 4px;
+            background-color: rgba(255,255,255,0.8);
+        }
+
+        .header-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+        }
+
+        /* Тело программы (меню слева, описание справа) */
+        .launcher-body {
+            display: flex;
+            height: 360px;
+        }
+
+        /* Левая часть: Список режимов */
+        .menu-list {
+            width: 280px;
+            border-right: 1px solid var(--border-color);
+            background-color: #fafbfc;
+            padding: 15px 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .menu-btn {
+            background-color: transparent;
+            border: none;
+            border-left: 4px solid transparent;
+            color: var(--text-main);
+            padding: 16px 20px;
+            text-align: left;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+
+        .menu-btn:hover { background-color: var(--menu-hover); }
+
+        .menu-btn.active {
+            background-color: var(--menu-active);
+            border-left: 4px solid var(--header-bg);
+            color: var(--header-bg);
+            font-weight: 700;
+        }
+
+        /* Правая часть: Описание */
+        .desc-panel {
+            flex: 1;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .desc-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--header-bg);
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .desc-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-desc);
+            margin-bottom: auto;
+        }
+
+        /* Подвал с кнопкой запуска */
+        .launcher-footer {
+            background-color: #f4f6f8;
+            padding: 16px 30px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .launch-btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 28px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+            box-shadow: 0 2px 5px rgba(242, 101, 34, 0.3);
+        }
+
+        .launch-btn:hover { background-color: var(--accent-hover); }
+
+
+        /* --- ЭКРАН 2: РАБОЧАЯ СРЕДА (IFRAME) --- */
+        #player-screen {
+            display: none;
+            flex-direction: column;
+            width: 100vw;
+            height: 100vh;
+            background-color: #ffffff;
+        }
+
+        .player-bar {
+            height: 40px;
+            background-color: #f4f6f8;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .back-btn {
+            background-color: transparent;
+            border: 1px solid #b0bec5;
+            border-radius: 4px;
+            color: var(--text-main);
+            padding: 5px 15px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+        
+        .back-btn:hover { background-color: #e2e8f0; }
+
+        .player-title {
+            margin-left: 20px;
+            font-size: 13px;
+            color: var(--text-desc);
+        }
+
+        #module-frame {
+            flex: 1;
+            width: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ЭКРАН 1: ЛАУНЧЕР -->
+    <div id="menu-screen">
+        
+        <!-- Шапка -->
+        <div class="launcher-header">
+            <div class="header-icon"></div>
+            <div class="header-title">ISRA VISION: Симулятор контроля качества</div>
+        </div>
+
+        <!-- Центральная часть -->
+        <div class="launcher-body">
+            
+            <!-- Меню слева (4 пункта) -->
+            <div class="menu-list">
+                <button class="menu-btn active" onclick="selectMode(1, this)">1. Как работать с тренажером</button>
+                <button class="menu-btn" onclick="selectMode(2, this)">2. Видеоинструкция (Теория)</button>
+                <button class="menu-btn" onclick="selectMode(3, this)">3. Обучающий тренажер</button>
+                <button class="menu-btn" onclick="selectMode(4, this)">4. Закрепление навыков</button>
+                 <button class="menu-btn" onclick="selectMode(5, this)">5. Атлас дефектов</button>
+            </div>
+
+            <!-- Описание справа -->
+            <div class="desc-panel">
+                <div id="desc-title" class="desc-title">Как работать с тренажером</div>
+                <div id="desc-text" class="desc-text">Справочная информация по навигации внутри симулятора. Ознакомьтесь с техническими требованиями, правилами прохождения модулей и порядком начисления баллов за практические задания.</div>
+            </div>
+
+        </div>
+
+        <!-- Подвал с кнопкой -->
+        <div class="launcher-footer">
+            <button class="launch-btn" onclick="startModule()">ЗАПУСТИТЬ</button>
+        </div>
+    </div>
+
+
+    <!-- ЭКРАН 2: ПЛЕЕР -->
+    <div id="player-screen">
+        <div class="player-bar">
+            <button class="back-btn" onclick="closeModule()">← Выход в меню</button>
+            <div class="player-title" id="current-module-title">Режим работы</div>
+        </div>
+        <iframe id="module-frame" name="main_player" src=""></iframe>
+    </div>
+
+            <script>
+        // --- ДАННЫЕ О РЕЖИМАХ ---
+        const modes = {
+            1: {
+                title: "Как работать с тренажером",
+                desc: "Справочная информация по навигации внутри симулятора. Ознакомьтесь с техническими требованиями, правилами прохождения модулей и порядком начисления баллов за практические задания.",
+                url: "help.html"
+            },
+            2: {
+                title: "Видеоинструкция (Теория)",
+                desc: "Ознакомительный видеоматериал по основам работы с интерфейсом системы ISRA VISION. Изучите настройку фильтров камер и классов дефектов перед началом практической работы.",
+                url: "video.html"
+            },
+            3: {
+                title: "Обучающий тренажер",
+                desc: "Свободная практика в симулированной среде терминала. Доступны все таблицы рулонов и инструменты анализа дефектов без ограничений времени. Идеально для самостоятельного изучения.",
+                url: "select_simulation.html" 
+            },
+            4: {
+                title: "Закрепление навыков",
+                desc: "Выполнение целевых задач на время. Вам необходимо найти и классифицировать дефекты согласно заданию. В этом режиме подсказки отключены, а результаты передаются в систему обучения.",
+                url: "exam.html"
+            },
+            5: {
+        title: "Атлас дефектов",
+        desc: "Визуальный справочник по типам брака. Используйте этот раздел для изучения внешнего вида дефектов и их технической классификации перед началом работы на симуляторе.",
+        url: "atlas.html"
+    }
+        };
+
+        let currentMode = 1;
+        // Счетчик глубины истории внутри iframe
+        let iframeHistorySteps = 0;
+
+        function selectMode(id, btnElement) {
+            currentMode = id;
+            
+            document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+
+            document.getElementById('desc-title').innerText = modes[id].title;
+            document.getElementById('desc-text').innerText = modes[id].desc;
+        }
+
+        // Запуск из главного меню
+        function startModule() {
+            iframeHistorySteps = 0; // Сбрасываем счетчик истории при новом запуске
+            updateBackButtonText();
+
+            document.getElementById('current-module-title').innerText = "Текущий модуль: " + modes[currentMode].title;
+            document.getElementById('module-frame').src = modes[currentMode].url;
+            
+            document.getElementById('menu-screen').style.display = 'none';
+            document.getElementById('player-screen').style.display = 'flex';
+        }
+
+        // Ловим загрузку iframe, чтобы считать шаги
+        document.getElementById('module-frame').addEventListener('load', function() {
+            // При первой загрузке (карточки) шаг будет 1. При переходе в симулятор — шаг 2.
+            iframeHistorySteps++;
+            updateBackButtonText();
+        });
+
+        // --- УМНАЯ КНОПКА НАЗАД (РАБОТАЕТ ЧЕРЕЗ ИСТОРИЮ) ---
+        function closeModule() {
+            // Если мы сделали больше 1 шага внутри iframe (значит провалились в симулятор)
+            if (iframeHistorySteps > 1) {
+                // Командуем iframe вернуться на 1 страницу назад (к карточкам)
+                try {
+                    window.frames["main_player"].history.back();
+                    iframeHistorySteps -= 2; // Корректируем счетчик, так как сработает событие load
+                } catch(e) {
+                    // Если браузер заблокировал history, перезагружаем принудительно на корень
+                    document.getElementById('module-frame').src = modes[currentMode].url;
+                    iframeHistorySteps = 0;
+                }
+            } else {
+                // Если мы в корне (на карточках или видео) -> Выходим в лаунчер
+                document.getElementById('module-frame').src = ""; 
+                document.getElementById('player-screen').style.display = 'none';
+                document.getElementById('menu-screen').style.display = 'flex';
+            }
+        }
+
+        function updateBackButtonText() {
+            const backBtn = document.querySelector('.back-btn');
+            // Шаг 1 = загрузился select_simulation.html. Шаг 2 = загрузился simulator.html
+            if (iframeHistorySteps > 1) {
+                backBtn.innerText = "← Назад к выбору задания";
+            } else {
+                backBtn.innerText = "← Выход в главное меню";
+            }
+        }
+
+        // --- ЛОГИКА SCORM ---
+        window.onload = function() {
+            try {
+                var isConnected = pipwerks.SCORM.init();
+                if (isConnected) {
+                    pipwerks.SCORM.set("cmi.core.lesson_status", "incomplete"); 
+                    pipwerks.SCORM.save();
+                }
+            } catch(e) {}
+        };
+
+        window.onunload = function() {
+            try { pipwerks.SCORM.quit(); } catch(e) {}
+        };
+    </script>
+
+
+</body>
+</html>

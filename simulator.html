@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Терминал-Режим Offline AEIP4</title>
+    <script src="SCORM_API_wrapper.js" type="text/javascript"></script>
+    <style>
+        /* CSS Variables & Global Styles */
+        :root {
+            --sys-gray: #ece9d8;
+            --sys-gray-dark: #d4d0c8;
+            --sys-border: #808080;
+            --sys-border-light: #ffffff;
+            --sys-blue-select: #0a246a;
+            --sys-blue-header: #3d6a9d;
+            --sys-blue-header-light: #7693b6;
+            --sys-text: #000000;
+            --font-main: 'Tahoma', sans-serif;
+            --font-size: 11px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-main);
+            font-size: var(--font-size);
+            user-select: none;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #a0a0a0;
+            overflow: hidden;
+        }
+
+        /* --- Window Header --- */
+        .os-header {
+            background-color: #f0f4f9;
+            color: #000;
+            padding: 4px 6px;
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            border-bottom: 1px solid var(--sys-border);
+        }
+        .os-header-icon {
+            width: 16px; height: 16px;
+            background-color: #1c5280;
+            border-radius: 50%; margin-right: 6px;
+            box-shadow: inset -2px -2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* --- Menu Bar --- */
+        .menu-bar { display: flex; padding: 2px 0; background-color: #f0f4f9; }
+        .menu-item { position: relative; padding: 4px 8px; cursor: pointer; color: #000; }
+        .menu-item:hover, .menu-item.active { background-color: #e5f1fb; border: 1px solid #99c1e2; padding: 3px 7px; }
+        
+        .dropdown {
+            display: none; position: absolute; top: 100%; left: 0;
+            background-color: var(--sys-gray); border: 1px solid var(--sys-border);
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.3); z-index: 1000; min-width: 150px;
+        }
+        .menu-item.active .dropdown { display: block; }
+        .dropdown-item { padding: 4px 15px; color: var(--sys-text); display: flex; justify-content: space-between; }
+        .dropdown-item:hover { background-color: var(--sys-blue-select); color: white; }
+        .dropdown-separator { height: 1px; background-color: var(--sys-border); margin: 2px 2px; border-bottom: 1px solid white; }
+
+        /* ========================================================= */
+        /* --- ИСПРАВЛЕННЫЙ TOOLBAR С ИКОНКАМИ ISRA VISION --- */
+        /* ========================================================= */
+        .toolbar {
+            display: flex; align-items: center; padding: 2px 4px; gap: 2px;
+            background-color: var(--sys-gray);
+            border-bottom: 1px solid #c0c0c0;
+            height: 28px;
+        }
+        
+        .tb-group {
+            display: flex; gap: 1px;
+            padding: 1px;
+            border-top: 1px solid var(--sys-border);
+            border-left: 1px solid var(--sys-border);
+            border-bottom: 1px solid white;
+            border-right: 1px solid white;
+            background-color: #e0dfd5;
+            margin-right: 4px;
+        }
+
+        .tb-btn {
+            width: 20px; height: 20px;
+            background-color: #c0c0c0;
+            display: flex; align-items: center; justify-content: center;
+            border-top: 1px solid white; border-left: 1px solid white;
+            border-bottom: 1px solid var(--sys-border); border-right: 1px solid var(--sys-border);
+            cursor: pointer; overflow: hidden; position: relative;
+        }
+        
+        .tb-btn:active {
+            border-bottom: 1px solid white; border-right: 1px solid white;
+            border-top: 1px solid var(--sys-border); border-left: 1px solid var(--sys-border);
+        }
+
+        .icon-pixel { width: 14px; height: 14px; background-color: #000; display: flex; }
+        .i-roll1 { background: repeating-linear-gradient(90deg, #000, #000 2px, #fff 2px, #fff 4px); border-radius: 50%; }
+        .i-map1 { background: #000; border-right: 4px solid #fff; position: relative; }
+        .i-map1::after { content: ''; position:absolute; width:2px; height:2px; background:white; top:2px; left:4px; box-shadow: 4px 6px white, 2px 10px white; }
+        .i-map2 { background: #000; border-left: 6px solid #fff; border-right: 6px solid #fff; position: relative; }
+        .i-map2::after { content: ''; position:absolute; width:2px; height:2px; background:black; top:3px; left:-4px; box-shadow: 10px 4px black; }
+        .i-map3 { background: #000; border-left: 4px solid #fff; border-bottom: 4px solid #fff; }
+        .i-light1 { background: #000; position: relative; }
+        .i-light1::after { content: ''; position:absolute; width:4px; height:4px; background:red; top:1px; left:1px; box-shadow: 4px 4px yellow, 8px 8px green; }
+        .i-light2 { background: #000; display: flex; }
+        .i-light2::before { content: ''; width: 50%; height: 100%; background: linear-gradient(to bottom, yellow 50%, red 50%); border-right: 1px solid #fff; }
+        .i-light2::after { content: ''; width: 50%; height: 100%; background: linear-gradient(to bottom, green 30%, #000 30%); }
+        .i-grid1 { background: repeating-linear-gradient(0deg, transparent, transparent 2px, #555 2px, #555 3px), repeating-linear-gradient(90deg, transparent, transparent 2px, #555 2px, #555 3px); }
+        .i-grid2 { border: 1px solid #000; display:flex; background:#fff;}
+        .i-grid2::after { content:''; width:50%; border-right:1px solid #000; }
+        .i-tool1 { background: #fff; border: 1px solid #000; border-bottom: 4px solid #000; }
+        .i-tool2 { color: #000; font-size: 10px; font-weight: bold; background: #fff; line-height: 14px; text-align: center; width: 100%; }
+        .i-tool3 { background: repeating-linear-gradient(0deg, #000, #000 1px, #fff 1px, #fff 3px); }
+        .i-spot1 { background: #000; position:relative; }
+        .i-spot1::after { content:''; position:absolute; width:2px; height:2px; background:#fff; top:5px; left:5px; box-shadow: 4px -2px #fff; }
+        .i-spot2 { background: #fff; border-radius: 50%; border: 2px dashed #000; }
+        .i-spot3 { background: #fff; border-radius: 50%; border: 1px solid #000; background-image: radial-gradient(#000 1px, transparent 1px); background-size: 3px 3px; }
+        .i-spot4 { background: #000; border-radius: 50%; border: 1px solid #000; background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 3px 3px; }
+        .i-wave { background: #000; position: relative; }
+        .i-wave::after { content: '~'; color: red; position: absolute; font-size: 18px; top: -5px; left: 2px; transform: rotate(90deg); }
+        .i-layer1 { background: #fff; border: 1px solid #000; position:relative; }
+        .i-layer1::after { content:''; position:absolute; width:100%; height:100%; border: 1px solid #000; top:2px; left:2px; background:rgba(255,255,255,0.8); }
+        .i-layer2 { background: repeating-linear-gradient(45deg, #ccc, #ccc 2px, #fff 2px, #fff 4px); border-radius: 50%; border: 1px solid #000;}
+
+        /* --- Workspace --- */
+        .workspace { display: flex; flex: 1; padding: 2px; gap: 4px; overflow: hidden; margin-bottom: 2px; }
+        .panel-left { width: 32%; display: flex; flex-direction: column; gap: 4px; }
+        .panel-right { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+
+        .box {
+            background-color: #ffffff;
+            border-top: 1px solid var(--sys-border); border-left: 1px solid var(--sys-border);
+            border-bottom: 1px solid white; border-right: 1px solid white;
+            display: flex; flex-direction: column;
+        }
+        .box-title {
+            background-color: var(--sys-gray-dark); padding: 2px 5px; font-weight: bold;
+            border-bottom: 1px solid var(--sys-border); display: flex; align-items: center;
+        }
+        .box-content { flex: 1; overflow: auto; position: relative; }
+        .h-35 { height: 35%; } .h-40 { height: 40%; } .h-25 { height: 25%; }
+
+        /* --- Tables --- */
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        th, td { border: 1px solid #d0d0d0; padding: 2px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        th {
+            background-color: var(--sys-gray); font-weight: normal; text-align: center;
+            border-top: 1px solid white; border-left: 1px solid white;
+            border-bottom: 1px solid var(--sys-border); border-right: 1px solid var(--sys-border);
+            position: sticky; top: 0; z-index: 10; cursor: pointer;
+        }
+        th:active { border-top: 1px solid var(--sys-border); border-left: 1px solid var(--sys-border); background-color: #d0c8c0; }
+        .table-rolls td:nth-child(n+8) { text-align: right; }
+        .table-defects td:nth-child(n+7) { text-align: right; }
+        tr { cursor: pointer; }
+        tr:nth-child(even) { background-color: #f8f8f8; }
+        tr.selected { background-color: var(--sys-blue-select) !important; color: white; }
+        .prop-grid td { border: 1px solid var(--sys-border); }
+        .prop-grid td:first-child { background-color: #e8e8e8; font-weight: bold; width: 45%; }
+        .prop-grid tr:nth-child(even) { background-color: #ffffff; }
+
+        /* --- Filters --- */
+        .filter-group { display: flex; flex-direction: column; }
+        .filter-row {
+            display: flex; align-items: center; background-color: var(--sys-gray);
+            border: 1px solid var(--sys-border); padding: 2px 5px; gap: 6px;
+        }
+        .filter-content {
+            background-color: #fff; border-left: 1px solid var(--sys-border);
+            border-right: 1px solid var(--sys-border); border-bottom: 1px solid var(--sys-border);
+            padding: 5px 10px; display: none; gap: 15px; flex-wrap: wrap;
+        }
+        .filter-content.active { display: flex; }
+        .filter-actions { margin-left: auto; display: flex; gap: 4px; }
+        .filter-row button {
+            padding: 1px 8px; background-color: var(--sys-gray); cursor: pointer;
+            border-top: 1px solid white; border-left: 1px solid white;
+            border-bottom: 1px solid var(--sys-border); border-right: 1px solid var(--sys-border);
+        }
+        .filter-row button:active { border-top: 1px solid var(--sys-border); border-left: 1px solid var(--sys-border); background-color: #d0c8c0; }
+        .btn-top5 { background-color: #e0e0e0; }
+        .color-box { width: 12px; height: 12px; border: 1px solid black; display: inline-block; }
+        .c-yellow { background-color: #ffff00; } .c-green { background-color: #00ff00; }
+        .arrow-toggle { font-size: 10px; cursor: pointer; padding: 0 4px; display: inline-block; transition: transform 0.2s; }
+        .arrow-toggle.open { transform: rotate(-90deg); }
+
+        .blue-header-container { display: flex; color: white; }
+        .blue-header-main { flex: 1; background-color: var(--sys-blue-header-light); padding: 3px 5px; border-right: 1px solid white; transition: all 0.3s; }
+        .blue-header-sub { background-color: var(--sys-blue-header); padding: 3px 10px; transition: all 0.3s; }
+
+        /* --- Context Menu --- */
+        .context-menu {
+            display: none; position: absolute; background-color: var(--sys-gray);
+            border: 1px solid var(--sys-border); box-shadow: 2px 2px 4px rgba(0,0,0,0.4); z-index: 2000; width: 190px; flex-direction: column;
+        }
+        .context-header { padding: 3px 10px; color: #666; background: white; border-bottom: 1px solid var(--sys-border); }
+        .context-item { padding: 4px 20px 4px 30px; cursor: pointer; }
+        .context-item:hover { background-color: var(--sys-blue-select); color: white; }
+
+        /* --- STATUS BAR --- */
+        .status-bar { background-color: var(--sys-gray); display: flex; align-items: center; height: 22px; padding: 2px; gap: 2px; }
+        .status-icon-container { padding-left: 2px; padding-right: 4px; display: flex; align-items: center; justify-content: center; }
+        .status-icon-circle { width: 15px; height: 15px; background-color: #1a4d33; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; box-shadow: inset -1px -1px 2px rgba(0,0,0,0.5), inset 1px 1px 2px rgba(255,255,255,0.4); }
+        .status-panel { border-top: 1px solid var(--sys-border); border-left: 1px solid var(--sys-border); border-bottom: 1px solid white; border-right: 1px solid white; padding: 1px 4px; display: flex; align-items: center; height: 100%; color: #000; white-space: nowrap; overflow: hidden; font-size: 11px; }
+        .sp-disabled { width: 225px; color: #888; text-overflow: ellipsis; }
+        .sp-rol { width: 35px; justify-content: center; }
+        .sp-btn { width: 55px; justify-content: center; }
+        .sp-btn-sm { width: 45px; justify-content: center; }
+        .sp-long { width: 280px; overflow: hidden; }
+        .status-right { margin-left: auto; display: flex; height: 100%; }
+        .sp-small { width: 70px; justify-content: center; }
+
+        /* ========================================================= */
+        /* --- СТИЛИ ДЛЯ ТРЕНАЖЕРА (TUTORIAL) --- */
+        /* ========================================================= */
+        .tutorial-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5); z-index: 9998; display: none;
+        }
+        .tutorial-highlight {
+            position: relative !important; z-index: 9999 !important;
+            box-shadow: 0 0 0 2px #fff, 0 0 15px 4px #ffc107 !important;
+            background-color: #fff; border-radius: 2px; pointer-events: auto;
+            animation: tutorial-pulse 1.5s infinite;
+        }
+        @keyframes tutorial-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+        }
+        .tutorial-popup {
+            position: absolute; z-index: 10000;
+            background-color: #ffffe1; border: 1px solid #000;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.4); padding: 10px; width: 250px;
+            font-size: 12px; color: #000; display: none; line-height: 1.4;
+        }
+        .tutorial-popup-title { font-weight: bold; margin-bottom: 5px; color: var(--sys-blue-select); }
+        .tutorial-btn {
+            margin-top: 10px; background-color: var(--sys-gray); border: 1px solid var(--sys-border);
+            border-top-color: white; border-left-color: white; padding: 3px 10px; cursor: pointer; float: right;
+        }
+        .tutorial-btn:active {
+            border: 1px solid var(--sys-border); border-bottom-color: white; border-right-color: white; background-color: #d0c8c0;
+        }
+        .tutorial-clear { clear: both; }
+
+
+
+
+
+
+
+
+
+    /* --- ТОЧНАЯ КОПИЯ КАРТЫ РУЛОНА (ЕДИНАЯ СЕТКА) --- */
+    .map-overlay-container {
+        display: none;
+        flex: 1;
+        flex-direction: column;
+        background-color: #8b8c91;
+        border: 1px solid var(--sys-border);
+        min-width: 0;
+        position: relative;
+        font-family: Tahoma, sans-serif;
+        overflow: hidden; /* Основной контейнер не скроллится */
+    }
+
+    .map-unified-scroll {
+        flex: 1;
+        overflow-y: scroll; /* Скроллим только обертку */
+        overflow-x: hidden;
+        background-color: #8b8c91;
+    }
+
+    .map-unified-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 3.5fr 1.2fr 130px 35px 1.2fr 3.5fr 1.2fr;
+        grid-template-rows: 35px 2500px; /* Первая строка - шапка, Вторая - контент */
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .h-cell {
+        position: sticky;
+        top: 0;
+        z-index: 100; /* Шапка всегда поверх карты */
+        padding: 2px 4px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        border-right: 1px solid #000;
+        border-bottom: 1px solid #000;
+        background-color: #e5e3d8;
+        box-sizing: border-box;
+        font-size: 10px;
+        font-weight: bold;
+        color: black;
+    }
+    .h-cell span { font-weight: normal; font-size: 9px; color: #444; }
+    .h-cell.bold-border { border-right: 2px solid #000; }
+    .h-cell.no-border { border-right: none; }
+    .h-cell.center { align-items: center; justify-content: center; text-align: center; }
+    .h-cell.col-len { background-color: #e5e3d8; }
+    .h-cell.col-scale { background-color: #ffffff; }
+
+    .b-cell {
+        position: relative;
+        box-sizing: border-box;
+        border-right: 1px solid #000;
+        background-color: #8b8c91;
+    }
+    .b-cell.bold-border { border-right: 2px solid #000; }
+    .b-cell.no-border { border-right: none; }
+    .b-cell.col-scale { background-color: #ffffff; }
+
+    /* НАПРАВЛЯЮЩИЕ */
+    .red-guide { position: absolute; width: 1px; background-color: rgba(255, 100, 100, 0.5); top: 0; bottom: 0; left: 50%; z-index: 1; }
+
+    /* ЯРЛЫКИ */
+    .defect-lbl { position: absolute; font-size: 10px; font-weight: bold; text-align: center; padding: 1px 3px; z-index: 10; cursor: pointer; transform: translate(-50%, -50%); min-width: 32px; box-shadow: 1px 1px 3px rgba(0,0,0,0.5); left: 50%; }
+    .md-red { background-color: #8b0000; color: white; border: 1px solid #700000; }
+    .md-white { background-color: white; color: #8b0000; border: 1px solid #700000; }
+    .md-red-stick-left { background-color: #8b0000; color: white; border: 1px solid #700000; transform: translate(-100%, -50%); left: calc(50% - 2px); }
+
+    .red-mesh { position: absolute; width: 16px; background-image: linear-gradient(rgba(139,0,0,0.7) 1px, transparent 1px), linear-gradient(90deg, rgba(139,0,0,0.7) 1px, transparent 1px); background-size: 3px 3px; border-left: 1px solid rgba(139,0,0,0.9); border-right: 1px solid rgba(139,0,0,0.9); transform: translateX(-50%); left: 50%; z-index: 3; }
+
+    /* ДЛИНА (ТРЕК) */
+    .track-border { position: absolute; width: 1px; background-color: rgba(255,100,100,0.5); top:0; bottom:0; }
+    .track-border-l { left: 22%; }
+    .track-border-r { right: 22%; }
+
+    .md-yel-l { position: absolute; background-color: #ffff00; width: 8px; left: calc(22% - 4px); z-index: 5;}
+    .md-yel-r { position: absolute; background-color: #ffff00; width: 8px; right: calc(22% - 4px); z-index: 5;}
+    .md-grn { position: absolute; background-color: #00ff00; height: 2px; left: 22%; right: 22%; z-index: 4; transform: translateY(-50%);}
+
+    /* СЕТКА ГОРИЗОНТАЛЬНАЯ */
+    .g-line-w { position: absolute; width: 100%; height: 1px; border-top: 1px dashed rgba(255,255,255,0.8); z-index: 2; }
+    .g-txt-w { position: absolute; color: white; font-size: 10px; transform: translateY(-50%); z-index: 2; white-space: nowrap; }
+    .g-line-b { position: absolute; width: 100%; height: 1px; background-color: #222; z-index: 1; }
+    .scale-num { position: absolute; width: 100%; text-align: center; font-size: 10px; color: black; transform: translateY(-50%); margin-top: -6px; z-index: 5; }
+</style>
+
+</head>
+<body>
+
+    <div class="os-header">
+        <div class="os-header-icon"></div>
+        <div>Терминал-Режим Offline AEIP4</div>
+    </div>
+
+    <div class="app-top">
+        <div class="menu-bar" id="main-menu">
+            <div class="menu-item">Файл
+                <div class="dropdown">
+                    <div class="dropdown-item">Открыть... <span>Ctrl+O</span></div>
+                    <div class="dropdown-item">Выход</div>
+                </div>
+            </div>
+            <div class="menu-item">Редактировать</div>
+            <div class="menu-item">Обзор</div>
+            <div class="menu-item">Карта рулона</div>
+            <div class="menu-item">Изображение дефекта</div>
+            <div class="menu-item">Режим</div>
+            <div class="menu-item">Система</div>
+            <div class="menu-item">Утилиты</div>
+            <div class="menu-item">Пользователь</div>
+            <div class="menu-item">Установки</div>
+            <div class="menu-item">Информация</div>
+        </div>
+
+        <div class="toolbar">
+            <div class="tb-group"><div class="tb-btn" title="Рулон"><div class="icon-pixel i-roll1"></div></div></div>
+            <div class="tb-group">
+                <div class="tb-btn" title="Карта 1"><div class="icon-pixel i-map1"></div></div>
+                <div class="tb-btn" title="Карта 2"><div class="icon-pixel i-map2"></div></div>
+                <div class="tb-btn" title="Карта 3"><div class="icon-pixel i-map3"></div></div>
+            </div>
+            <div class="tb-group">
+                <div class="tb-btn" title="Статус"><div class="icon-pixel i-light1"></div></div>
+                <div class="tb-btn" title="График"><div class="icon-pixel i-light2"></div></div>
+                <div class="tb-btn" title="Сетка"><div class="icon-pixel i-grid1"></div></div>
+                <div class="tb-btn" title="Разделение"><div class="icon-pixel i-grid2"></div></div>
+            </div>
+            <div class="tb-group">
+                <div class="tb-btn" title="Инструмент"><div class="icon-pixel i-tool1"></div></div>
+                <div class="tb-btn" title="Вопрос"><div class="icon-pixel i-tool2">?=</div></div>
+                <div class="tb-btn" title="Шкала"><div class="icon-pixel i-tool3"></div></div>
+            </div>
+            <div class="tb-group">
+                <div class="tb-btn" title="Точка"><div class="icon-pixel i-spot1"></div></div>
+                <div class="tb-btn" title="Область"><div class="icon-pixel i-spot2"></div></div>
+                <div class="tb-btn" title="Пятно 1"><div class="icon-pixel i-spot3"></div></div>
+                <div class="tb-btn" title="Пятно 2"><div class="icon-pixel i-spot4"></div></div>
+            </div>
+            <div class="tb-group"><div class="tb-btn" title="Волна"><div class="icon-pixel i-wave"></div></div></div>
+            <div class="tb-group">
+                <div class="tb-btn" title="Слои"><div class="icon-pixel i-layer1"></div></div>
+                <div class="tb-btn" title="Текстура"><div class="icon-pixel i-layer2"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="workspace">
+        <div class="panel-left">
+            <div class="box h-35">
+                <div class="box-title">Данные инспектируемого рулона</div>
+                <div class="box-content">
+                    <table class="table-rolls">
+                        <thead>
+                            <tr>
+                                <th style="width: 55px;">ID</th><th style="width: 60px;">N рулона</th>
+                                <th style="width: 40px;">Статус</th><th style="width: 60px;">Плавка</th>
+                                <th style="width: 50px;">Партия</th><th style="width: 45px;">Рулон</th>
+                                <th style="width: 45px;">Матер...</th><th style="width: 55px;">Толщ...</th>
+                                <th style="width: 50px;">Длина</th><th style="width: 50px;">Ширина</th>
+                                <th style="width: 100px;">Начало</th><th style="width: 100px;">Окончание</th>
+                                <th style="width: 45px;">Деф...</th>
+                            </tr>
+                        </thead>
+                        <tbody id="coil-tbody">
+                            <tr class="selected"><td>4040678</td><td>4040676/1</td><td>F</td><td>-1</td><td>-1</td><td>-1</td><td>E3A</td><td>0.00 mm</td><td>4925 m</td><td>2000 mm</td><td>20.10.25 15:41</td><td>20.10.25 17:33</td><td>4517</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="box h-40">
+                <div class="box-title">Описание дефекта</div>
+                <div class="box-content">
+                    <table class="prop-grid">
+                        <tbody id="prop-tbody">
+                            <tr><td>ID дефекта</td><td id="p-id"></td></tr>
+                            <tr><td>Класс</td><td id="p-class"></td></tr>
+                            <tr><td>Prod. Class / Test Class</td><td id="p-prod"></td></tr>
+                            <tr><td>Уверенность</td><td id="p-conf"></td></tr>
+                            <tr><td>Расстояние от лиц.стороны</td><td id="p-dist-os"></td></tr>
+                            <tr><td>Расстояние от обрат.стороны</td><td id="p-dist-ds"></td></tr>
+                            <tr><td>Расстояние от начала</td><td id="p-dist-fro"></td></tr>
+                            <tr><td>Ширина</td><td></td></tr>
+                            <tr><td>Длина</td><td id="p-len"></td></tr>
+                            <tr><td>Высота волны</td><td></td></tr>
+                            <tr><td>Длина периода</td><td></td></tr>
+                            <tr><td>Камера</td><td id="p-cam"></td></tr>
+                            <tr><td>ID изображения</td><td id="p-img"></td></tr>
+                            <tr><td>Сторона</td><td id="p-side"></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="box h-25">
+                <div class="box-title">Изображение дефекта</div>
+                <div class="box-content" style="background-color: white;" id="defect-image-box"></div>
+            </div>
+        </div>
+
+        <div class="panel-right">
+            <div class="filter-group">
+                <div class="filter-row">
+                    <span class="arrow-toggle" onclick="toggleFilter(this, 'content-classes')">▼</span>
+                    <span class="color-box c-yellow"></span> <b style="cursor:pointer" onclick="toggleFilter(this.previousElementSibling.previousElementSibling, 'content-classes')">КЛАССЫ 41 / 1970</b>
+                    <div class="filter-actions">
+                        <button>Все вкл.</button> <button>Все выкл.</button> <button class="btn-top5">ТОП 5</button>
+                    </div>
+                </div>
+                <div class="filter-content" id="content-classes">
+                    <label><input type="checkbox" checked class="class-filter-cb" value="41"> Класс 41</label>
+                    <label><input type="checkbox" checked class="class-filter-cb" value="1970" id="filter-1970"> Класс 1970</label>
+                    <label><input type="checkbox" checked class="class-filter-cb" value="022"> Класс 022</label>
+                    <label><input type="checkbox" checked class="class-filter-cb" value="704"> Класс 704</label>
+                    <label><input type="checkbox" checked class="class-filter-cb" value="281 (в)"> Класс 281 (в)</label>
+                    <label><input type="checkbox" checked class="class-filter-cb" value="088 (а)"> Класс 088 (а)</label>
+                    <label><input type="checkbox" checked class="class-filter-cb" value="691 (е)"> Класс 691 (е)</label>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <div class="filter-row">
+                    <span class="arrow-toggle" onclick="toggleFilter(this, 'content-cameras')">▼</span>
+                    <span class="color-box c-green"></span> <b style="cursor:pointer" onclick="toggleFilter(this.previousElementSibling.previousElementSibling, 'content-cameras')">КАМЕРЫ</b>
+                    <div class="filter-actions">
+                        <button>Все вкл.</button> <button>Все выкл.</button>
+                    </div>
+                </div>
+                <div class="filter-content" id="content-cameras">
+                    <label><input type="checkbox" checked> Камера 5</label>
+                    <label><input type="checkbox" checked> Камера 6</label>
+                </div>
+            </div>
+
+            <div class="blue-header-container">
+                <div class="blue-header-main">Карта рулона - Название изображения: 4040676/1</div>
+                <div class="blue-header-sub">Дефекты 41(1970)</div>
+            </div>
+
+
+            <!-- НОВАЯ КАРТА РУЛОНА (ОДИН В ОДИН СО СКРИНОМ) -->
+
+
+            <div class="map-overlay-container" id="map-view-panel">
+                <div class="map-unified-scroll">
+                    <div class="map-unified-grid" id="map-lanes-inner">
+                        <!-- HEADER ROW -->
+                        <div class="h-cell" style="align-items:flex-start;">Левая кромка<br><span>1000</span></div>
+                        <div class="h-cell" style="align-items:center;">Лицевая сторона<br><span>900 800 700 600 500 400 300 200 100</span></div>
+                        <div class="h-cell bold-border" style="align-items:flex-end;">Правая кромка<br><span>0 mm</span></div>
+
+                        <div class="h-cell center col-len">Длина<br>4924 m</div>
+                        <div class="h-cell center bold-border col-scale">10<br>m</div>
+
+                        <div class="h-cell" style="align-items:flex-start;">Правая кромка<br><span>0 mm | 100 200</span></div>
+                        <div class="h-cell" style="align-items:center;">Обратная сторона<br><span>300 400 500 600 700 800 900</span></div>
+                        <div class="h-cell no-border" style="align-items:flex-end;">Левая кромка<br><span>1000</span></div>
+
+                        <!-- BODY ROW -->
+                        <div class="b-cell" id="mc1"></div>
+                        <div class="b-cell" id="mc2"></div>
+                        <div class="b-cell bold-border" id="mc3"></div>
+                        <div class="b-cell col-len" id="mc4"></div>
+                        <div class="b-cell col-scale" id="mc5"></div>
+                        <div class="b-cell" id="mc6"></div>
+                        <div class="b-cell" id="mc7"></div>
+                        <div class="b-cell no-border" id="mc8"></div>
+                    </div>
+                </div>
+            </div>
+            </div>
+
+            </div>
+                </div>
+            </div>
+
+                </div>
+            </div>
+
+            <div class="box-content" id="table-view-panel" style="background: white;">
+                <div class="context-menu" id="sort-menu">
+                    <div class="context-header" id="context-header-text">Выбор: Length</div>
+                    <div class="context-item" onclick="alert('Сортировка по возрастанию применена!')">Сортировать по возрастанию</div>
+                    <div class="context-item" onclick="alert('Сортировка по убыванию применена!')">Сортировать по убыванию</div>
+                </div>
+
+                <table class="table-defects">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;" data-col="ID">ID</th>
+                            <th style="width: 70px;" data-col="Status">Status</th>
+                            <th style="width: 60px;" data-col="Coil Side">Coil Side</th>
+                            <th style="width: 45px;" data-col="Class">Class</th>
+                            <th style="width: 80px;" data-col="Producti...">Producti...</th>
+                            <th style="width: 35px;" data-col="Conf...">Conf...</th>
+                            <th style="width: 70px;" data-col="Dist. fro...">Dist. fro...</th>
+                            <th style="width: 80px;" data-col="Dist. from OS">Dist. from OS</th>
+                            <th style="width: 80px;" data-col="Dist. from DS">Dist. from DS</th>
+                            <th style="width: 70px;" data-col="Dist. from bo...">Dist. from bo...</th>
+                            <th style="width: 70px;" data-col="Dist. from top">Dist. from top</th>
+                            <th style="width: 50px;" data-col="Length">Len...</th>
+                            <th style="width: 60px;" data-col="Area">Area</th>
+                            <th style="width: 45px;" data-col="Camera">Camera</th>
+                            <th style="width: 55px;" data-col="Image ...">Image ...</th>
+                        </tr>
+                    </thead>
+                    <tbody id="defects-tbody">
+                        <!-- Данные генерируются скриптом -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <div class="status-icon-container"><div class="status-icon-circle">✎</div></div>
+        <div class="status-panel sp-disabled">ный уравненны растянуты чрезмерны</div>
+        <div class="status-panel sp-rol">Rol</div>
+        <div class="status-panel sp-btn">Большой</div>
+        <div class="status-panel sp-btn">реальный</div>
+        <div class="status-panel sp-btn-sm">Ярлык</div>
+        <div class="status-panel sp-btn">Таблица</div>
+        <div class="status-panel sp-btn-sm">Стат</div>
+        <div class="status-panel sp-btn-sm">Отчет</div>
+        <div class="status-panel sp-long">Ч дефекты э период|естовый к| с изображ...</div>
+        <div class="status-right"><div class="status-panel sp-small">Маленьки</div></div>
+    </div>
+
+    <script>
+        function toggleFilter(arrowElement, contentId) {
+            arrowElement.classList.toggle('open');
+            document.getElementById(contentId).classList.toggle('active');
+        }
+
+        // ==========================================
+        // ЛОГИКА ТРЕНАЖЕРА (С ИНТЕРАКТИВОМ И ИЗМЕНЕНИЕМ КОНТЕНТА)
+        // ==========================================
+        const tutorialSteps = [
+            {
+                selector: '.tb-group:nth-child(2) .tb-btn:first-child',
+                title: 'Выбор инструмента',
+                text: 'Кликните по инструменту «Карта 1», чтобы включить режим просмотра дефектов на карте рулона.',
+                trigger: 'click',
+                action: () => {
+                    // Имитируем "нажатие" кнопки (стиль активной)
+                    const btn = document.querySelector('.tb-group:nth-child(2) .tb-btn:first-child');
+                    btn.style.borderTop = '1px solid var(--sys-border)';
+                    btn.style.borderLeft = '1px solid var(--sys-border)';
+                    btn.style.borderBottom = '1px solid white';
+                    btn.style.borderRight = '1px solid white';
+                    btn.style.backgroundColor = '#99c1e2';
+                    // Меняем заголовок
+                    document.querySelector('.blue-header-main').innerText = 'Карта рулона - Включен режим обзора (Карта 1)';
+                    document.querySelector('.blue-header-main').style.backgroundColor = '#0a246a';
+                }
+            },
+            {
+                selector: '#coil-tbody tr:nth-child(2)',
+                title: 'Выбор рулона',
+                text: 'Теперь выберите этот рулон из списка инспектируемых рулонов для загрузки его данных.',
+                trigger: 'click',
+                action: () => {
+                    // Просто эмулируем клик по строке рулона - вся логика (карта, таблица) сработает из обработчика!
+                    const row = document.querySelector('#coil-tbody tr:nth-child(2)');
+                    if (row) {
+                        row.click();
+                    }
+                }
+            },
+            {
+                selector: '.filter-group',
+                title: 'Настройка фильтров',
+                text: 'Сейчас мы автоматически раскроем фильтры и отключим отображение дефектов класса 1970. Нажмите «Далее».',
+                trigger: 'button',
+                action: () => {
+                    // Раскрываем фильтры визуально
+                    document.getElementById('content-classes').classList.add('active');
+                    document.querySelector('.arrow-toggle').classList.add('open');
+
+                    // Снимаем галочку
+                    const chk = document.getElementById('filter-1970');
+                    if (chk) chk.checked = false;
+
+                    // Меняем дополнительный заголовок
+                    document.querySelector('.blue-header-sub').innerText = 'Дефекты 41 (отфильтровано)';
+                }
+            },
+            {
+                selector: '.blue-header-container',
+                title: 'Успешно!',
+                text: 'Обучение завершено. Как видите, интерфейс отреагировал на ваши действия (сменились данные и заголовок).',
+                trigger: 'button',
+                action: () => {}
+            }
+        ];
+
+        let currentStepIndex = 0;
+        let currentHighlightTarget = null;
+        let currentClickHandler = null;
+
+        function startTutorial() {
+            currentStepIndex = 0;
+            document.getElementById('tutorial-overlay').style.display = 'block';
+            showStep(currentStepIndex);
+        }
+
+        function showStep(index) {
+            if (index >= tutorialSteps.length) {
+                endTutorial();
+                return;
+            }
+
+            const step = tutorialSteps[index];
+            const targetElement = document.querySelector(step.selector);
+
+            if (!targetElement) {
+                console.warn('Элемент не найден: ' + step.selector);
+                endTutorial();
+                return;
+            }
+
+            if (currentHighlightTarget) {
+                currentHighlightTarget.classList.remove('tutorial-highlight');
+                if (currentClickHandler) {
+                    currentHighlightTarget.removeEventListener('click', currentClickHandler);
+                }
+            }
+
+            currentHighlightTarget = targetElement;
+            currentHighlightTarget.classList.add('tutorial-highlight');
+
+            const popup = document.getElementById('tutorial-popup');
+            document.getElementById('tutorial-title').innerText = step.title;
+            document.getElementById('tutorial-text').innerText = step.text;
+
+            const nextBtn = document.getElementById('tutorial-next-btn');
+
+            // Если ожидаем клик, вешаем слушатель с выполнением экшена
+            if (step.trigger === 'click') {
+                nextBtn.style.display = 'none';
+                currentClickHandler = () => {
+                    if(step.action) step.action(); // Запуск визуальных изменений!
+                    showStep(index + 1);
+                };
+                currentHighlightTarget.addEventListener('click', currentClickHandler, { once: true });
+            }
+            // Если переход по кнопке в попапе
+            else if (step.trigger === 'button') {
+                nextBtn.style.display = 'block';
+                nextBtn.innerText = (index === tutorialSteps.length - 1) ? 'Завершить' : 'Далее';
+                nextBtn.onclick = () => {
+                    if(step.action) step.action(); // Запуск визуальных изменений!
+                    showStep(index + 1);
+                };
+            }
+
+            positionPopup(targetElement, popup);
+        }
+
+        function positionPopup(target, popup) {
+            popup.style.display = 'block';
+            const rect = target.getBoundingClientRect();
+            const popupRect = popup.getBoundingClientRect();
+
+            let top = rect.top;
+            let left = rect.right + 15;
+
+            if (left + popupRect.width > window.innerWidth) {
+                left = rect.left;
+                top = rect.bottom + 15;
+            }
+            if (top + popupRect.height > window.innerHeight) {
+                top = window.innerHeight - popupRect.height - 10;
+            }
+
+            popup.style.top = top + 'px';
+            popup.style.left = left + 'px';
+        }
+
+        function endTutorial() {
+            document.getElementById('tutorial-overlay').style.display = 'none';
+            document.getElementById('tutorial-popup').style.display = 'none';
+            if (currentHighlightTarget) {
+                currentHighlightTarget.classList.remove('tutorial-highlight');
+            }
+            currentStepIndex = 0;
+        }
+        // ==========================================
+
+
+        // Инициализация данных таблицы и запуск тренажера
+        document.addEventListener('DOMContentLoaded', () => {
+            const coilTbody = document.getElementById('coil-tbody');
+            for(let i = 0; i < 15; i++) {
+                const coilId = 4040660 + i;
+                coilTbody.innerHTML += `<tr data-coil-id="${coilId}" data-coil-index="${i}"><td>${coilId}</td><td>${9689480 - i}</td><td>F</td><td>2519122</td><td>521006</td><td>1</td><td>E3A</td><td>0.27 mm</td><td>${4700 + (i*15)} m</td><td>1045 mm</td><td>19.10.25 08:21</td><td>19.10.25 10:03</td><td>${7000 + i*15}</td></tr>`;
+            }
+
+            // Инициализация таблицы дефектов теперь происходит при клике на рулон
+
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    menuItems.forEach(mi => { if(mi !== item) mi.classList.remove('active') });
+                    if(item.querySelector('.dropdown')) item.classList.toggle('active');
+                });
+            });
+            document.addEventListener('click', () => {
+                menuItems.forEach(mi => mi.classList.remove('active'));
+                document.getElementById('sort-menu').style.display = 'none';
+            });
+
+            const setupTableSelection = (tbodyId, isDefectsTable) => {
+                const tbody = document.getElementById(tbodyId);
+                tbody.addEventListener('click', (e) => {
+                    const row = e.target.closest('tr');
+                    if (!row || !row.cells[0].innerText.trim()) return;
+                    Array.from(tbody.children).forEach(r => r.classList.remove('selected'));
+                    row.classList.add('selected');
+
+                    if (isDefectsTable) {
+                        const cells = row.cells;
+                        document.getElementById('p-id').innerText = cells[0].innerText;
+                        document.getElementById('p-class').innerText = cells[3].innerText;
+                        document.getElementById('p-prod').innerText = cells[4].innerText;
+                        document.getElementById('p-conf').innerText = cells[5].innerText;
+                        document.getElementById('p-dist-fro').innerText = cells[7].innerText;
+                        document.getElementById('p-dist-os').innerText = cells[8].innerText;
+                        document.getElementById('p-dist-ds').innerText = cells[9].innerText;
+                        document.getElementById('p-len').innerText = cells[11].innerText;
+                        document.getElementById('p-cam').innerText = cells[13].innerText;
+                        document.getElementById('p-img').innerText = cells[14].innerText;
+                        document.getElementById('p-side').innerText = cells[2].innerText;
+                    }
+                });
+            };
+            setupTableSelection('coil-tbody', false);
+            setupTableSelection('defects-tbody', true);
+
+            const sortMenu = document.getElementById('sort-menu');
+            const headerText = document.getElementById('context-header-text');
+            const tableHeaders = document.querySelectorAll('th');
+
+            tableHeaders.forEach(th => {
+                th.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    const colName = th.getAttribute('data-col') || th.innerText;
+                    headerText.innerText = 'Выбор: ' + colName;
+                    sortMenu.style.display = 'flex';
+                    let x = e.clientX; let y = e.clientY;
+                    if (x + 190 > window.innerWidth) x = window.innerWidth - 190;
+                    if (y + 80 > window.innerHeight) y = window.innerHeight - 80;
+                    sortMenu.style.left = x + 'px'; sortMenu.style.top = y + 'px';
+                });
+            });
+
+            sortMenu.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if(e.target.classList.contains('context-item')) sortMenu.style.display = 'none';
+            });
+
+            // Автозапуск тренажера после прогрузки
+            setTimeout(() => {
+                startTutorial();
+            }, 300);
+
+        });
+    </script>
+
+    <script>
+    window.onload = function() {
+        setTimeout(function() {
+            if (typeof pipwerks !== 'undefined') {
+                var isConnected = pipwerks.SCORM.init();
+                if (isConnected) {
+                    pipwerks.SCORM.set("cmi.core.lesson_status", "completed");
+                    pipwerks.SCORM.save();
+                }
+            } else {
+                console.warn("SCORM API не найден, работаем в автономном режиме");
+            }
+        }, 2000);
+    };
+
+    window.onunload = function() {
+        if (typeof pipwerks !== 'undefined') {
+            pipwerks.SCORM.quit();
+        }
+    };
+
+
+// --- НОВАЯ ЛОГИКА ДАННЫХ РУЛОНОВ ---
+let selectedCoilId = null;
+const coilDataStore = {};
+
+function mulberry32(a) {
+    return function() {
+        let t = a += 0x6D2B79F5;
+        t = Math.imul(t ^ t >>> 15, t | 1);
+        t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+}
+
+function getOrCreateCoilData(coilId, coilIndex = 0) {
+    if (coilDataStore[coilId]) return coilDataStore[coilId];
+
+    const seed = Number(String(coilId).slice(-6)) + coilIndex + 1;
+    const rand = mulberry32(seed);
+
+    const classPool = ['022', '021', '69', '1970', '281', '088', '704', '705', '162', '691'];
+    const zonePool = ['left', 'right', 'right', 'right-zone'];
+
+    const defectsCount = 35 + Math.floor(rand() * 40); // От 35 до 75 дефектов на рулон
+
+    const defects = Array.from({ length: defectsCount }, (_, i) => {
+        const classCode = classPool[Math.floor(rand() * classPool.length)];
+        const mapZone = zonePool[Math.floor(rand() * zonePool.length)];
+        const top = +(2 + i * (94 / Math.max(defectsCount - 1, 1))).toFixed(1);
+
+        return {
+            id: 40000 + Math.floor(rand() * 50000),
+            productSide: 'Лицевая ст...',
+            classCode,
+            confirmClass: `${classCode}СИСТЕМА`,
+            conf: '5',
+            distFromStart: `${(3200 + rand() * 1800).toFixed(1)} m`,
+            pos1: `${Math.floor(rand() * 1000)} mm`,
+            pos2: `${Math.floor(rand() * 1000)} mm`,
+            len: `${10 + Math.floor(rand() * 30)} mm`,
+            pos3: `${Math.floor(rand() * 1000)} mm`,
+            width: `${20 + Math.floor(rand() * 50)} mm`,
+            camera: rand() > 0.5 ? '5' : '6',
+            score: `${100 + Math.floor(rand() * 10000)}`,
+            label: classCode,
+            mapZone,
+            mapStyle: mapZone === 'left' ? 'md-red-stick-left' : (rand() > 0.5 ? 'md-red' : 'md-white'),
+            top: top,
+            imgBgGradient: rand() > 0.5 ? 'linear-gradient(to right, #4a4a4a, #888888, #555555)' : 'linear-gradient(135deg, #333, #777, #444)',
+            imgSpotWidth: 20 + Math.floor(rand() * 80),
+            imgSpotHeight: 15 + Math.floor(rand() * 60),
+            imgSpotTop: 15 + Math.floor(rand() * 50),
+            imgSpotLeft: 15 + Math.floor(rand() * 50)
+        };
+    });
+
+    coilDataStore[coilId] = { coilId, defects };
+    return coilDataStore[coilId];
+}
+
+function fillDefectProps(defect) {
+    const set = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = val;
+    };
+
+    set('p-id', defect.id);
+    set('p-class', defect.classCode);
+    set('p-prod', defect.label);
+    set('p-conf', 'СИСТЕМА');
+    set('p-dist-fro', defect.distFromStart);
+    set('p-dist-os', defect.pos1);
+    set('p-dist-ds', defect.pos2);
+    set('p-len', defect.len);
+    set('p-cam', defect.camera);
+
+    const imgBox = document.getElementById('defect-image-box');
+    if (imgBox) {
+        imgBox.innerHTML = `
+            <div style="width:100%; height:100%; background: ${defect.imgBgGradient}; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;">
+                <div style="position:absolute; width:100%; height:100%; opacity:0.1; background-image: repeating-linear-gradient(0deg, transparent, transparent 1px, #000 1px, #000 2px), repeating-linear-gradient(90deg, transparent, transparent 1px, #fff 1px, #fff 2px);"></div>
+                <div style="position:absolute; width:${defect.imgSpotWidth}px; height:${defect.imgSpotHeight}px; background:radial-gradient(ellipse at center, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 70%); border-radius:50%; top:${defect.imgSpotTop}%; left:${defect.imgSpotLeft}%;"></div>
+                <div style="position:absolute; width:${defect.imgSpotWidth + 6}px; height:${defect.imgSpotHeight + 6}px; border:1px solid red; z-index:2; top:calc(${defect.imgSpotTop}% - 3px); left:calc(${defect.imgSpotLeft}% - 3px);"></div>
+                <div style="position:absolute; top:2px; left:2px; color:white; font-size:9px; z-index:3;">Camera: ${defect.camera}<br>ID: ${defect.id}</div>
+                <div style="position:absolute; bottom:5px; background:rgba(255,255,255,0.8); color:black; font-size:11px; padding:2px 5px; z-index:3; font-weight:bold;">Класс: ${defect.classCode}</div>
+            </div>`;
+    }
+}
+
+function renderDefectsTable(coilData) {
+    const defectsTbody = document.getElementById('defects-tbody');
+    if (!defectsTbody) return;
+
+    defectsTbody.innerHTML = '';
+
+    coilData.defects.forEach((defect) => {
+        const tr = document.createElement('tr');
+        tr.dataset.defectId = defect.id;
+        tr.innerHTML = `
+            <td>${defect.id}</td>
+            <td></td>
+            <td>${defect.productSide}</td>
+            <td>${defect.classCode}</td>
+            <td>${defect.classCode}</td>
+            <td>${defect.confirmClass}</td>
+            <td>${defect.conf}</td>
+            <td>${defect.distFromStart}</td>
+            <td>${defect.pos1}</td>
+            <td>${defect.pos2}</td>
+            <td>${defect.len}</td>
+            <td>${defect.pos3}</td>
+            <td>${defect.width}</td>
+            <td>${defect.camera}</td>
+            <td>${defect.score}</td>
+        `;
+
+        tr.addEventListener('click', () => {
+            document.querySelectorAll('#defects-tbody tr').forEach(r => r.classList.remove('selected'));
+            tr.classList.add('selected');
+            fillDefectProps(defect);
+        });
+
+        defectsTbody.appendChild(tr);
+    });
+
+    const firstRow = defectsTbody.querySelector('tr');
+    if (firstRow) firstRow.click();
+}
+// --- КОНЕЦ НОВОЙ ЛОГИКИ ---
+
+// --- ЛОГИКА ПЕРЕКЛЮЧЕНИЯ И ГЕНЕРАЦИИ КАРТЫ ---
+document.addEventListener('DOMContentLoaded', () => {
+    const mapPanel = document.getElementById('map-view-panel');
+    const tablePanel = document.getElementById('table-view-panel');
+    const mapBtn = document.querySelector('.tb-group:nth-child(2) .tb-btn:nth-child(1)');
+    const coilTbody = document.getElementById('coil-tbody');
+    let isMapOpen = false;
+
+    // 1. При клике на рулон открываем карту и грузим данные
+    if(coilTbody) {
+        coilTbody.addEventListener('click', (e) => {
+            const row = e.target.closest('tr');
+            if(!row) return;
+
+            const coilId = row.dataset.coilId || row.cells[0]?.innerText.trim();
+            const coilIndex = Number(row.dataset.coilIndex || 0);
+
+            selectedCoilId = coilId;
+
+            document.querySelectorAll('#coil-tbody tr').forEach(tr => tr.classList.remove('selected'));
+            row.classList.add('selected');
+
+            const coilData = getOrCreateCoilData(coilId, coilIndex);
+            renderDefectsTable(coilData);
+
+            if(!isMapOpen) {
+                toggleMap(true);
+            }
+            generateMapData(coilData);
+        });
+    }
+
+    // 2. Кнопка карты (ручное переключение)
+    if(mapBtn) {
+        mapBtn.addEventListener('click', () => {
+            if(!isMapOpen) {
+                toggleMap(true);
+                const activeRow = document.querySelector('#coil-tbody tr.selected') || document.querySelector('#coil-tbody tr');
+                if(activeRow) {
+                    activeRow.click();
+                }
+            } else {
+                toggleMap(false);
+            }
+        });
+    }
+
+    // 3. Закрытие карты при клике "мимо" (но игнорируем туториал и программные клики)
+    document.addEventListener('click', (e) => {
+        if(!isMapOpen) return;
+
+        // Игнорируем искусственные (программные) клики от туториала!
+        if(!e.isTrusted) return;
+
+        // Если идет обучение, вообще не закрываем карту по случайному клику
+        const isTutorial = document.getElementById('tutorial-overlay') && document.getElementById('tutorial-overlay').style.display === 'block';
+        if(isTutorial) return;
+
+        // Если клик по карте, левой панели, тулбару, или кнопкам фильтров - игнорим
+        if(e.target.closest('#map-view-panel') ||
+           e.target.closest('.panel-left') ||
+           e.target.closest('.tb-group') ||
+           e.target.closest('.filter-group')) {
+            return;
+        }
+
+        // Иначе (клик по фону) скрываем карту
+        toggleMap(false);
+    });
+
+    function toggleMap(show) {
+        isMapOpen = show;
+        if(show) {
+            mapPanel.style.display = 'flex';
+            tablePanel.style.display = 'none';
+        } else {
+            mapPanel.style.display = 'none';
+            tablePanel.style.display = 'flex';
+        }
+    }
+
+    function generateMapData(coilData) {
+        if (!coilData) return;
+        const c1 = document.getElementById('mc1');
+        const c2 = document.getElementById('mc2');
+        const c3 = document.getElementById('mc3');
+        const c4 = document.getElementById('mc4');
+        const c5 = document.getElementById('mc5');
+        const c6 = document.getElementById('mc6');
+        const c7 = document.getElementById('mc7');
+        const c8 = document.getElementById('mc8');
+
+        [c1,c2,c3,c4,c5,c6,c7,c8].forEach(c => c.innerHTML = '');
+
+        // Базовые направляющие
+        c1.innerHTML = '<div class="red-guide"></div>';
+        c3.innerHTML = '<div class="red-guide"></div>';
+        c4.innerHTML = '<div class="track-border track-border-l"></div><div class="track-border track-border-r"></div>';
+        c6.innerHTML = '<div class="red-guide"></div>';
+        c8.innerHTML = '<div class="red-guide"></div>';
+
+
+        let startM = 1320;
+        let totalLines = 150; // Увеличим количество делений, чтобы карта была длиннее и детальнее
+        let stepPct = 100 / totalLines;
+
+        for(let i=0; i<=totalLines; i++) {
+            let topP = i * stepPct;
+
+            if(i > 0) {
+                c4.innerHTML += `<div class="g-line-b" style="top:${topP}%;"></div>`;
+                c5.innerHTML += `<div class="g-line-b" style="top:${topP}%;"></div>`;
+                c5.innerHTML += `<div class="scale-num" style="top:${topP}%;">${i*10}</div>`;
+            } else {
+                c5.innerHTML += `<div class="scale-num" style="top:0%; transform:none; margin-top:0;">0</div>`;
+            }
+
+            // Метраж пунктиром чаще (каждые 5 делений, как на скрине где 50, 100, 150)
+            if(i % 5 === 0 && i > 0) {
+                let mVal = startM + (i/5)*10;
+
+                c2.innerHTML += `<div class="g-line-w" style="top:${topP}%;"></div>`;
+                c1.innerHTML += `<div class="g-txt-w" style="top:${topP}%; right:2px;">-${mVal} m-</div>`;
+                c3.innerHTML += `<div class="g-txt-w" style="top:${topP}%; left:2px;">-${mVal} m-</div>`;
+
+                c7.innerHTML += `<div class="g-line-w" style="top:${topP}%;"></div>`;
+                c6.innerHTML += `<div class="g-txt-w" style="top:${topP}%; right:2px;">-${mVal} m-</div>`;
+                c8.innerHTML += `<div class="g-txt-w" style="top:${topP}%; left:2px;">-${mVal} m-</div>`;
+            }
+        }
+
+        // --- ЖЕЛТО-ЗЕЛЕНЫЕ ДЕФЕКТЫ ---
+        const addYel = (side, top, h) => {
+            c4.innerHTML += `<div class="md-yel-${side[0]}" style="top:${top}%; height:${h}%;"></div>`;
+        };
+        addYel('left', 5, 5);
+        addYel('left', 20, 2);
+        addYel('left', 25, 4);
+        addYel('left', 40, 2);
+        addYel('left', 45, 10);
+        addYel('left', 60, 15);
+        addYel('left', 85, 5);
+        addYel('left', 92, 6);
+
+        addYel('right', 0, 98);
+
+        // Много зеленых
+        for(let k=0; k<40; k++) {
+            c4.innerHTML += `<div class="md-grn" style="top:${2 + k*2.4}%;"></div>`;
+        }
+
+        // Интерактив для ярлыков
+        const mkDefect = (parent, defect) => {
+            const d = document.createElement('div');
+            d.className = `defect-lbl class-filter-target ${defect.mapStyle}`;
+            d.innerText = defect.label;
+            d.style.top = defect.top + '%';
+
+            d.addEventListener('click', function(e) {
+                e.stopPropagation();
+                fillDefectProps(defect);
+
+                const row = document.querySelector(`#defects-tbody tr[data-defect-id="${defect.id}"]`);
+                if(row) {
+                    document.querySelectorAll('#defects-tbody tr').forEach(r => r.classList.remove('selected'));
+                    row.classList.add('selected');
+                    // прокручиваем к выбранному дефекту
+                    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+
+            parent.appendChild(d);
+        };
+
+        const leftDefects = coilData.defects.filter(d => d.mapZone === 'left');
+        const rightDefects = coilData.defects.filter(d => d.mapZone === 'right');
+        const rightZoneDefects = coilData.defects.filter(d => d.mapZone === 'right-zone');
+
+        if(leftDefects.length) {
+            c1.innerHTML += `<div class="red-mesh class-filter-target" style="top:0; height:${Math.max(8, leftDefects.length * 4)}%;"></div>`;
+            leftDefects.forEach(defect => mkDefect(c1, defect));
+        }
+
+        if(rightDefects.length) {
+            c3.innerHTML += `<div class="red-mesh class-filter-target" style="top:0; height:100%;"></div>`;
+            rightDefects.forEach(defect => mkDefect(c3, defect));
+        }
+
+        rightZoneDefects.forEach(defect => mkDefect(c6, defect));
+
+        filterMapTags();
+    }
+});
+
+    // --- ЛОГИКА ФИЛЬТРАЦИИ КАРТЫ ПО КЛАССАМ ---
+    const classCheckboxes = document.querySelectorAll('.class-filter-cb');
+    classCheckboxes.forEach(cb => {
+        cb.addEventListener('change', () => {
+            filterMapTags();
+        });
+    });
+
+    // Кнопки "Все вкл" / "Все выкл" в блоке классов
+    const classFilterGroup = document.getElementById('content-classes').previousElementSibling;
+    const btnAllOn = classFilterGroup.querySelectorAll('button')[0];
+    const btnAllOff = classFilterGroup.querySelectorAll('button')[1];
+
+    if(btnAllOn) {
+        btnAllOn.addEventListener('click', () => {
+            classCheckboxes.forEach(cb => cb.checked = true);
+            filterMapTags();
+        });
+    }
+    if(btnAllOff) {
+        btnAllOff.addEventListener('click', () => {
+            classCheckboxes.forEach(cb => cb.checked = false);
+            filterMapTags();
+        });
+    }
+
+    function filterMapTags() {
+        // Собираем массив включенных классов
+        const activeClasses = Array.from(classCheckboxes)
+                                   .filter(cb => cb.checked)
+                                   .map(cb => cb.value);
+
+        // Перебираем все красные ярлыки на карте
+        const allTags = document.querySelectorAll('.class-filter-target');
+        allTags.forEach(tag => {
+            let text = tag.innerText.trim();
+            if(!text) text = '022'; // для безымянных красных сеток привяжем их к 022 для примера
+
+            // Проверяем, начинается ли текст фильтра с текста ярлыка (т.к. там есть 088 и 088 (a))
+            const isActive = activeClasses.some(ac => text.includes(ac) || ac.includes(text));
+
+            if(isActive) {
+                tag.style.display = tag.classList.contains('red-grid-pattern') ? 'block' : 'flex';
+            } else {
+                tag.style.display = 'none';
+            }
+        });
+    }
+</script>
+
+    <!-- Контейнеры тренажера -->
+    <div class="tutorial-overlay" id="tutorial-overlay"></div>
+    <div class="tutorial-popup" id="tutorial-popup">
+        <div class="tutorial-popup-title" id="tutorial-title">Шаг 1</div>
+        <div id="tutorial-text">Текст подсказки...</div>
+        <button class="tutorial-btn" id="tutorial-next-btn" style="display:none;">Далее</button>
+        <div class="tutorial-clear"></div>
+    </div>
+
+</body>
+</html>
