@@ -507,30 +507,67 @@
 }
 
 .dropdown-item {
-    position: relative;          /* Важно для позиционирования галочки */
-    padding: 4px 10px 4px 24px;  /* Увеличен левый padding (24px) для колонки с галочкой */
+    position: relative;
+    padding: 4px 10px 4px 24px; /* Фиксированный padding */
     cursor: pointer;
     color: #000;
     font-size: 11px;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    border: 1px solid transparent; /* Добавляем прозрачную границу */
+}
+
+.check-mark {
+    position: absolute;
+    left: 8px;
+    width: 12px;
+    text-align: center;
+    font-weight: bold;
+    color: #000;
+    pointer-events: none;
+}
+
+.check-placeholder {
+    position: absolute;
+    left: 8px;
+    width: 12px;
+    text-align: center;
+    pointer-events: none;
+}
+
+.dropdown-item span:last-child {
+    margin-left: 16px;
+    flex: 1;
+}
+
+.dropdown-item.disabled {
+    color: #a0a0a0;
+    text-shadow: 1px 1px 0 #fff;
+    cursor: default;
+    pointer-events: none;
 }
 
 .dropdown-item:hover {
     background-color: #e5f1fb;
     border: 1px solid #99c1e2;
-    padding: 3px 9px 3px 23px;
+    padding: 4px 10px 4px 24px; /* Одинаковый padding при наведении */
 }
 
-.dropdown-item.disabled:hover {
-    background-color: transparent;
-    border: none;
+
+
+.dropdown-item.checked {
     padding: 4px 10px 4px 24px;
+    border: 1px solid transparent;
 }
 
 .dropdown-item.disabled:hover {
     background-color: transparent;
     border: none;
     padding: 4px 10px;
+}
+.dropdown-item.disabled:hover span:last-child {
+    margin-left: 16px;
 }
 
 /* Галочки для пунктов меню "Изображение дефекта" */
@@ -731,9 +768,41 @@
         </div>
     </div>
 
-    <div class="menu-item">Режим</div>
+    <div class="menu-item" data-menu="mode">
+    Режим
+    <div class="dropdown-menu" id="mode-menu">
+        <div class="dropdown-item disabled" onclick="archiveAction()">
+            <span class="check-placeholder"></span>
+            <span>Архивация</span>
+        </div>
+        <div class="dropdown-item checked" id="mode-offline" onclick="toggleMode('offline')">
+            <span class="check-mark">✓</span>
+            <span>Offline - F7</span>
+        </div>
+        <div class="dropdown-item disabled" onclick="defectClassificationAction()">
+            <span class="check-placeholder"></span>
+            <span>Классификация дефектов</span>
+        </div>
+        <div class="dropdown-item disabled" id="mode-online" onclick="toggleMode('online')">
+            <span class="check-placeholder"></span>
+            <span>Online - F8</span>
+        </div>
+        <div class="dropdown-item disabled" onclick="currentImageAction()">
+            <span class="check-placeholder"></span>
+            <span>Текущая картинка F6</span>
+        </div>
+    </div>
+</div>
+
+
     <div class="menu-item">Система</div>
-    <div class="menu-item">Утилиты</div>
+    <div class="menu-item" data-menu="utils">
+        Утилиты
+         <div class="dropdown-menu" id="utils">
+            <div class="dropdown-item" onclick="showAbout()">Сменный отчет</div>
+        </div>
+
+    </div>
     <div class="menu-item">Пользователь</div>
     <div class="menu-item">Установки</div>
 
@@ -2207,6 +2276,130 @@ function mapMenuAction(actionName) {
     console.log('Выполняется действие:', actionName);
     closeAllMenus(); // Закрываем все открытые меню (уже есть в вашем коде)
 }
+
+
+
+// Функции для меню "Режим"
+let currentMode = 'offline'; // Текущий режим
+
+function toggleMode(mode) {
+    // Если пытаемся переключиться в уже активный режим - ничего не делаем
+    if (mode === currentMode) {
+        return;
+    }
+
+    // Получаем элементы
+    const offlineItem = document.getElementById('mode-offline');
+    const onlineItem = document.getElementById('mode-online');
+
+    if (!offlineItem || !onlineItem) {
+        console.error('Элементы режимов не найдены');
+        return;
+    }
+
+    // Сбрасываем все галочки
+    resetModeCheckmarks();
+
+    // Устанавливаем галочку для выбранного режима
+    if (mode === 'offline') {
+        setCheckmark(offlineItem);
+        offlineItem.classList.remove('disabled');
+        onlineItem.classList.add('disabled');
+    } else if (mode === 'online') {
+        setCheckmark(onlineItem);
+        onlineItem.classList.remove('disabled');
+        offlineItem.classList.add('disabled');
+    }
+
+    currentMode = mode;
+    console.log('Переключен режим на:', mode);
+
+    // Здесь можно добавить дополнительную логику
+    if (mode === 'online') {
+        // Логика для Online режима
+        console.log('Активирован Online режим');
+    } else {
+        // Логика для Offline режима
+        console.log('Активирован Offline режим');
+    }
+
+    closeAllMenus();
+}
+
+function resetModeCheckmarks() {
+    const offlineItem = document.getElementById('mode-offline');
+    const onlineItem = document.getElementById('mode-online');
+
+    if (offlineItem) {
+        // Меняем галочку на placeholder
+        const checkMark = offlineItem.querySelector('.check-mark');
+        if (checkMark) {
+            checkMark.className = 'check-placeholder';
+            checkMark.innerText = '';
+        }
+        offlineItem.classList.remove('checked');
+    }
+
+    if (onlineItem) {
+        const checkMark = onlineItem.querySelector('.check-mark');
+        if (checkMark) {
+            checkMark.className = 'check-placeholder';
+            checkMark.innerText = '';
+        }
+        onlineItem.classList.remove('checked');
+    }
+}
+
+function setCheckmark(item) {
+    const placeholder = item.querySelector('.check-placeholder');
+    if (placeholder) {
+        placeholder.className = 'check-mark';
+        placeholder.innerText = '✓';
+    }
+    item.classList.add('checked');
+}
+
+function archiveAction() {
+    console.log('Архивация - неактивно');
+    closeAllMenus();
+}
+
+function defectClassificationAction() {
+    console.log('Классификация дефектов - неактивно');
+    closeAllMenus();
+}
+
+function currentImageAction() {
+    console.log('Текущая картинка F6 - неактивно');
+    closeAllMenus();
+}
+
+// Обработчик горячих клавиш
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'F7') {
+        e.preventDefault();
+        toggleMode('offline');
+    }
+
+    if (e.key === 'F8') {
+        e.preventDefault();
+        const onlineItem = document.getElementById('mode-online');
+        if (onlineItem && !onlineItem.classList.contains('disabled')) {
+            toggleMode('online');
+        } else {
+            console.log('Online режим недоступен');
+        }
+    }
+
+    if (e.key === 'F6') {
+        e.preventDefault();
+        currentImageAction();
+    }
+});
+
+
+
+
 </script>
 
 
