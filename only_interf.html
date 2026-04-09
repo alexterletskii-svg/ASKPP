@@ -125,7 +125,9 @@
             border-bottom: 1px solid var(--sys-border); display: flex; align-items: center;
         }
         .box-content { flex: 1; overflow: auto; position: relative; }
-        .h-35 { height: 35%; } .h-40 { height: 40%; } .h-25 { height: 25%; }
+       .h-35 { flex: 1; min-height: 0; }        /* Занимает всё доступное свободное место */
+.h-40 { flex: 0 0 auto; }                /* Обтягивает таблицу строго по её высоте */
+.h-25 { flex: 0 0 28%; min-height: 0; }  /* Фиксируем 28% меню для фото/миникарты */
 
         /* --- Tables --- */
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
