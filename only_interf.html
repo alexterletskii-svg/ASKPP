@@ -815,21 +815,100 @@
 </div>
         </div>
 
-      <div class="toolbar">
+<!--      <div class="toolbar">-->
+<!--    <div class="tb-group">-->
+<!--        <div class="tb-btn" title="Поиск рулона" onclick="openRollModal()">-->
+<!--            <img src="picture\ico\ico_1.png" alt="Рулон" style="width:14px;height:14px;">-->
+<!--        </div>-->
+<!--        <div class="tb-btn" title="Только верхняя сторона" onclick="openRollModal()">-->
+<!--            <img src="picture\ico\ico_2.png" alt="Открыть" style="width:14px;height:14px;">-->
+<!--        </div>-->
+<!--        <div class="tb-btn" title="Две стороны" onclick="saveCoil()">-->
+<!--            <img src="picture\ico\ico_3.png" alt="Сохранить" style="width:14px;height:14px;">-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    <div class="tb-group">-->
+<!--        <div class="tb-btn" title="Только нижняя сторона" onclick="toggleMap(true)">-->
+<!--            <img src="picture\ico\ico_4.png" alt="Карта 1" style="width:14px;height:14px;">-->
+<!--        </div>-->
+<!--        <div class="tb-btn" title="Показать дефекты в виде ярлыков" onclick="toggleMap(true)">-->
+<!--            <img src="picture\ico\ico_5.png" alt="Карта 2" style="width:14px;height:14px;">-->
+<!--        </div>-->
+<!--        <div class="tb-btn" title="Показать точный размер и позицию дефектов" onclick="toggleMap(true)">-->
+<!--            <img src="picture\ico\ico_6.png" alt="Карта 3" style="width:14px;height:14px;">-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    <div class="tb-group">-->
+<!--        <div class="tb-btn" title="Показать таблицу дефектов" onclick="showStatus()">-->
+<!--            <img src="picture\ico\ico_7.png" alt="Статус" style="width:14px;height:14px;">-->
+<!--        </div>-->
+<!--        <div class="tb-btn" title="Показать данные рулона" onclick="showChart()">-->
+<!--            <img src="picture\ico\ico_8.png" alt="График" style="width:14px;height:14px;">-->
+<!--        </div>-->
+<!--        <div class="tb-btn" title="Перезагрузка данных рулона" onclick="toggleGrid()">-->
+<!--            <img src="picture\ico\ico_9.png" alt="Сетка" style="width:14px;height:14px;">-->
+<!--        </div>-->
+<!--        <div class="tb-btn" title="Выбрать класс дефекта" onclick="toggleSplit()">-->
+<!--            <img src="picture\ico\ico_10.png" alt="Разделение" style="width:14px;height:14px;">-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    <div class="tb-group">-->
+<!--        <div class="tb-btn" title="Выбор камеры" onclick="showTools()">-->
+<!--            <img src="picture\ico\ico_11.png" alt="Инструмент" style="width:14px;height:14px;">-->
+<!--        </div>-->
+<!--        <div class="tb-btn" title="Исходное изображение дефекта" onclick="showHelp()">-->
+<!--            <img src="picture\ico\ico_12.png" alt="Вопрос" style="width:14px;height:14px;">-->
+<!--        </div>-->
+<!--        <div class="tb-btn" title="Выровнять изображение дефекта" onclick="toggleScale()">-->
+<!--            <img src="picture\ico\ico_13.png" alt="Шкала" style="width:14px;height:14px;">-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    <div class="tb-group">-->
+<!--        <div class="tb-btn" title="Растянуть изображение дефекта" onclick="selectTool('point')">-->
+<!--            <img src="picture\ico\ico_14.png" alt="Точка" style="width:14px;height:14px;">-->
+<!--        </div>-->
+<!--        <div class="tb-btn" title="Фильтр трехмерного изображения дефекта" onclick="selectTool('area')">-->
+<!--            <img src="picture\ico\ico_15.png" alt="Область" style="width:14px;height:14px;">-->
+<!--        </div>-->
+<!--        <div class="tb-btn" title="Rol в изображении дефектов включен/выключен" onclick="selectTool('spot1')">-->
+<!--            <img src="picture\ico\ico_16.png" alt="Пятно 1" style="width:14px;height:14px;">-->
+<!--        </div>-->
+<!--        <div class="tb-btn" title="Карта рулона большая/маленькая" onclick="selectTool('spot2')">-->
+<!--            <img src="picture\ico\ico_17.png" alt="Пятно 2" style="width:14px;height:14px;">-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    <div class="tb-group">-->
+<!--        <div class="tb-btn" title="Напечатать протокол" onclick="selectTool('wave')">-->
+<!--            <img src="picture\ico\ico_18.png" alt="Волна" style="width:14px;height:14px;">-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+<!--    </div>-->
+
+
+    <div class="toolbar">
     <div class="tb-group">
         <div class="tb-btn" title="Поиск рулона" onclick="openRollModal()">
             <img src="picture\ico\ico_1.png" alt="Рулон" style="width:14px;height:14px;">
         </div>
-        <div class="tb-btn" title="Только верхняя сторона" onclick="openRollModal()">
+        <!-- ДОБАВЛЕН ID, УДАЛЕН ОШИБОЧНЫЙ ONCLICK -->
+        <div class="tb-btn" id="btn-side-top" title="Только верхняя сторона">
             <img src="picture\ico\ico_2.png" alt="Открыть" style="width:14px;height:14px;">
         </div>
-        <div class="tb-btn" title="Две стороны" onclick="saveCoil()">
+        <!-- ДОБАВЛЕН ID, УДАЛЕН ОШИБОЧНЫЙ ONCLICK -->
+        <div class="tb-btn" id="btn-side-both" title="Две стороны">
             <img src="picture\ico\ico_3.png" alt="Сохранить" style="width:14px;height:14px;">
         </div>
     </div>
 
     <div class="tb-group">
-        <div class="tb-btn" title="Только нижняя сторона" onclick="toggleMap(true)">
+        <!-- ДОБАВЛЕН ID, УДАЛЕН ОШИБОЧНЫЙ ONCLICK -->
+        <div class="tb-btn" id="btn-side-bottom" title="Только нижняя сторона">
             <img src="picture\ico\ico_4.png" alt="Карта 1" style="width:14px;height:14px;">
         </div>
         <div class="tb-btn" title="Показать дефекты в виде ярлыков" onclick="toggleMap(true)">
@@ -888,7 +967,6 @@
         </div>
     </div>
 </div>
-    </div>
 
     <div class="workspace">
         <div class="panel-left">
@@ -1194,8 +1272,8 @@
         renderFilterBlocks();
         initCoilsTable();
 
-        const mapBtn = document.querySelector('.tb-group:nth-child(2) .tb-btn:nth-child(1)');
-        if(mapBtn) mapBtn.addEventListener('click', () => toggleMap(!isMapOpen));
+        //const mapBtn = document.querySelector('.tb-group:nth-child(2) .tb-btn:nth-child(1)');
+        //if(mapBtn) mapBtn.addEventListener('click', () => toggleMap(!isMapOpen));
 
         setupTableSelection('coil-tbody', false);
     });
@@ -2512,6 +2590,94 @@ document.addEventListener('keydown', function(e) {
         }
     };
 })();
+
+// =========================================================
+// ФИЛЬТР СТОРОН РУЛОНА (ЧЕРЕЗ УНИКАЛЬНЫЕ ID)
+// =========================================================
+(function initMapSideFilters() {
+    const style = document.createElement('style');
+    style.innerHTML = `
+        .tb-btn.active-tool {
+            border-bottom: 1px solid white; border-right: 1px solid white;
+            border-top: 1px solid var(--sys-border); border-left: 1px solid var(--sys-border);
+            background-color: #d4d0c8;
+        }
+        #map-lanes-inner.view-top-only { grid-template-columns: 1.2fr 3.5fr 1.2fr 130px 35px !important; }
+        #map-lanes-inner.view-top-only > div:nth-child(6),
+        #map-lanes-inner.view-top-only > div:nth-child(7),
+        #map-lanes-inner.view-top-only > div:nth-child(8),
+        #map-lanes-inner.view-top-only > div:nth-child(14),
+        #map-lanes-inner.view-top-only > div:nth-child(15),
+        #map-lanes-inner.view-top-only > div:nth-child(16) { display: none !important; }
+
+        #map-lanes-inner.view-bottom-only { grid-template-columns: 130px 35px 1.2fr 3.5fr 1.2fr !important; }
+        #map-lanes-inner.view-bottom-only > div:nth-child(1),
+        #map-lanes-inner.view-bottom-only > div:nth-child(2),
+        #map-lanes-inner.view-bottom-only > div:nth-child(3),
+        #map-lanes-inner.view-bottom-only > div:nth-child(9),
+        #map-lanes-inner.view-bottom-only > div:nth-child(10),
+        #map-lanes-inner.view-bottom-only > div:nth-child(11) { display: none !important; }
+
+        #map-view-panel.shrunk-mode .map-unified-grid.view-top-only,
+        #map-view-panel.shrunk-mode .map-unified-grid.view-bottom-only { min-width: 600px; }
+    `;
+    document.head.appendChild(style);
+
+    // Берем кнопки точно по ID
+    let btnTop = document.getElementById('btn-side-top');
+    let btnBoth = document.getElementById('btn-side-both');
+    let btnBottom = document.getElementById('btn-side-bottom');
+    const mapGrid = document.getElementById('map-lanes-inner');
+
+    // Клонируем элементы, чтобы подчистить старые обработчики,
+    // которые были привязаны через JS к nth-child селекторам
+    function safeClone(el) {
+        if (!el) return null;
+        let clone = el.cloneNode(true);
+        el.parentNode.replaceChild(clone, el);
+        return clone;
+    }
+
+    btnTop = safeClone(btnTop);
+    btnBoth = safeClone(btnBoth);
+    btnBottom = safeClone(btnBottom);
+
+    function setActiveButton(activeBtn) {
+        if(btnTop) btnTop.classList.remove('active-tool');
+        if(btnBoth) btnBoth.classList.remove('active-tool');
+        if(btnBottom) btnBottom.classList.remove('active-tool');
+        if(activeBtn) activeBtn.classList.add('active-tool');
+    }
+
+    function showTopOnly() {
+        if (!isMapOpen) window.toggleMap(true);
+        mapGrid.classList.remove('view-bottom-only');
+        mapGrid.classList.add('view-top-only');
+        setActiveButton(btnTop);
+    }
+
+    function showBothSides() {
+        if (!isMapOpen) window.toggleMap(true);
+        mapGrid.classList.remove('view-top-only', 'view-bottom-only');
+        setActiveButton(btnBoth);
+    }
+
+    function showBottomOnly() {
+        if (!isMapOpen) window.toggleMap(true);
+        mapGrid.classList.remove('view-top-only');
+        mapGrid.classList.add('view-bottom-only');
+        setActiveButton(btnBottom);
+    }
+
+    // Подключаем функционал
+    if (btnTop) btnTop.addEventListener('click', showTopOnly);
+    if (btnBoth) {
+        btnBoth.addEventListener('click', showBothSides);
+        btnBoth.classList.add('active-tool'); // по умолчанию включены две стороны
+    }
+    if (btnBottom) btnBottom.addEventListener('click', showBottomOnly);
+})();
+
 </script>
 </body>
 </html>
