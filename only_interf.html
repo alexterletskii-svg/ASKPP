@@ -2843,7 +2843,6 @@ function modalSetStandard() {
 }
 
 function modalApplyClasses() {
-    // Кнопка "ОК". Принимаем изменения.
     const checkboxes = document.querySelectorAll('#modal-class-list input[type="checkbox"]');
 
     checkboxes.forEach(cb => {
@@ -2854,7 +2853,6 @@ function modalApplyClasses() {
             block.classList.remove('active', 'inactive', 'yellow');
 
             if (cb.checked) {
-                // Если включен - присваиваем active (а изолятору - yellow, как у вас задумано)
                 if (cls === "Электроизол") block.classList.add('yellow');
                 else block.classList.add('active');
             } else {
@@ -2863,7 +2861,6 @@ function modalApplyClasses() {
         }
     });
 
-    // Обязательно вызываем вашу родную функцию применения фильтров, чтобы отрисовать карту!
     applyFilters();
     closeClassModal();
 }
