@@ -645,6 +645,59 @@
     border-bottom: 1px solid #ffffff;
     margin: 3px 2px;
 }
+
+         /* --- Стили для модального окна Классов --- */
+        .class-filter-layout {
+            display: flex;
+            flex-direction: row;
+            height: 300px;
+            padding: 8px;
+            gap: 12px;
+            background-color: var(--sys-gray);
+        }
+
+        .class-list-box {
+            flex: 1;
+            background-color: #ffffff;
+            border-top: 2px solid #808080; border-left: 2px solid #808080;
+            border-bottom: 1px solid #ffffff; border-right: 1px solid #ffffff;
+            overflow-y: auto;
+            padding: 2px;
+        }
+
+        /* Выравнивание текста в списке - как на скриншоте (сетка) */
+        .class-row {
+            display: grid;
+            grid-template-columns: 20px 140px 60px 60px;
+            align-items: center;
+            padding: 1px 0;
+            cursor: pointer;
+        }
+        .class-row:hover { background-color: #e5f1fb; }
+        .class-row input { margin-left: 2px; cursor: pointer; }
+
+        .class-btn-column {
+            width: 85px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .class-btn-column button {
+            width: 100%;
+            height: 22px;
+            background: var(--sys-gray);
+            border-top: 1px solid white; border-left: 1px solid white;
+            border-bottom: 2px solid #404040; border-right: 2px solid #404040;
+            cursor: pointer; color: black;
+        }
+        .class-btn-column button:active {
+            border-top: 2px solid #404040; border-left: 2px solid #404040;
+            border-bottom: 1px solid white; border-right: 1px solid white;
+            padding: 1px 0 0 1px;
+        }
+        .btn-spacer {
+            flex: 1; /* Расталкивает верхние и нижние кнопки */
+        }
     </style>
 </head>
 <body>
@@ -747,7 +800,7 @@
 
             <hr class="menu-separator">
 
-            <div class="dropdown-item" onclick="mapMenuAction('Выбрать класс')">Выбрать класс дефектов...</div>
+            <div class="dropdown-item" onclick="openClassSelectModal()">Выбрать класс дефектов...</div>
             <div class="dropdown-item" onclick="mapMenuAction('Выбрать камеры')">Выбрать камеры ...</div>
             <div class="dropdown-item" onclick="mapMenuAction('Выбор градации')">Выбор градации ...</div>
             <div class="dropdown-item" onclick="mapMenuAction('Только дефекты')">Only Defects CLASS&lt;&gt;Тестовые классы</div>
@@ -854,7 +907,7 @@
         <div class="tb-btn" title="Перезагрузка данных рулона" onclick="toggleGrid()">
             <img src="picture\ico\ico_9.png" alt="Сетка" style="width:14px;height:14px;">
         </div>
-        <div class="tb-btn" title="Выбрать класс дефекта" onclick="toggleSplit()">
+       <div class="tb-btn" title="Выбрать класс дефекта" onclick="openClassModal()">
             <img src="picture\ico\ico_10.png" alt="Разделение" style="width:14px;height:14px;">
         </div>
     </div>
@@ -1144,8 +1197,54 @@
         </div>
     </div>
 
+    <!-- Модальное окно выбора класса дефектов -->
+    <div id="class-filter-modal" class="modal-overlay">
+        <div class="modal-window" style="width: 480px;">
+            <div class="modal-header">
+                <span>Выбрать класс дефектов</span>
+                <button class="modal-close" onclick="closeClassModal()">×</button>
+            </div>
+            <div class="modal-body class-filter-layout">
+                <!-- Контейнер со списком чекбоксов -->
+                <div class="class-list-box">
+                    <div class="class-list-scroll" id="modal-class-list">
+                        <!-- Строки генерируются через JS -->
+                    </div>
+                </div>
+                <!-- Правая колонка с кнопками -->
+                <div class="class-btn-column">
+                    <button onclick="modalSetAllClasses(true)">Все</button>
+                    <button onclick="modalSetAllClasses(false)">Нет</button>
+                    <div class="btn-spacer"></div>
+                    <button onclick="modalSetStandard()">Стандарт</button>
+                    <button onclick="modalApplyClasses()">Ok</button>
+                    <button onclick="closeClassModal()">Выход</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 <script>
+
+
+
+
+    // =========================================================
+// ЗАГЛУШКИ ДЛЯ НЕДОДЕЛАННЫХ КНОПОК ТУЛБАРА
+// =========================================================
+window.showStatus = function() { console.log('Функция showStatus еще не реализована'); };
+window.showChart = function() { console.log('Функция showChart еще не реализована'); };
+window.toggleGrid = function() { console.log('Функция toggleGrid еще не реализована'); };
+window.showTools = function() { console.log('Функция showTools еще не реализована'); };
+window.showHelp = function() { alert('Справка еще не написана'); };
+window.toggleScale = function() { console.log('Функция toggleScale еще не реализована'); };
+window.selectTool = function(tool) { console.log('Выбран инструмент:', tool); };
+
+
+
+
+
+
     const ALL_CLASSES = [
         "Сквозной разр", "Кромочный де", "Складка", "Неоднородный", "Окисление",
         "Смятая повер", "Слиточная пл", "Царапина", "Пятно ржавчи", "Пятно слипов",
@@ -2274,12 +2373,16 @@ function toggleRadioMenu(clickedElement) {
     console.log('Выбрана опция:', clickedElement.innerText.replace('✓ ', '').trim());
 }
 
-// Заглушка для выполнения действий из одиночных пунктов меню "Карта рулона"
+// Обработчик пунктов меню
 function mapMenuAction(actionName) {
-    console.log('Выполняется действие:', actionName);
-    closeAllMenus(); // Закрываем все открытые меню (уже есть в вашем коде)
-}
+    closeAllMenus();
 
+    if (actionName === 'Выбрать класс') {
+        openClassModal(); // Вызываем наше новое окно
+    } else {
+        console.log('Выполняется действие:', actionName);
+    }
+}
 
 
 // Функции для меню "Режим"
@@ -2694,6 +2797,99 @@ document.addEventListener('keydown', function(e) {
     // Подсвечиваем Ярлыки по умолчанию
     if(btnLabel) btnLabel.classList.add('active-tool');
 })();
+
+
+    // =========================================================
+// ЛОГИКА МОДАЛЬНОГО ОКНА "ВЫБРАТЬ КЛАСС ДЕФЕКТОВ"
+// =========================================================
+
+function openClassModal() {
+    const modal = document.getElementById('class-filter-modal');
+    const listContainer = document.getElementById('modal-class-list');
+
+    // 1. Считаем фактическое количество дефектов каждого класса на текущем рулоне
+    const defectCounts = {};
+    ALL_CLASSES.forEach(cls => defectCounts[cls] = 0);
+
+    if (currentActiveCoilData && currentActiveCoilData.defects) {
+        currentActiveCoilData.defects.forEach(d => {
+            if (defectCounts[d.classCode] !== undefined) {
+                defectCounts[d.classCode]++;
+            }
+        });
+    }
+
+    // 2. Генерация списка (смотрим статус активен/не активен у блоков на правой панели)
+    listContainer.innerHTML = '';
+    ALL_CLASSES.forEach((cls, index) => {
+        // Ищем оригинальный блок в правой панели, чтобы узнать, включен ли он сейчас
+        const rightPanelBlock = document.querySelector(`#content-classes .filter-block[data-value="${cls}"]`);
+        const isChecked = rightPanelBlock && !rightPanelBlock.classList.contains('inactive');
+
+        const row = document.createElement('div');
+        row.className = 'class-row';
+
+        // Клик по всей строке переключает чекбокс
+        row.onclick = function(e) {
+            if(e.target.tagName !== 'INPUT') {
+                const cb = this.querySelector('input');
+                cb.checked = !cb.checked;
+            }
+        };
+
+        row.innerHTML = `
+            <input type="checkbox" id="cb-modal-${index}" value="${cls}" ${isChecked ? 'checked' : ''}>
+            <label for="cb-modal-${index}">Класс : ${cls.substring(0,10)}</label>
+            <div>(ID: ${index})</div>
+            <div>${defectCounts[cls]}</div>
+        `;
+        listContainer.appendChild(row);
+    });
+
+    modal.style.display = 'flex';
+}
+
+function closeClassModal() {
+    document.getElementById('class-filter-modal').style.display = 'none';
+}
+
+function modalSetAllClasses(state) {
+    // Включить Все / Выключить Всё
+    document.querySelectorAll('#modal-class-list input[type="checkbox"]').forEach(cb => cb.checked = state);
+}
+
+function modalSetStandard() {
+    // Кнопка "Стандарт" - включает только ТОР 5
+    document.querySelectorAll('#modal-class-list input[type="checkbox"]').forEach(cb => {
+        cb.checked = TOP_5_CLASSES.includes(cb.value);
+    });
+}
+
+function modalApplyClasses() {
+    // Кнопка "ОК". Принимаем изменения.
+    const checkboxes = document.querySelectorAll('#modal-class-list input[type="checkbox"]');
+
+    checkboxes.forEach(cb => {
+        const cls = cb.value;
+        const block = document.querySelector(`#content-classes .filter-block[data-value="${cls}"]`);
+
+        if (block) {
+            block.classList.remove('active', 'inactive', 'yellow');
+
+            if (cb.checked) {
+                // Если включен - присваиваем active (а изолятору - yellow, как у вас задумано)
+                if (cls === "Электроизол") block.classList.add('yellow');
+                else block.classList.add('active');
+            } else {
+                block.classList.add('inactive');
+            }
+        }
+    });
+
+    // Обязательно вызываем вашу родную функцию применения фильтров, чтобы отрисовать карту!
+    applyFilters();
+    closeClassModal();
+}
 </script>
 </body>
 </html>
