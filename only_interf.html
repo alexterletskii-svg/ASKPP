@@ -2210,11 +2210,11 @@ function toggleDefectView(viewType) {
             case 'Показатель "регион интересов" (Rol)': viewTypeKey = 'roi'; break;
         }
 
-        if (defectViewStates[vertexType]) {
-            item.classList.add('checked');
-        } else {
-            item.classList.remove('checked');
-        }
+        if (defectViewStates[viewTypeKey]) {
+    item.classList.add('checked');
+} else {
+    item.classList.remove('checked');
+}
     });
 
     // Применяем настройки отображения
@@ -2396,13 +2396,6 @@ document.addEventListener('keydown', function(e) {
         currentImageAction();
     }
 });
-
-
-
-
 </script>
-
-
-
 </body>
 </html>
