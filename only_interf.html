@@ -815,81 +815,6 @@
 </div>
         </div>
 
-<!--      <div class="toolbar">-->
-<!--    <div class="tb-group">-->
-<!--        <div class="tb-btn" title="Поиск рулона" onclick="openRollModal()">-->
-<!--            <img src="picture\ico\ico_1.png" alt="Рулон" style="width:14px;height:14px;">-->
-<!--        </div>-->
-<!--        <div class="tb-btn" title="Только верхняя сторона" onclick="openRollModal()">-->
-<!--            <img src="picture\ico\ico_2.png" alt="Открыть" style="width:14px;height:14px;">-->
-<!--        </div>-->
-<!--        <div class="tb-btn" title="Две стороны" onclick="saveCoil()">-->
-<!--            <img src="picture\ico\ico_3.png" alt="Сохранить" style="width:14px;height:14px;">-->
-<!--        </div>-->
-<!--    </div>-->
-
-<!--    <div class="tb-group">-->
-<!--        <div class="tb-btn" title="Только нижняя сторона" onclick="toggleMap(true)">-->
-<!--            <img src="picture\ico\ico_4.png" alt="Карта 1" style="width:14px;height:14px;">-->
-<!--        </div>-->
-<!--        <div class="tb-btn" title="Показать дефекты в виде ярлыков" onclick="toggleMap(true)">-->
-<!--            <img src="picture\ico\ico_5.png" alt="Карта 2" style="width:14px;height:14px;">-->
-<!--        </div>-->
-<!--        <div class="tb-btn" title="Показать точный размер и позицию дефектов" onclick="toggleMap(true)">-->
-<!--            <img src="picture\ico\ico_6.png" alt="Карта 3" style="width:14px;height:14px;">-->
-<!--        </div>-->
-<!--    </div>-->
-
-<!--    <div class="tb-group">-->
-<!--        <div class="tb-btn" title="Показать таблицу дефектов" onclick="showStatus()">-->
-<!--            <img src="picture\ico\ico_7.png" alt="Статус" style="width:14px;height:14px;">-->
-<!--        </div>-->
-<!--        <div class="tb-btn" title="Показать данные рулона" onclick="showChart()">-->
-<!--            <img src="picture\ico\ico_8.png" alt="График" style="width:14px;height:14px;">-->
-<!--        </div>-->
-<!--        <div class="tb-btn" title="Перезагрузка данных рулона" onclick="toggleGrid()">-->
-<!--            <img src="picture\ico\ico_9.png" alt="Сетка" style="width:14px;height:14px;">-->
-<!--        </div>-->
-<!--        <div class="tb-btn" title="Выбрать класс дефекта" onclick="toggleSplit()">-->
-<!--            <img src="picture\ico\ico_10.png" alt="Разделение" style="width:14px;height:14px;">-->
-<!--        </div>-->
-<!--    </div>-->
-
-<!--    <div class="tb-group">-->
-<!--        <div class="tb-btn" title="Выбор камеры" onclick="showTools()">-->
-<!--            <img src="picture\ico\ico_11.png" alt="Инструмент" style="width:14px;height:14px;">-->
-<!--        </div>-->
-<!--        <div class="tb-btn" title="Исходное изображение дефекта" onclick="showHelp()">-->
-<!--            <img src="picture\ico\ico_12.png" alt="Вопрос" style="width:14px;height:14px;">-->
-<!--        </div>-->
-<!--        <div class="tb-btn" title="Выровнять изображение дефекта" onclick="toggleScale()">-->
-<!--            <img src="picture\ico\ico_13.png" alt="Шкала" style="width:14px;height:14px;">-->
-<!--        </div>-->
-<!--    </div>-->
-
-<!--    <div class="tb-group">-->
-<!--        <div class="tb-btn" title="Растянуть изображение дефекта" onclick="selectTool('point')">-->
-<!--            <img src="picture\ico\ico_14.png" alt="Точка" style="width:14px;height:14px;">-->
-<!--        </div>-->
-<!--        <div class="tb-btn" title="Фильтр трехмерного изображения дефекта" onclick="selectTool('area')">-->
-<!--            <img src="picture\ico\ico_15.png" alt="Область" style="width:14px;height:14px;">-->
-<!--        </div>-->
-<!--        <div class="tb-btn" title="Rol в изображении дефектов включен/выключен" onclick="selectTool('spot1')">-->
-<!--            <img src="picture\ico\ico_16.png" alt="Пятно 1" style="width:14px;height:14px;">-->
-<!--        </div>-->
-<!--        <div class="tb-btn" title="Карта рулона большая/маленькая" onclick="selectTool('spot2')">-->
-<!--            <img src="picture\ico\ico_17.png" alt="Пятно 2" style="width:14px;height:14px;">-->
-<!--        </div>-->
-<!--    </div>-->
-
-<!--    <div class="tb-group">-->
-<!--        <div class="tb-btn" title="Напечатать протокол" onclick="selectTool('wave')">-->
-<!--            <img src="picture\ico\ico_18.png" alt="Волна" style="width:14px;height:14px;">-->
-<!--        </div>-->
-<!--    </div>-->
-<!--</div>-->
-<!--    </div>-->
-
 
     <div class="toolbar">
     <div class="tb-group">
@@ -911,16 +836,16 @@
         <div class="tb-btn" id="btn-side-bottom" title="Только нижняя сторона">
             <img src="picture\ico\ico_4.png" alt="Карта 1" style="width:14px;height:14px;">
         </div>
-        <div class="tb-btn" title="Показать дефекты в виде ярлыков" onclick="toggleMap(true)">
+        <div class="tb-btn" id="btn-view-label" title="Показать дефекты в виде ярлыков">
             <img src="picture\ico\ico_5.png" alt="Карта 2" style="width:14px;height:14px;">
         </div>
-        <div class="tb-btn" title="Показать точный размер и позицию дефектов" onclick="toggleMap(true)">
+        <div class="tb-btn" id="btn-view-real" title="Показать точный размер и позицию дефектов">
             <img src="picture\ico\ico_6.png" alt="Карта 3" style="width:14px;height:14px;">
         </div>
     </div>
 
     <div class="tb-group">
-        <div class="tb-btn" title="Показать таблицу дефектов" onclick="showStatus()">
+        <div class="tb-btn" id="btn-view-table" title="Показать таблицу дефектов">
             <img src="picture\ico\ico_7.png" alt="Статус" style="width:14px;height:14px;">
         </div>
         <div class="tb-btn" title="Показать данные рулона" onclick="showChart()">
@@ -2678,6 +2603,97 @@ document.addEventListener('keydown', function(e) {
     if (btnBottom) btnBottom.addEventListener('click', showBottomOnly);
 })();
 
+    // =========================================================
+// ПЕРЕКЛЮЧЕНИЯ РЕЖИМОВ КАРТЫ (ЯРЛЫК / РЕАЛЬНЫЙ / ТАБЛИЦА)
+// =========================================================
+(function initViewModes() {
+    // 1. Находим наши кнопки по свежим ID
+    let btnLabel = document.getElementById('btn-view-label');
+    let btnReal  = document.getElementById('btn-view-real');
+    let btnTable = document.getElementById('btn-view-table');
+
+    // Клонируем, чтобы убить скрытые JS-перехватчики и старые onclick
+    function safeClone(el) {
+        if (!el) return null;
+        el.removeAttribute('onclick'); // убиваем HTML атрибуты, если они остались
+        let clone = el.cloneNode(true);
+        el.parentNode.replaceChild(clone, el);
+        return clone;
+    }
+
+    btnLabel = safeClone(btnLabel);
+    btnReal  = safeClone(btnReal);
+    btnTable = safeClone(btnTable);
+
+    // Подсветка активной кнопки в ВЕРХНЕМ тулбаре
+    function setActiveToolBtn(activeBtn) {
+        [btnLabel, btnReal, btnTable].forEach(btn => {
+            if(btn) btn.classList.remove('active-tool');
+        });
+        if(activeBtn) activeBtn.classList.add('active-tool');
+    }
+
+    // Подсветка активной кнопки в НИЖНЕМ статус-баре
+    function syncStatusBar(modeStr) {
+        const sbReal = document.getElementById('btn-real');
+        const sbPanels = Array.from(document.querySelectorAll('.sb-right-section .sb-panel'));
+        const sbLabels = sbPanels.find(b => b.innerText.trim() === 'Ярлык');
+        const sbTable = sbPanels.find(b => b.innerText.trim() === 'Таблица');
+
+        if(sbReal) sbReal.classList.remove('active-tab');
+        if(sbLabels) sbLabels.classList.remove('active-tab');
+        if(sbTable) sbTable.classList.remove('active-tab');
+
+        if (modeStr === 'real' && sbReal) sbReal.classList.add('active-tab');
+        if (modeStr === 'label' && sbLabels) sbLabels.classList.add('active-tab');
+        if (modeStr === 'table' && sbTable) sbTable.classList.add('active-tab');
+    }
+
+    // --- ЛОГИКА РЕЖИМОВ ---
+
+    function setLabelMode() {
+        isRealMode = false;      // Отключаем истинные размеры
+        window.toggleMap(true);  // Включаем интерфейс карты (а не таблицы)
+        setActiveToolBtn(btnLabel);
+        syncStatusBar('label');
+
+        if (currentActiveCoilData) {
+            generateMapData(currentActiveCoilData); // перерисовываем ярлыки
+            applyFilters();
+        }
+    }
+
+    function setRealMode() {
+        isRealMode = true;       // Включаем истинные размеры (штриховка и длинные полосы)
+        window.toggleMap(true);  // Включаем интерфейс карты
+        setActiveToolBtn(btnReal);
+        syncStatusBar('real');
+
+        if (currentActiveCoilData) {
+            generateMapData(currentActiveCoilData); // перерисовываем в блоки
+            applyFilters();
+        }
+    }
+
+    function setTableMode() {
+        isRealMode = false;
+        window.toggleMap(false); // Выключаем карту, включаем табличный вид
+        setActiveToolBtn(btnTable);
+        syncStatusBar('table');
+
+        if (currentActiveCoilData) {
+            applyFilters();
+        }
+    }
+
+    // 2. Вешаем правильные события
+    if(btnLabel) btnLabel.addEventListener('click', setLabelMode);
+    if(btnReal) btnReal.addEventListener('click', setRealMode);
+    if(btnTable) btnTable.addEventListener('click', setTableMode);
+
+    // Подсвечиваем Ярлыки по умолчанию
+    if(btnLabel) btnLabel.classList.add('active-tool');
+})();
 </script>
 </body>
 </html>
