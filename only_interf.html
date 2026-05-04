@@ -699,6 +699,20 @@
         .btn-spacer {
             flex: 1; /* Расталкивает верхние и нижние кнопки */
         }
+
+
+/* Стили для пунктов меню "Редактировать" */
+#edit-menu .dropdown-item {
+    color: #a0a0a0;
+    text-shadow: 1px 1px 0 #fff;
+}
+
+#edit-menu .dropdown-item:hover {
+    background-color: #e5f1fb;
+    border: 1px solid #99c1e2;
+    text-shadow: none;
+    cursor: pointer;
+}
     </style>
 </head>
 <body>
@@ -726,8 +740,57 @@
         </div>
     </div>
 
-    <div class="menu-item">Редактировать</div>
-    <div class="menu-item">Обзор</div>
+<div class="menu-item" data-menu="edit">
+    Редактировать
+    <div class="dropdown-menu" id="edit-menu">
+        <div class="dropdown-item" onclick="editAction1()">
+            <span class="check-placeholder"></span>
+            <span>Добавить дефект (Ctrl+F11)</span>
+        </div>
+        <div class="dropdown-item" onclick="editAction2()">
+            <span class="check-placeholder"></span>
+            <span>Редактировать данные дефекта</span>
+        </div>
+        <div class="dropdown-item" onclick="editAction3()">
+            <span class="check-placeholder"></span>
+            <span>Удалить дефект</span>
+        </div>
+    </div>
+</div>
+
+
+<div class="menu-item" data-menu="overview">
+    Обзор
+    <div class="dropdown-menu" id="overview-menu">
+        <div class="dropdown-item disabled has-submenu">
+            <span>Состояние системы</span> <span class="submenu-arrow">▶</span>
+        </div>
+        <div class="dropdown-item" onclick="toggleLargeImageFromMenu()">Карта рулона большая/маленькая</div>
+
+        <hr class="menu-separator">
+
+        <div class="dropdown-item disabled">Информация о системе</div>
+        <div class="dropdown-item disabled">Последние дефекты</div>
+        <div class="dropdown-item disabled">Last Defect Image only</div>
+        <div class="dropdown-item disabled">Последние изображения дефекта</div>
+
+        <hr class="menu-separator">
+
+        <div class="dropdown-item" onclick="overviewAction('Параметры инспектируемого рулона')">Параметры инспектируемого рулона</div>
+        <div class="dropdown-item checked" onclick="toggleCheckMenu(this, 'Описание дефектов')">
+            Описание дефектов
+        </div>
+
+        <hr class="menu-separator">
+
+        <div class="dropdown-item" onclick="overviewAction('Показать тестовые классы')">Показать тестовые классы</div>
+    </div>
+</div>
+
+
+
+
+
     <div class="menu-item" data-menu="coil-map">
         Карта рулона
         <div class="dropdown-menu" id="coil-map-menu">
@@ -833,7 +896,32 @@
 </div>
 
 
-    <div class="menu-item">Система</div>
+    <div class="menu-item" data-menu="system">
+    Система
+    <div class="dropdown-menu" id="system-menu">
+        <div class="dropdown-item disabled">Старт - F2</div>
+        <div class="dropdown-item disabled">Пауза - F3</div>
+        <div class="dropdown-item disabled checked">Стоп - F4</div>
+        <div class="dropdown-item disabled">Добавить рулон - F11</div>
+        <div class="dropdown-item disabled">Старт следующего рулона - F12</div>
+
+        <hr class="menu-separator">
+
+        <div class="dropdown-item disabled">Перезагрузить параметры</div>
+
+        <hr class="menu-separator">
+
+        <div class="dropdown-item disabled">Записать секцию</div>
+
+        <hr class="menu-separator">
+
+        <div class="dropdown-item" onclick="systemAction('Статистика освещения')">Статистика освещения</div>
+    </div>
+</div>
+
+
+
+
     <div class="menu-item" data-menu="utils">
         Утилиты
          <div class="dropdown-menu" id="utils">
@@ -841,8 +929,63 @@
         </div>
 
     </div>
-    <div class="menu-item">Пользователь</div>
-    <div class="menu-item">Установки</div>
+
+
+   <div class="menu-item" data-menu="user">
+        Пользователь
+        <div class="dropdown-menu" id="user-menu">
+            <div class="dropdown-item" onclick="openLoginModal()">Новый пользователь</div>
+        </div>
+    </div>
+
+ <!-- Окно "Вход пользователя в базу данных" в современном системном стиле -->
+    <div id="login-modal" class="modal-overlay">
+        <!-- Используем inline-стили, чтобы отвязаться от старой квадратной рамки .modal-window -->
+        <div style="background-color: #f0f0f0; border: 1px solid #a0a0a0; border-radius: 6px; width: 340px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column;">
+
+            <!-- Современная системная шапка -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 12px 5px 12px;">
+                <span style="color: #000; font-size: 12px;">Вход пользователя в базу данных</span>
+                <button onclick="closeLoginModal()" style="background: transparent; border: none; font-size: 18px; color: #555; cursor: pointer; padding: 0; line-height: 10px;" onmouseover="this.style.color='#000'" onmouseout="this.style.color='#555'">×</button>
+            </div>
+
+            <!-- Тело окна -->
+            <div style="padding: 15px 25px 25px 25px;">
+
+                <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                    <label style="width: 135px; font-size: 12px; color: black;">Имя пользователя</label>
+                    <input type="text" id="login-username" value="Admin" style="flex: 1; height: 21px; padding: 2px 4px; box-sizing: border-box; background: #fff; border-top: 1px solid #808080; border-left: 1px solid #808080; border-bottom: 1px solid #ffffff; border-right: 1px solid #ffffff; outline: none; font-size: 12px;">
+                </div>
+
+                <div style="display: flex; align-items: center; margin-bottom: 25px;">
+                    <label style="width: 135px; font-size: 12px; color: black;">Пароль</label>
+                    <input type="password" id="login-password" style="flex: 1; height: 21px; padding: 2px 4px; box-sizing: border-box; background: #fff; border-top: 1px solid #808080; border-left: 1px solid #808080; border-bottom: 1px solid #ffffff; border-right: 1px solid #ffffff; outline: none; font-size: 12px;">
+                </div>
+
+                <div style="display: flex; justify-content: center; gap: 35px;">
+                    <button onclick="submitLogin()" style="width: 75px; height: 24px; cursor: pointer; color: black; background: #f0f0f0; border-top: 1px solid white; border-left: 1px solid white; border-bottom: 1px solid #808080; border-right: 1px solid #808080; font-size: 12px;" onmousedown="this.style.borderTop='1px solid #808080'; this.style.borderLeft='1px solid #808080'; this.style.borderBottom='1px solid white'; this.style.borderRight='1px solid white';" onmouseup="this.style.borderTop='1px solid white'; this.style.borderLeft='1px solid white'; this.style.borderBottom='1px solid #808080'; this.style.borderRight='1px solid #808080';">Ok</button>
+                    <button onclick="closeLoginModal()" style="width: 75px; height: 24px; cursor: pointer; color: black; background: #f0f0f0; border-top: 1px solid white; border-left: 1px solid white; border-bottom: 1px solid #808080; border-right: 1px solid #808080; font-size: 12px;" onmousedown="this.style.borderTop='1px solid #808080'; this.style.borderLeft='1px solid #808080'; this.style.borderBottom='1px solid white'; this.style.borderRight='1px solid white';" onmouseup="this.style.borderTop='1px solid white'; this.style.borderLeft='1px solid white'; this.style.borderBottom='1px solid #808080'; this.style.borderRight='1px solid #808080';">Выход</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+     <div class="menu-item" data-menu="settings">
+        Установки
+        <div class="dropdown-menu" id="settings-menu">
+            <div class="dropdown-item" onclick="settingsAction('Изображения дефектов')">Изображения дефектов</div>
+            <div class="dropdown-item disabled">Captured Images</div>
+
+            <hr class="menu-separator">
+
+            <div class="dropdown-item" onclick="settingsAction('Конфигурация системы')">Конфигурация системы</div>
+            <div class="dropdown-item" onclick="settingsAction('Customize')">Customize</div>
+        </div>
+    </div>
+
+
 
     <div class="menu-item" data-menu="info">
         Информация
@@ -2865,6 +3008,112 @@ function modalApplyClasses() {
 
     applyFilters();
     closeClassModal();
+}
+
+
+
+<!--    пункт меню редактировать заглушки-->
+    function editAction1() {
+    console.log('Действие 1');
+    closeAllMenus();
+}
+
+function editAction2() {
+    console.log('Действие 2');
+    closeAllMenus();
+}
+
+function editAction3() {
+    console.log('Действие 3');
+    closeAllMenus();
+}
+
+
+    // =========================================================
+// Функции для меню "Обзор"
+// =========================================================
+
+// Заглушка для простых кликов
+function overviewAction(actionName) {
+    console.log('Выбрано в меню Обзор:', actionName);
+    closeAllMenus();
+}
+
+// Переключатель с галочкой
+function toggleCheckMenu(element, actionName) {
+    element.classList.toggle('checked');
+    console.log('Переключено свойство:', actionName);
+    closeAllMenus();
+}
+
+// Связываем пункт меню с уже существующей функцией "Большой/Обычный"
+function toggleLargeImageFromMenu() {
+    const btnBig = Array.from(document.querySelectorAll('.sb-left-section .sb-panel'))
+                    .find(b => b.innerText.trim() === 'Большой' || b.innerText.trim() === 'Обычный');
+    if (btnBig) {
+        btnBig.click();
+    } else {
+        console.log('Кнопка Большой/Обычный не найдена');
+    }
+    closeAllMenus();
+}
+
+
+
+
+// =========================================================
+// Функции для меню "Система"
+// =========================================================
+function systemAction(actionName) {
+    console.log('Выбрано в меню Система:', actionName);
+
+    if (actionName === 'Статистика освещения') {
+        alert('Заглушка: Открытие окна статистики освещения');
+    }
+
+    closeAllMenus();
+}
+
+    // =========================================================
+// Функции для меню "Пользователь" (Окно логина)
+// =========================================================
+
+function openLoginModal() {
+    closeAllMenus(); // Закрываем выпадающие списки
+    document.getElementById('login-modal').style.display = 'flex';
+
+    // Делаем фокус на поле и выделяем текст "Admin", как на вашем скриншоте
+    const userField = document.getElementById('login-username');
+    userField.focus();
+    userField.select();
+}
+
+function closeLoginModal() {
+    document.getElementById('login-modal').style.display = 'none';
+    document.getElementById('login-password').value = ''; // Очищаем пароль при закрытии
+}
+
+function submitLogin() {
+    const user = document.getElementById('login-username').value;
+    const pass = document.getElementById('login-password').value;
+
+    console.log(`[Авторизация] Пользователь: ${user}, Пароль: ${pass}`);
+    // Здесь можно дописать реальную проверку пароля, если потребуется
+
+    closeLoginModal();
+}
+
+
+    // =========================================================
+// Функции для меню "Установки"
+// =========================================================
+function settingsAction(actionName) {
+    console.log('Выбрано в меню Установки:', actionName);
+
+    // В будущем здесь можно добавить логику открытия соответствующих окон настроек
+    // alert('Открытие настроек: ' + actionName);
+
+    closeAllMenus();
 }
 </script>
 </body>
