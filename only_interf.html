@@ -1041,14 +1041,114 @@
     </div>
 
     <div class="tb-group">
-        <div class="tb-btn" title="Выбор камеры" onclick="showTools()">
+
+        <div class="tb-btn" title="Выбор камеры" onclick="openCameraModal()">
             <img src="picture\ico\ico_11.png" alt="Инструмент" style="width:14px;height:14px;">
         </div>
+
+
+
         <div class="tb-btn" title="Исходное изображение дефекта" onclick="showHelp()">
             <img src="picture\ico\ico_12.png" alt="Вопрос" style="width:14px;height:14px;">
         </div>
         <div class="tb-btn" title="Выровнять изображение дефекта" onclick="toggleScale()">
             <img src="picture\ico\ico_13.png" alt="Шкала" style="width:14px;height:14px;">
+        </div>
+    </div>
+
+
+ <!-- Окно "Выбрать камеры" (Оригинальный классический вид) -->
+    <div id="camera-modal" class="modal-overlay">
+        <style>
+            .cam-modal-btn {
+                width: 85px; height: 23px; cursor: pointer; color: black; background: #f0f0f0;
+                border-top: 1px solid white; border-left: 1px solid white;
+                border-bottom: 2px solid #808080; border-right: 2px solid #808080;
+                font-size: 11px; font-family: Tahoma, sans-serif; position: relative;
+            }
+            .cam-modal-btn:active {
+                border-top: 2px solid #808080; border-left: 2px solid #808080;
+                border-bottom: 1px solid white; border-right: 1px solid white;
+                padding-top: 1px; padding-left: 1px;
+            }
+
+            /* Пунктирная рамка фокуса у кнопки OK (как на скриншоте) */
+            .cam-modal-btn.focus-dotted::after {
+                content: ''; position: absolute;
+                top: 2px; left: 2px; right: 3px; bottom: 3px;
+                border: 1px dotted #000; pointer-events: none;
+            }
+
+            /* Строка списка */
+            .cam-cb-row {
+                display: flex; align-items: center; font-size: 11px; font-family: Tahoma, sans-serif;
+                margin-bottom: 1px; cursor: default; padding-left: 2px; white-space: nowrap; color: #000;
+            }
+
+            /* Кастомные классические чекбоксы (Win32) */
+            .cam-cb-row input[type="checkbox"] {
+                display: none; /* Скрываем современные чекбоксы браузера */
+            }
+            .classic-cb {
+                width: 11px; height: 11px; background: #fff;
+                border-top: 1px solid #808080; border-left: 1px solid #808080;
+                border-bottom: 1px solid #fff; border-right: 1px solid #fff;
+                display: inline-flex; align-items: center; justify-content: center;
+                margin-right: 4px; box-shadow: inset 1px 1px 0 #000;
+            }
+            /* Отрисовка галочки */
+            .cam-cb-row input[type="checkbox"]:checked + .classic-cb::after {
+                content: '✔'; font-size: 10px; font-weight: bold; color: #000;
+                margin-top: -1px; margin-left: 1px;
+            }
+
+            /* Фиксированная ширина столбцов для идеального выравнивания как на скрине */
+            .cc-col1 { display: inline-block; width: 62px; }
+            .cc-col2 { display: inline-block; width: 22px; }
+            .cc-col3 { display: inline-block; width: 105px; }
+        </style>
+
+        <div style="background-color: #f0f0f0; border: 1px solid #a0a0a0; border-radius: 6px; width: 440px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column;">
+
+            <!-- Шапка окна -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 12px 5px 12px;">
+                <span style="color: #000; font-size: 11px;">Выбрать камеры</span>
+                <button onclick="closeCameraModal()" style="background: transparent; border: none; font-size: 16px; color: #555; cursor: pointer; padding: 0; line-height: 10px;" onmouseover="this.style.color='#000'" onmouseout="this.style.color='#555'">×</button>
+            </div>
+
+            <!-- Тело окна -->
+            <div style="padding: 10px 15px 15px 15px; display: flex; gap: 15px; height: 310px;">
+
+                <!-- Список камер -->
+                <div style="flex: 1; background: #fff; border-top: 2px solid #808080; border-left: 2px solid #808080; border-bottom: 2px solid #fff; border-right: 2px solid #fff; overflow: hidden; padding: 4px;" id="modal-camera-list">
+                    <label class="cam-cb-row"><input type="checkbox" value="01 Низ LF"><span class="classic-cb"></span><span class="cc-col1">Камера : 1</span><span class="cc-col2">LF</span><span class="cc-col3">Обратная сторона</span><span>608 - 1614</span></label>
+                    <label class="cam-cb-row"><input type="checkbox" value="02 Низ LF"><span class="classic-cb"></span><span class="cc-col1">Камера : 2</span><span class="cc-col2">LF</span><span class="cc-col3">Обратная сторона</span><span>191 - 1198</span></label>
+                    <label class="cam-cb-row"><input type="checkbox" value="03 Низ RF"><span class="classic-cb"></span><span class="cc-col1">Камера : 3</span><span class="cc-col2">RF</span><span class="cc-col3">Обратная сторона</span><span>427 - 1437</span></label>
+                    <label class="cam-cb-row"><input type="checkbox" value="04 Низ RF"><span class="classic-cb"></span><span class="cc-col1">Камера : 4</span><span class="cc-col2">RF</span><span class="cc-col3">Обратная сторона</span><span>0 - 1008</span></label>
+                    <label class="cam-cb-row"><input type="checkbox" value="05 Верх LF"><span class="classic-cb"></span><span class="cc-col1">Камера : 5</span><span class="cc-col2">LF</span><span class="cc-col3">Лицевая сторона</span><span>18 - 1030</span></label>
+                    <label class="cam-cb-row"><input type="checkbox" value="06 Верх LF"><span class="classic-cb"></span><span class="cc-col1">Камера : 6</span><span class="cc-col2">LF</span><span class="cc-col3">Лицевая сторона</span><span>440 - 1451</span></label>
+                    <label class="cam-cb-row"><input type="checkbox" value="07 Верх RF"><span class="classic-cb"></span><span class="cc-col1">Камера : 7</span><span class="cc-col2">RF</span><span class="cc-col3">Лицевая сторона</span><span>206 - 1214</span></label>
+                    <label class="cam-cb-row"><input type="checkbox" value="08 Верх RF"><span class="classic-cb"></span><span class="cc-col1">Камера : 8</span><span class="cc-col2">RF</span><span class="cc-col3">Лицевая сторона</span><span>633 - 1638</span></label>
+                    <label class="cam-cb-row"><input type="checkbox" value="09 Верх BF"><span class="classic-cb"></span><span class="cc-col1">Камера : 9</span><span class="cc-col2">BF</span><span class="cc-col3">Лицевая сторона</span><span>99 - 546</span></label>
+                    <label class="cam-cb-row"><input type="checkbox" value="10 Верх BF"><span class="classic-cb"></span><span class="cc-col1">Камера : 10</span><span class="cc-col2">BF</span><span class="cc-col3">Лицевая сторона</span><span>475 - 922</span></label>
+                    <label class="cam-cb-row"><input type="checkbox" value="11 Верх BF"><span class="classic-cb"></span><span class="cc-col1">Камера : 11</span><span class="cc-col2">BF</span><span class="cc-col3">Лицевая сторона</span><span>848 - 1295</span></label>
+                </div>
+
+                <!-- Кнопки управления справа -->
+                <div style="width: 85px; display: flex; flex-direction: column; gap: 6px;">
+                    <button class="cam-modal-btn" onclick="camModalSelect('all')"><u>B</u>ce</button>
+                    <button class="cam-modal-btn" onclick="camModalSelect('none')"><u>H</u>ет</button>
+                    <button class="cam-modal-btn" onclick="camModalSelect('LF')">LF</button>
+                    <button class="cam-modal-btn" onclick="camModalSelect('RF')">RF</button>
+                    <button class="cam-modal-btn" onclick="camModalSelect('BF')">BF</button>
+
+                    <div style="flex: 1;"></div> <!-- Пустое пространство -->
+
+                    <button class="cam-modal-btn focus-dotted" onclick="submitCameraModal()">Ok</button>
+                    <button class="cam-modal-btn" onclick="closeCameraModal()">Выход</button>
+                </div>
+
+            </div>
         </div>
     </div>
 
@@ -3115,6 +3215,82 @@ function settingsAction(actionName) {
 
     closeAllMenus();
 }
+
+    // =========================================================
+// Функции модального окна "Выбрать камеры"
+// =========================================================
+
+function toggleCamCb(labelEl) {
+    const cb = labelEl.querySelector('input');
+    cb.checked = !cb.checked;
+}
+
+function openCameraModal() {
+    // 1. При открытии синхронизируем галочки в окне с состоянием правой боковой панели
+    const checkboxes = document.querySelectorAll('#modal-camera-list input[type="checkbox"]');
+
+    checkboxes.forEach(cb => {
+        // Ищем блок камеры на правой панели
+        const rightPanelBlock = document.querySelector(`#content-cameras .filter-block[data-value="${cb.value}"]`);
+        // Если блок не имеет класса 'inactive', значит камера включена
+        cb.checked = rightPanelBlock && !rightPanelBlock.classList.contains('inactive');
+    });
+
+    document.getElementById('camera-modal').style.display = 'flex';
+}
+
+function closeCameraModal() {
+    document.getElementById('camera-modal').style.display = 'none';
+}
+
+function camModalSelect(action) {
+    const checkboxes = document.querySelectorAll('#modal-camera-list input[type="checkbox"]');
+
+    checkboxes.forEach(cb => {
+        if (action === 'all') cb.checked = true;
+        else if (action === 'none') cb.checked = false;
+        else if (action === 'LF') cb.checked = cb.value.includes('LF');
+        else if (action === 'RF') cb.checked = cb.value.includes('RF');
+        else if (action === 'BF') cb.checked = cb.value.includes('BF');
+    });
+}
+
+function submitCameraModal() {
+    const checkboxes = document.querySelectorAll('#modal-camera-list input[type="checkbox"]');
+
+    // Перебираем все камеры и синхронизируем их с кнопками на правой панели
+    checkboxes.forEach(cb => {
+        const camValue = cb.value;
+        const block = document.querySelector(`#content-cameras .filter-block[data-value="${camValue}"]`);
+
+        if (block) {
+            block.classList.remove('active', 'inactive');
+            if (cb.checked) {
+                block.classList.add('active');
+            } else {
+                block.classList.add('inactive');
+            }
+        }
+    });
+
+    // Применяем фильтр к таблице и карте дефектов
+    applyFilters();
+
+    // Закрываем окно
+    closeCameraModal();
+}
+
+// Свяжем также пункт "Выбрать камеры ..." в меню с этим окном
+// В вашем коде в функции mapMenuAction(actionName) есть строчки, заменим эту логику:
+const originalMapMenuAction = window.mapMenuAction;
+window.mapMenuAction = function(actionName) {
+    if (actionName === 'Выбрать камеры') {
+        openCameraModal();
+        closeAllMenus();
+    } else {
+        originalMapMenuAction(actionName);
+    }
+};
 </script>
 </body>
 </html>
