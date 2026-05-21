@@ -1866,8 +1866,13 @@
                     for(let j=0; j<groupSize; j++) {
                         groupItems.push({ id: defectIdCounter++, classCode: Math.floor(100 + rand() * 899).toString() });
                     }
-                    // Даем большой шанс быть заштрихованным для наглядности
-                    if (rand() < 0.5) isHatched = true;
+                    // Исправлено: теперь мы еще и класс задаем правильно!
+                    if (rand() < 0.5) {
+                        isHatched = true;
+                        mapStyle = 'md-hatched';
+                    } else {
+                        mapStyle = 'md-white-group';
+                    }
                 }
 
                 const isScratch = rand() > 0.5;
