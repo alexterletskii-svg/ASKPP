@@ -713,6 +713,17 @@
     text-shadow: none;
     cursor: pointer;
 }
+
+        /* Подсветка активного дефекта белым */
+        .active-defect-label {
+            box-shadow: 0 0 0 2px #ffffff, 0 0 8px #ffffff !important;
+            z-index: 1000 !important;
+        }
+        .active-defect-real {
+            border: 2px solid #ffffff !important;
+            box-shadow: 0 0 8px #ffffff !important;
+            z-index: 1000 !important;
+        }
     </style>
 </head>
 <body>
@@ -1934,6 +1945,7 @@
                 imgBgGradient: 'linear-gradient(to right, #4a4a4a, #888888, #555555)', imgSpotWidth: 50, imgSpotHeight: 50, imgSpotTop: 25, imgSpotLeft: 25
             });
         }
+        defects.sort((a, b) => a.top - b.top);
 
         coilDataStore[coilId] = { coilId, length, defects };
         return coilDataStore[coilId];
@@ -2246,6 +2258,7 @@
             d.dataset.top = defect.top;
             d.dataset.classCode = defect.classCode;
             d.dataset.camera = defect.camera;
+            d.dataset.defectId = defect.id;
             d.title = `* ${defect.id} - ${defect.classCode}`;
 
             d.addEventListener('click', function(e) {
@@ -2277,9 +2290,16 @@
         fillDefectProps(defect);
     }
 
+     // Очищаем старую подсветку со всех дефектов
+    document.querySelectorAll('.class-filter-target').forEach(el => {
+        el.classList.remove('active-defect-label', 'active-defect-real');
+    });
+
+    // Добавляем белую подсветку
     if (!isRealMode) {
-        document.querySelectorAll('.defect-lbl').forEach(el => el.style.boxShadow = '1px 1px 3px rgba(0,0,0,0.5)');
-        this.style.boxShadow = '0 0 0 2px #0a246a, 0 0 10px #0a246a';
+        this.classList.add('active-defect-label');
+    } else {
+        this.classList.add('active-defect-real');
     }
 
     const tr = document.querySelector(`#defects-tbody tr[data-defect-id="${defect.id}"]`);
@@ -2489,7 +2509,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function selectSystem() {
     closeAllMenus();
     document.getElementById('system-select-modal').style.display = 'flex';
-    
+
     // Автоматически ставим фокус на список выбора для удобства
     document.getElementById('sys-select').focus();
 }
@@ -2504,9 +2524,9 @@ function submitSystemSelect() {
     const user = document.getElementById('sys-username').value;
     const pass = document.getElementById('sys-password').value;
     const sys = document.getElementById('sys-select').value;
-    
+
     console.log(`[Выбор системы] Юзер: ${user}, Система: ${sys}`);
-    
+
     // Закрываем окно после нажатия Ok
     closeSystemSelect();
 }
@@ -3300,6 +3320,85 @@ function editAction3() {
             originalMapMenuAction(actionName);
         }
     };
+
+    // =========================================================
+    // НАВИГАЦИЯ ПО ДЕФЕКТАМ С ПОМОЩЬЮ СТРЕЛОК (В ПРЕДЕЛАХ ОДНОЙ СТОРОНЫ)
+    // =========================================================
+    document.addEventListener('keydown', function(e) {
+        if (!currentActiveCoilData) return;
+        if (document.querySelector('.modal-overlay[style*="display: flex"]')) return;
+
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+            e.preventDefault();
+
+            // Все видимые строки
+            const visibleRows = Array.from(document.querySelectorAll('#defects-tbody tr')).filter(tr => tr.style.display !== 'none');
+            if (visibleRows.length === 0) return;
+
+            let currentIndex = visibleRows.findIndex(tr => tr.classList.contains('selected'));
+            if (currentIndex === -1) currentIndex = 0;
+
+            // Определяем текущую сторону рулона (колонка 3 в таблице - индекс 2)
+            const currentSide = visibleRows[currentIndex].cells[2].innerText;
+
+            // Отфильтровываем только те строки, которые находятся на той же стороне
+            const sameSideRows = visibleRows.filter(tr => tr.cells[2].innerText === currentSide);
+
+            // Находим индекс нашего текущего элемента в новом отфильтрованном массиве
+            let sameSideIndex = sameSideRows.findIndex(tr => tr.classList.contains('selected'));
+            if (sameSideIndex === -1) sameSideIndex = 0;
+
+            let nextIndex = sameSideIndex;
+
+            if (e.key === 'ArrowUp') {
+                nextIndex = sameSideIndex > 0 ? sameSideIndex - 1 : 0;
+            } else if (e.key === 'ArrowDown') {
+                nextIndex = sameSideIndex < sameSideRows.length - 1 ? sameSideIndex + 1 : sameSideRows.length - 1;
+            }
+
+            if (nextIndex !== sameSideIndex || e.key) {
+                const targetRow = sameSideRows[nextIndex]; // Берем следующую строку с ТАКОЙ ЖЕ стороны
+                const defectId = Number(targetRow.dataset.defectId);
+
+                // 1. Выделяем строку в таблице
+                document.querySelectorAll('#defects-tbody tr').forEach(r => r.classList.remove('selected'));
+                targetRow.classList.add('selected');
+                targetRow.scrollIntoView({ block: 'center', behavior: 'smooth' });
+
+                // 2. Обновляем панель свойств
+                const defect = currentActiveCoilData.defects.find(d => d.id === defectId);
+                if (defect) {
+                    fillDefectProps(defect);
+
+                    // 3. Выделяем элемент на карте
+                    const mapEl = document.querySelector(`.class-filter-target[data-defect-id="${defectId}"]`);
+
+                    // Убираем подсветку со всех
+                    document.querySelectorAll('.class-filter-target').forEach(el => {
+                        el.classList.remove('active-defect-label', 'active-defect-real');
+                    });
+
+                    // Красим нужный белым
+                    if (mapEl) {
+                        if (!isRealMode) {
+                            mapEl.classList.add('active-defect-label');
+                        } else {
+                            mapEl.classList.add('active-defect-real');
+                        }
+                    }
+
+                    // 4. Скроллим карту
+                    const scrollContainer = document.querySelector('.map-unified-scroll');
+                    if (scrollContainer && defect.top) {
+                        const containerHeight = scrollContainer.clientHeight;
+                        const scrollHeight = scrollContainer.scrollHeight;
+                        const targetY = (scrollHeight * (defect.top / 100)) - (containerHeight / 2);
+                        scrollContainer.scrollTo({ top: targetY, behavior: 'smooth' });
+                    }
+                }
+            }
+        }
+    });
 </script>
 </body>
 </html>
