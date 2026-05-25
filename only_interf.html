@@ -2261,7 +2261,9 @@
                 // РЕЖИМ ЯРЛЫКОВ
                 d.className = `defect-lbl class-filter-target ${defect.mapStyle}`;
                 let labelText = defect.label;
-                if (defect.isHatched) labelText += ' (x)';
+                if (defect.mapStyle === 'md-hatched') {
+                    labelText += ' (x)';
+                }
                 d.innerText = labelText;
                 d.style.top = defect.top + '%';
 
@@ -2280,54 +2282,60 @@
             d.dataset.defectId = defect.id;
             d.title = `* ${defect.id} - ${defect.classCode}`;
 
+
             d.addEventListener('click', function(e) {
-    e.stopPropagation();
+                e.stopPropagation();
 
-    if (isRealMode) {
-        // В реальном режиме для крестиков (точечных дефектов) сразу заполняем свойства
-        // Для длинных дефектов с группами показываем меню
-        if (defect.isHuge || defect.realLength > 10) {
-            // Это длинный дефект - показываем меню если есть группы
-            if (defect.groupItems && defect.groupItems.length > 0) {
-                showRealModePopup(e, defect);
-            } else {
-                fillDefectProps(defect);
-                document.getElementById('defect-popup').style.display = 'none';
-            }
-        } else {
-            // Это крестик (точечный дефект) - сразу заполняем свойства
-            fillDefectProps(defect);
-            document.getElementById('defect-popup').style.display = 'none';
-        }
-    } else {
-        // В режиме ярлыков
-        if (defect.isGroup || defect.isHatched) {
-            showDefectPopup(e, defect);
-        } else {
-            document.getElementById('defect-popup').style.display = 'none';
-        }
-        fillDefectProps(defect);
-    }
+                if (isRealMode) {
+                    // В реальном режиме для крестиков (точечных дефектов) сразу заполняем свойства
+                    if (defect.isHuge || defect.realLength > 10) {
+                        if (defect.groupItems && defect.groupItems.length > 0) {
+                            showRealModePopup(e, defect);
+                        } else {
+                            fillDefectProps(defect);
+                            document.getElementById('defect-popup').style.display = 'none';
+                        }
+                    } else {
+                        fillDefectProps(defect);
+                        document.getElementById('defect-popup').style.display = 'none';
+                    }
+                } else {
+                    // === ИСПРАВЛЕНИЕ ЗДЕСЬ ===
+                    // В режиме ярлыков: показываем меню ТОЛЬКО если стиль ярлыка белый или заштрихованный
+                    if (defect.mapStyle === 'md-white-group' || defect.mapStyle === 'md-hatched') {
+                        showDefectPopup(e, defect);
+                    } else {
+                        // Красный 'md-red' всегда одиночный, меню прячем
+                        document.getElementById('defect-popup').style.display = 'none';
+                    }
+                    fillDefectProps(defect);
+                }
 
-     // Очищаем старую подсветку со всех дефектов
-    document.querySelectorAll('.class-filter-target').forEach(el => {
-        el.classList.remove('active-defect-label', 'active-defect-real');
-    });
+                // Очищаем старую подсветку со всех дефектов
+                document.querySelectorAll('.class-filter-target').forEach(el => {
+                    el.classList.remove('active-defect-label', 'active-defect-real');
+                });
 
-    // Добавляем белую подсветку
-    if (!isRealMode) {
-        this.classList.add('active-defect-label');
-    } else {
-        this.classList.add('active-defect-real');
-    }
+                // Добавляем белую подсветку
+                if (!isRealMode) {
+                    this.classList.add('active-defect-label');
+                } else {
+                    this.classList.add('active-defect-real');
+                }
 
-    const tr = document.querySelector(`#defects-tbody tr[data-defect-id="${defect.id}"]`);
-    if(tr) {
-        document.querySelectorAll('#defects-tbody tr').forEach(r => r.classList.remove('selected'));
-        tr.classList.add('selected');
-        tr.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    }
-});
+                const tr = document.querySelector(`#defects-tbody tr[data-defect-id="${defect.id}"]`);
+                if(tr) {
+                    document.querySelectorAll('#defects-tbody tr').forEach(r => r.classList.remove('selected'));
+                    tr.classList.add('selected');
+                    tr.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                }
+            });
+
+
+
+
+
+
             parent.appendChild(d);
         };
 
