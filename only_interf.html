@@ -1343,6 +1343,19 @@
         </div>
     </div>
 
+    <!-- Окно Прогресс-бара загрузки системы -->
+    <div id="loading-modal" class="modal-overlay" style="z-index: 3000;">
+        <div style="background-color: #f0f0f0; border: 1px solid #a0a0a0; border-radius: 6px; width: 320px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column; padding: 20px;">
+            <div style="font-size: 11px; margin-bottom: 12px; font-family: Tahoma, sans-serif;" id="loading-text">Загрузка системы...</div>
+
+            <!-- Внешняя рамка бара -->
+            <div style="width: 100%; height: 16px; background: #fff; border-top: 2px solid #808080; border-left: 2px solid #808080; border-bottom: 1px solid #fff; border-right: 1px solid #fff; box-sizing: border-box;">
+                <!-- Заполняющаяся часть -->
+                <div id="loading-bar-fill" style="width: 0%; height: 100%; background-color: var(--sys-blue-select);"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Модальное окно выбора класса дефектов -->
     <div id="class-filter-modal" class="modal-overlay">
         <div class="modal-window" style="width: 480px;">
@@ -2526,20 +2539,109 @@ function closeSystemSelect() {
 }
 
 // Функция обработки нажатия кнопки Ok
+// Функция обработки нажатия кнопки Ok
 function submitSystemSelect() {
     const user = document.getElementById('sys-username').value;
     const pass = document.getElementById('sys-password').value;
     const sys = document.getElementById('sys-select').value;
 
-    console.log(`[Выбор системы] Юзер: ${user}, Система: ${sys}`);
+    // ПРОВЕРКА ЛОГИНА И ПАРОЛЯ
+    if (user !== 'Admin' || pass !== 'Admin') {
+        alert('Неверное имя пользователя или пароль!\nДоступ запрещен.');
 
-    // Закрываем окно после нажатия Ok
+        // Очищаем пароль для повторного ввода и ставим туда курсор
+        const passInput = document.getElementById('sys-password');
+        passInput.value = '';
+        passInput.focus();
+
+        return; // Прерываем выполнение, окно не закрывается
+    }
+
+    console.log(`[Выбор системы] Авторизация успешна. Начинается загрузка: ${sys}`);
+
+    // Закрываем окно выбора
     closeSystemSelect();
+
+    // Показываем окно прогресс-бара
+    const loadModal = document.getElementById('loading-modal');
+    const loadFill = document.getElementById('loading-bar-fill');
+    const loadText = document.getElementById('loading-text');
+
+    loadModal.style.display = 'flex';
+    loadText.innerText = `Загрузка базы данных ${sys}...`;
+    loadFill.style.width = '0%';
+
+    // Имитация процесса загрузки
+    let progress = 0;
+    const loadingInterval = setInterval(() => {
+        // Случайный шаг от 5 до 15%
+        progress += Math.floor(Math.random() * 10) + 5;
+
+        if (progress >= 100) {
+            progress = 100;
+            clearInterval(loadingInterval);
+            loadFill.style.width = progress + '%';
+
+            // Небольшая задержка перед закрытием для красоты
+            setTimeout(() => {
+                loadModal.style.display = 'none';
+                regenerateSystemData(sys); // Вызываем функцию из предыдущего ответа
+            }, 400);
+        } else {
+            loadFill.style.width = progress + '%';
+        }
+    }, 150); // Скорость обновления
 }
 
-function loadCoil() {
-    closeAllMenus();
-    openRollModal();
+// Функция генерации новых данных на основе выбранной системы
+function regenerateSystemData(systemName) {
+    // 1. Очищаем старые данные
+    for (let key in coilDataStore) {
+        delete coilDataStore[key];
+    }
+    currentActiveCoilData = null;
+
+    // Очищаем таблицу рулонов и таблицу дефектов
+    const coilTbody = document.getElementById('coil-tbody');
+    coilTbody.innerHTML = '';
+    document.getElementById('defects-tbody').innerHTML = '';
+
+    // Очищаем миникарту
+    const mapCells = [document.getElementById('mc1'), document.getElementById('mc2'), document.getElementById('mc3'), document.getElementById('mc4'), document.getElementById('mc5'), document.getElementById('mc6'), document.getElementById('mc7'), document.getElementById('mc8')];
+    mapCells.forEach(cell => { if(cell) cell.innerHTML = ''; });
+
+    // 2. Устанавливаем базовые параметры в зависимости от системы
+    let baseId, baseCoilNumber;
+    if (systemName === 'DQS_CAL2') {
+        baseId = 2041770;
+        baseCoilNumber = 2796770;
+    } else if (systemName === 'DQS_CAL4') {
+        baseId = 4041770;
+        baseCoilNumber = 4796770;
+    } else if (systemName === 'DQS_CAL6') {
+        baseId = 6041770;
+        baseCoilNumber = 6796770;
+    } else { // ANO7
+        baseId = 7041770;
+        baseCoilNumber = 7796770;
+    }
+
+    // 3. Генерируем новые строки рулонов
+    for(let i = 0; i < 50; i++) {
+        const coilId = baseId + i;
+        const length = 4753 + (i*15);
+        // ID и N рулона теперь зависят от выбранной системы
+        coilTbody.innerHTML += `<tr data-coil-id="${coilId}" data-coil-index="${i}" data-length="${length}"><td>${coilId}</td><td>${baseCoilNumber - i}</td><td>F</td><td>2528085</td><td>413673</td><td>2</td><td>E3A</td><td>0.27 mm</td><td>${length} m</td><td>1045 mm</td><td>20.01.26 17:02</td><td>20.01.26 19:08</td><td>3579</td></tr>`;
+    }
+
+    // Меняем заголовок окна чтобы было видно, в какой мы системе
+    document.querySelector('.os-header div:nth-child(2)').innerText = `Терминал-Режим Offline - [Система: ${systemName}]`;
+
+    // 4. Автоматически кликаем на первый рулон в списке, чтобы сгенерировать его дефекты и отрисовать карту
+    const firstRow = coilTbody.querySelector('tr');
+    if (firstRow) {
+        firstRow.click();
+    }
 }
 
 
