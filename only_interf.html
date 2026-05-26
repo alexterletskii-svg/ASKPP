@@ -2907,9 +2907,6 @@ document.addEventListener('keydown', function(e) {
 // =========================================================
 // ЛОГИКА ПЕРЕКЛЮЧЕНИЯ РЕЖИМА "БОЛЬШОЕ ИЗОБРАЖЕНИЕ"
 // =========================================================
-(function initLargeImageMode() {// =========================================================
-// ЛОГИКА ПЕРЕКЛЮЧЕНИЯ РЕЖИМА "БОЛЬШОЕ ИЗОБРАЖЕНИЕ"
-// =========================================================
 (function initLargeImageMode() {
     const imgContainer = document.getElementById('defect-image-box');
     const mapContainer = document.getElementById('map-view-panel');
@@ -2919,180 +2916,93 @@ document.addEventListener('keydown', function(e) {
     const leftSmallBox = imgContainer.parentElement; // Контейнер .box.h-25
     const leftBoxTitle = leftSmallBox.querySelector('.box-title');
 
-    // Находим кнопку "Большой" (в левой части статус-бара)
-    const btnBig = Array.from(document.querySelectorAll('.sb-section .sb-panel'))
+    // Находим кнопки именно по тексту
+    const btnBig = Array.from(document.querySelectorAll('.sb-panel'))
                     .find(b => b.innerText.trim() === 'Большой');
-
-    // Находим кнопку "Маленький" (в правой части статус-бара)
-    const btnSmall = Array.from(document.querySelectorAll('.sb-section .sb-panel'))
+    const btnSmall = Array.from(document.querySelectorAll('.sb-panel'))
                       .find(b => b.innerText.trim() === 'Маленький');
 
     let isLargeMode = false;
 
-    // Исходно кнопка "Маленький" должна быть нажата (так как это обычный размер по умолчанию)
+    // Исходно кнопка "Маленький" (которая работает как "Обычный") активна
     if (btnSmall) btnSmall.classList.add('active-tab');
 
-    // Стили для изоляции элементов от распирания и сохранения пропорций
     const style = document.createElement('style');
     style.innerHTML = `
         .panel-left .box.h-25 { min-height: 0; display: flex; flex-direction: column; }
         .panel-left .box.h-40 { flex-shrink: 0; }
 
-        #map-view-panel.shrunk-mode {
-            flex: 1; border: none; margin: 0; min-height: 0;
-        }
-        #map-view-panel.shrunk-mode .map-unified-grid {
-            min-width: 500px;
-        }
-        #map-view-panel.shrunk-mode .map-unified-scroll {
-            overflow-x: auto;
-        }
+        #map-view-panel.shrunk-mode { flex: 1; border: none; margin: 0; min-height: 0; }
+        #map-view-panel.shrunk-mode .map-unified-grid { min-width: 500px; }
+        #map-view-panel.shrunk-mode .map-unified-scroll { overflow-x: auto; }
 
         #defect-image-box.large-mode {
-            flex: 1;
-            border: 1px solid var(--sys-border);
-            background-color: #8b8c91 !important;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            flex: 1; border: 1px solid var(--sys-border);
+            background-color: #8b8c91 !important; display: flex; align-items: center; justify-content: center;
         }
 
         #defect-image-box.large-mode > div {
-            position: relative !important;
-            width: 100% !important;
-            max-width: 700px !important;
-            height: auto !important;
-            aspect-ratio: 4 / 3 !important;
-            border: 2px solid white;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.5);
-            margin: 0 auto;
+            position: relative !important; width: 100% !important; max-width: 700px !important;
+            height: auto !important; aspect-ratio: 4 / 3 !important; border: 2px solid white;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.5); margin: 0 auto;
         }
     `;
     document.head.appendChild(style);
 
-    // Функция, которая устанавливает конкретный режим
+    // Функция переключения
     function setMode(makeLarge) {
-        if (isLargeMode === makeLarge) return; // Режим уже установлен
+        if (isLargeMode === makeLarge) return;
         isLargeMode = makeLarge;
 
         if (isLargeMode) {
-            // Включаем "Большой"
+            // Включаем РЕЖИМ БОЛЬШОЙ
             if (btnBig) btnBig.classList.add('active-tab');
             if (btnSmall) btnSmall.classList.remove('active-tab');
             leftBoxTitle.innerText = "Карта рулона";
 
-            // Меняем блоки местами
             mapContainer.classList.add('shrunk-mode');
             leftSmallBox.appendChild(mapContainer);
             imgContainer.classList.add('large-mode');
             rightPanel.insertBefore(imgContainer, tableContainer);
 
         } else {
-            // Включаем "Маленький" (обычный)
+            // Возвращаем в РЕЖИМ МАЛЕНЬКИЙ (работает как "Обычный")
             if (btnBig) btnBig.classList.remove('active-tab');
             if (btnSmall) btnSmall.classList.add('active-tab');
             leftBoxTitle.innerText = "Изображение дефекта";
 
-            // Возвращаем блоки назад
             imgContainer.classList.remove('large-mode');
             leftSmallBox.appendChild(imgContainer);
             mapContainer.classList.remove('shrunk-mode');
             rightPanel.insertBefore(mapContainer, tableContainer);
         }
 
-        // Перерисовываем правильные display
         window.toggleMap(isMapOpen);
     }
 
-    // Для вызова из верхнего меню (переключает режим на противоположный)
+    // Для верхнего меню
     window.globalToggleLargeImage = function() {
         setMode(!isLargeMode);
     };
 
-    // Привязываем клики по кнопкам в нижнем статус-баре
-    if (btnBig) {
-        btnBig.addEventListener('click', () => setMode(true));
-    }
-    if (btnSmall) {
-        btnSmall.addEventListener('click', () => setMode(false));
-    }
+    // Привязываем клики к кнопкам!
+    if (btnBig) btnBig.addEventListener('click', () => setMode(true));
+    if (btnSmall) btnSmall.addEventListener('click', () => setMode(false));
 
-    // Переписываем функцию переключения Ярлык / Таблица
+    // Правильное отображение текущей панели (Карта или Таблица)
     window.toggleMap = function(show) {
         isMapOpen = show;
-
         if (isLargeMode) {
-            // В режиме "Большой": Картинка справа
             imgContainer.style.display = isMapOpen ? 'flex' : 'none';
             tableContainer.style.display = isMapOpen ? 'none' : 'block';
-            mapContainer.style.display = 'flex'; // Маленькая карта слева всегда видима
+            mapContainer.style.display = 'flex';
         } else {
-            // Обычный режим
             mapContainer.style.display = isMapOpen ? 'flex' : 'none';
             tableContainer.style.display = isMapOpen ? 'none' : 'block';
-            imgContainer.style.display = 'block'; // Картинка слева всегда видима
+            imgContainer.style.display = 'block';
         }
     };
 })();
-
-   function toggleLargeImage() {
-        isLargeMode = !isLargeMode;
-
-        if (isLargeMode) {
-            btnBig.classList.add('active-tab');
-            btnBig.innerText = 'Обычный';
-            leftBoxTitle.innerText = "Карта рулона";
-
-            // 1. Прячем карту в левую часть
-            mapContainer.classList.add('shrunk-mode');
-            leftSmallBox.appendChild(mapContainer);
-
-            // 2. Картинку выводим в правую часть
-            imgContainer.classList.add('large-mode');
-            rightPanel.insertBefore(imgContainer, tableContainer);
-
-        } else {
-            btnBig.classList.remove('active-tab');
-            btnBig.innerText = 'Большой';
-            leftBoxTitle.innerText = "Изображение дефекта";
-
-            // Возвращаем все обратно
-            imgContainer.classList.remove('large-mode');
-            leftSmallBox.appendChild(imgContainer);
-
-            mapContainer.classList.remove('shrunk-mode');
-            rightPanel.insertBefore(mapContainer, tableContainer);
-        }
-
-        // Перерисовываем правильные display
-        window.toggleMap(isMapOpen);
-    }
-
-    // --- ВАЖНАЯ СТРОКА: Делаем функцию доступной для верхнего меню ---
-    window.globalToggleLargeImage = toggleLargeImage;
-
-    if (btnBig) btnBig.addEventListener('click', toggleLargeImage);
-
-    // Переписываем функцию переключения Ярлык / Таблица
-    window.toggleMap = function(show) {
-        isMapOpen = show;
-
-        if (isLargeMode) {
-            // В режиме "Большой": Картинка справа (display: flex нужен для выравнивания по центру)
-            imgContainer.style.display = isMapOpen ? 'flex' : 'none';
-            tableContainer.style.display = isMapOpen ? 'none' : 'block';
-
-            mapContainer.style.display = 'flex'; // Маленькая карта слева всегда видима
-        } else {
-            // Обычный режим
-            mapContainer.style.display = isMapOpen ? 'flex' : 'none';
-            tableContainer.style.display = isMapOpen ? 'none' : 'block';
-
-            imgContainer.style.display = 'block'; // Картинка слева всегда видима
-        }
-    };
-})();
-
 
 
 // =========================================================
