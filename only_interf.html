@@ -724,6 +724,29 @@
             box-shadow: 0 0 8px #ffffff !important;
             z-index: 1000 !important;
         }
+
+           /* --- Стили для модального окна Подклассов --- */
+        #subclass-modal .modal-window {
+            width: 320px;
+            background-color: var(--sys-gray);
+        }
+        .subclass-list-box {
+            background-color: #ffffff;
+            border-top: 2px solid #808080; border-left: 2px solid #808080;
+            border-bottom: 2px solid #ffffff; border-right: 2px solid #ffffff;
+            height: 250px; overflow-y: auto; padding: 2px;
+        }
+        .subclass-list-box label {
+            display: flex; align-items: center; justify-content: space-between;
+            font-size: 11px; padding: 1px 2px; cursor: pointer;
+            white-space: nowrap;
+        }
+        .subclass-list-box label:hover { background-color: var(--sys-blue-select); color: #fff; }
+        .subclass-list-box input { margin-right: 5px; }
+
+        /* Желтый блок, когда выбрана только часть подклассов */
+        .filter-block.yellow { background-color: #ffff00; color: black; }
+
     </style>
 </head>
 <body>
@@ -949,12 +972,12 @@
         </div>
     </div>
 
- <!-- Окно "Вход пользователя в базу данных" в современном системном стиле -->
+ <!-- Окно "Вход пользователя в базу данных" в системном стиле -->
     <div id="login-modal" class="modal-overlay">
         <!-- Используем inline-стили, чтобы отвязаться от старой квадратной рамки .modal-window -->
         <div style="background-color: #f0f0f0; border: 1px solid #a0a0a0; border-radius: 6px; width: 340px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column;">
 
-            <!-- Современная системная шапка -->
+            <!-- системная шапка -->
             <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 12px 5px 12px;">
                 <span style="color: #000; font-size: 12px;">Вход пользователя в базу данных</span>
                 <button onclick="closeLoginModal()" style="background: transparent; border: none; font-size: 18px; color: #555; cursor: pointer; padding: 0; line-height: 10px;" onmouseover="this.style.color='#000'" onmouseout="this.style.color='#555'">×</button>
@@ -1524,21 +1547,102 @@
         </div>
     </div>
 <script>
+ // --- 1. ТАБЛИЦЫ КЛАССОВ ПО СИСТЕМАМ ---
+    const SYSTEM_CLASSES_MAP = {
+        "DQS_CAL2": {
+            "Кромочный дефект": ["Класс : 019(a) (ID=15)", "Класс : 019 (ID=19)", "Класс : 022 (ID=22)", "Класс : 030 (ID=30)", "Класс : 054 (ID=54)", "Класс : 022(a) (ID=67)", "Класс : 162 (ID=162)"],
+            "Складка": ["Класс : 020 (ID=20)", "Класс : 020(a) (ID=31)", "Класс : 020(b) (ID=32)"],
+            "Неоднородный грунт": ["Класс : 702-2 (ID=42)", "Класс : 702-3 (ID=44)", "Класс : 702-3 (ID=45)", "Класс : 707-3 (ID=50)", "Класс : 706-2 (ID=53)", "Класс : 701-2 (ID=56)", "Класс : 708-2 (ID=57)", "Класс : 701-4 (ID=701)", "Класс : 702-4 (ID=702)", "Класс : 703-4 (ID=703)", "Класс : 704 (ID=704)", "Класс : 705 (ID=705)", "Класс : 706-4 (ID=706)"],
+            "Окисление": ["Класс : 690(a) (ID=10)", "Класс : 690(b) (ID=11)", "Класс : 690-2 (ID=33)", "Класс : 620-2 (ID=35)", "Класс : 690-2 (ID=38)", "Класс : 691-2 (ID=71)", "Класс : 691-3 (ID=72)", "Класс : 691(a) (ID=79)", "Класс : 691(b) (ID=81)", "Класс : 691(v) (ID=82)", "Класс : 691(g) (ID=83)", "Класс : 691(d) (ID=84)", "Класс : 691(e) (ID=85)", "Класс : 691(k) (ID=86)", "Класс : 620-4 (ID=620)", "Класс : 621-4 (ID=621)", "Класс : 690-4 (ID=690)", "Класс : 691-4 (ID=691)"],
+            "Смятая поверхность": ["Класс : 088(b) (ID=87)", "Класс : 088 (ID=88)", "Класс : 088(a) (ID=89)", "Класс : 188 (ID=188)"],
+            "Слиточная плена": ["Класс : 003 (ID=3)"],
+            "Царапина": ["Класс : 017 (ID=17)"],
+            "Пятно ржавчины": ["Класс : 021 (ID=21)", "Класс : 021(a) (ID=74)"],
+            "Пятна слипания сварки": ["Класс : 023 (ID=23)", "Класс : 023(a) (ID=24)"],
+            "Сварочные швы": ["Класс : Weld (ID=157)", "Класс : Shov s (ID=484)", "Класс : Shov (ID=485)", "Класс : 486 (ID=486)"],
+            "System": ["-"],
+            "Пятно загрязнения": ["Класс : 028 (ID=28)"],
+            "Отпечаток": ["Класс : 043 (ID=43)"],
+            "Нарушение покрытия": ["Класс : 066 (ID=66)"],
+            "Неплоскостность": ["Класс : 184 (ID=184)"],
+            "Несмытая MgO": ["Класс : 281-3 (ID=14)", "Класс : 282(a) (ID=75)", "Класс : 281(a) (ID=76)", "Класс : 281(b) (ID=77)", "Класс : 281(v) (ID=78)", "Класс : 281(d) (ID=91)", "Класс : 280-4 (ID=280)", "Класс : 281-4 (ID=281)", "Класс : 282-4 (ID=282)", "Класс : 282(a) (ID=283)"],
+            "Утолщение электроизол р-ра": ["Класс : 491(b) (ID=26)", "Класс : 492-2 (ID=92)", "Класс : 492-2 (ID=93)", "Класс : 492-2 (ID=94)", "Класс : 492-4 (ID=95)", "Класс : 492-3 (ID=99)", "Класс : 492(a) (ID=117)", "Класс : V/p (ID=491)", "Класс : 492-4 (ID=492)"],
+            "Электроизоляционный раств": ["Класс : 661-3 (ID=7)", "Класс : 661-2 (ID=9)", "Класс : 661-3 (ID=12)", "Класс : 661-2 (ID=36)", "Класс : 661-3 (ID=37)", "Класс : 661(a) (ID=103)", "Класс : 661(b) (ID=105)", "Класс : 661-4 (ID=661)"],
+            "Крапчатость": ["Класс : 692+621 (ID=493)", "Класс : 692 (ID=692)", "Класс : 693 (ID=700)"],
+            "Вдавлины": ["Класс : 016 (ID=16)", "Класс : 016(a) (ID=60)", "Класс : 016(b) (ID=63)", "Класс : 016(v) (ID=64)"],
+            "Излом": ["Класс : Izlom (ID=41)"],
+            "Перегибы": ["Класс : Peregib (ID=96)"],
+            "Все другие": ["Класс : NC (ID=0)", "Класс : 2 (ID=2)", "Класс : 18 (ID=18)", "Класс : PsDyra (ID=108)", "Класс : Nachalo (ID=109)", "Класс : Konets (ID=110)", "Класс : Other (ID=199)"]
+        },
+        "DQS_CAL4": {
+            "Сквозной разрыв": ["Класс : 047(a) (ID=46)", "Класс : 047 (ID=47)", "Класс : 047(б) (ID=48)", "Класс : 061 (ID=61)", "Класс : 061+003 (ID=62)", "Класс : 061(a) (ID=65)"],
+            "Кромочный дефект": ["Класс : 019(a) (ID=18)", "Класс : 019 (ID=19)", "Класс : 022 (ID=22)", "Класс : 030 (ID=30)", "Класс : 054 (ID=54)", "Класс : 022(a) (ID=67)", "Класс : 162 (ID=162)"],
+            "Складка": ["Класс : 020 (ID=20)", "Класс : 020(a) (ID=31)", "Класс : 020(б) (ID=32)"],
+            "Неоднородный грунт": ["Класс : 702-2 (ID=42)", "Класс : 702-3 (ID=44)", "Класс : 702-3 (ID=45)", "Класс : 707-3 (ID=50)", "Класс : 706-2 (ID=53)", "Класс : 701-2 (ID=56)", "Класс : 708-2 (ID=57)", "Класс : 701-4 (ID=701)", "Класс : 702-4 (ID=702)", "Класс : 703-4 (ID=703)", "Класс : 704 (ID=704)", "Класс : 705 (ID=705)", "Класс : 706-4 (ID=706)"],
+            "Окисление": ["Класс : 690(а) (ID=10)", "Класс : 690(б) (ID=11)", "Класс : 690-2 (ID=33)", "Класс : 620-2 (ID=35)", "Класс : 690-2 (ID=38)", "Класс : 691-2 (ID=71)", "Класс : 691-3 (ID=72)", "Класс : 691(а) (ID=79)", "Класс : 691(б) (ID=81)", "Класс : 691(в) (ID=82)", "Класс : 691(г) (ID=83)", "Класс : 691(д) (ID=84)", "Класс : 691(е) (ID=85)", "Класс : 620-4 (ID=620)", "Класс : 621-4 (ID=621)", "Класс : 690-4 (ID=690)", "Класс : 691-4 (ID=691)"],
+            "Смятая поверхность": ["Класс : 088 (ID=88)", "Класс : 088(а) (ID=89)", "Класс : 188 (ID=188)"],
+            "Слиточная плена": ["Класс : 003 (ID=3)"],
+            "Царапина": ["Класс : 017 (ID=17)"],
+            "Пятно ржавчины": ["Класс : 021 (ID=21)", "Класс : 021(а) (ID=74)"],
+            "Пятна слипания сварки": ["Класс : 023 (ID=23)", "Класс : 023(а) (ID=24)"],
+            "Сварочные швы": ["Класс : 483 (ID=483)", "Класс : 484 (ID=484)", "Класс : 485 (ID=485)", "Класс : 486 (ID=486)"],
+            "Pseudo": ["-"],
+            "System": ["-"],
+            "Пятно загрязнения": ["Класс : 028 (ID=28)"],
+            "Нарушение покрытия": ["Класс : 066 (ID=66)"],
+            "Неплоскостность": ["Класс : 184 (ID=184)"],
+            "Несмытая MgO": ["Класс : 281-3 (ID=14)", "Класс : 281(а) (ID=76)", "Класс : 281(б) (ID=77)", "Класс : 281(в) (ID=78)", "Класс : 281(д) (ID=791)", "Класс : 280-4 (ID=280)", "Класс : 281-4 (ID=281)", "Класс : 282-4 (ID=282)", "Класс : 282(а) (ID=283)", "Класс : 282(б) (ID=284)"],
+            "Утолщение электроизол р-ра": ["Класс : 491(б) (ID=26)", "Класс : 492-2 (ID=92)", "Класс : 492-2 (ID=93)", "Класс : 492-2 (ID=94)", "Класс : 492-4 (ID=95)", "Класс : 492-3 (ID=99)", "Класс : 492(a) (ID=117)", "Класс : В/п (ID=491)", "Класс : 492-4 (ID=492)"],
+            "Электроизоляционный раств": ["Класс : 661-2 (ID=9)", "Класс : 661-3 (ID=12)", "Класс : 661-2 (ID=36)", "Класс : 661-3 (ID=37)", "Класс : 661-3 (ID=40)", "Класс : 661-3 (ID=103)", "Класс : 661(a) (ID=105)", "Класс : 661(б) (ID=106)", "Класс : 661-4 (ID=661)"],
+            "Крапчатость": ["Класс : 692+621 (ID=49)", "Класс : 692 (ID=692)", "Класс : 693 (ID=700)"],
+            "Вдавлины": ["Класс : 016(а) (ID=60)", "Класс : 016(б) (ID=63)", "Класс : 016(в) (ID=64)", "Класс : 016 (ID=16)"],
+            "Волна": ["Класс : WaveDW (ID=130)", "Класс : WaveCW (ID=131)"],
+            "Излом": ["Класс : 041 (ID=41)"],
+            "Перегибы": ["Класс : Peregib (ID=96)"],
+            "Все другие": ["Класс : НК (ID=0)", "Класс : 2 (ID=2)", "Класс : 692+690 (ID=8)", "Класс : 90 (ID=90)", "Класс : 91 (ID=91)", "Класс : 100 (ID=100)", "Класс : 100(а) (ID=101)", "Класс : 100(б) (ID=102)", "Класс : ПсДыра (ID=108)", "Класс : Начало (ID=109)", "Класс : Other (ID=199)"]
+        },
+        "DQS_CAL6": {
+            "Сквозной разрыв": ["Класс : 047(a) (ID=46)", "Класс : 047 (ID=47)", "Класс : 047(б) (ID=48)", "Класс : 061 (ID=61)", "Класс : 061+003 (ID=62)", "Класс : 061(a) (ID=65)"],
+            "Кромочный дефект": ["Класс : 019(а) (ID=18)", "Класс : 019 (ID=19)", "Класс : 022 (ID=22)", "Класс : 030 (ID=30)", "Класс : 054 (ID=54)", "Класс : 022(а) (ID=67)", "Класс : 162(б) (ID=111)", "Класс : 162 (ID=162)", "Класс : 162(а) (ID=200)", "Класс : Rol (ID=202)"],
+            "Складка": ["Класс : 020(а) (ID=31)", "Класс : 020(б) (ID=32)"],
+            "Неоднородный грунт": ["Класс : 702-2 (ID=42)", "Класс : 702-3 (ID=44)", "Класс : 702-3 (ID=45)", "Класс : 707-3 (ID=50)", "Класс : 706-2 (ID=53)", "Класс : 701-2 (ID=56)", "Класс : 708-2 (ID=57)", "Класс : 701-4 (ID=701)", "Класс : 702-4 (ID=702)", "Класс : 703-4 (ID=703)", "Класс : 704 (ID=704)", "Класс : 705 (ID=705)", "Класс : 706-4 (ID=706)"],
+            "Окисление": ["Класс : 690(а) (ID=10)", "Класс : 690(б) (ID=11)", "Класс : 690-2 (ID=33)", "Класс : 620-2 (ID=34)", "Класс : 620-2 (ID=35)", "Класс : 691-2 (ID=71)", "Класс : 691-3 (ID=72)", "Класс : 691(а) (ID=79)", "Класс : 691(б) (ID=80)", "Класс : 691(в) (ID=82)", "Класс : 691(г) (ID=83)", "Класс : 620-4 (ID=620)", "Класс : 621-4 (ID=621)", "Класс : 690-4 (ID=690)", "Класс : 691-4 (ID=691)"],
+            "Смятая поверхность": ["Класс : 088 (ID=88)", "Класс : 088(а) (ID=89)", "Класс : 188 (ID=188)"],
+            "Слиточная плена": ["Класс : 003 (ID=3)"],
+            "Царапина": ["Класс : 017 (ID=17)"],
+            "Пятно ржавчины": ["Класс : 021 (ID=21)", "Класс : 021(а) (ID=74)"],
+            "Пятна слипания сварки": ["Класс : 023 (ID=23)", "Класс : 023(а) (ID=24)"],
+            "Сварочные швы": ["Класс : 481-1 (ID=156)", "Класс : 483 (ID=483)", "Класс : 484 (ID=484)", "Класс : 485 (ID=485)", "Класс : 486 (ID=486)"],
+            "Pseudo": ["-"],
+            "System": ["-"],
+            "Загрязнение": ["Класс : 028 (ID=28)"],
+            "Отпечаток": ["Класс : 702-3 (ID=43)"],
+            "Нарушение покрытия": ["Класс : 066 (ID=66)"],
+            "Неплоскостность": ["Класс : 184 (ID=184)"],
+            "Несмытая MgO": ["Класс : 281-3 (ID=13)", "Класс : 281-3 (ID=14)", "Класс : 281(а) (ID=76)", "Класс : 281(б) (ID=77)", "Класс : 281(в) (ID=78)", "Класс : 280-4 (ID=280)", "Класс : 281-4 (ID=281)", "Класс : 282-4 (ID=282)", "Класс : 282(а) (ID=283)", "Класс : 282(б) (ID=284)"],
+            "Утолщение электроизол р-ра": ["Класс : 492-2 (ID=92)", "Класс : 492-2 (ID=93)", "Класс : 492-4 (ID=94)", "Класс : 492-4 (ID=95)", "Класс : 492-4 (ID=96)", "Класс : 492-4 (ID=97)", "Класс : В/п (ID=491)", "Класс : 492-4 (ID=492)"],
+            "Электроизоляционный раств": ["Класс : 661-2 (ID=9)", "Класс : 661-2 (ID=36)", "Класс : 661-3 (ID=37)", "Класс : 661-3 (ID=38)", "Класс : 661-3 (ID=39)", "Класс : 661-3 (ID=103)", "Класс : 661(а) (ID=105)", "Класс : 661-4 (ID=661)"],
+            "Крапчатость": ["Класс : 692+621 (ID=493)", "Класс : 692 (ID=692)", "Класс : 693 (ID=700)"],
+            "Вдавлины": ["Класс : 016 (ID=16)", "Класс : 016(а) (ID=60)", "Класс : 016(б) (ID=63)", "Класс : 016(в) (ID=64)", "Класс : Псевдо (ID=87)"],
+            "Излом": ["Класс : 041 (ID=41)"],
+            "Все другие": ["Класс : НК (ID=0)", "Класс : 2 (ID=2)", "Класс : 692+690 (ID=8)", "Класс : 90 (ID=90)", "Класс : 91 (ID=91)", "Класс : 100 (ID=100)", "Класс : 100(а) (ID=101)", "Класс : 100(б) (ID=102)", "Класс : ПсДыра (ID=108)", "Класс : Начало (ID=109)", "Класс : Other (ID=199)"]
+        }
+    };
 
 
 
 
 
 
-    const ALL_CLASSES = [
-        "Сквозной разр", "Кромочный де", "Складка", "Неоднородный", "Окисление",
-        "Смятая повер", "Слиточная пл", "Царапина", "Пятно ржавчи", "Пятно слипов",
-        "Сварные швы", "Pseudo", "System", "Пятно загряз", "Отпечаток",
-        "Нарушение по", "Неплоскостно", "Несмытая MgCO", "Утолщение эл", "Электроизол",
-        "Крайчатость", "Вдавлины", "Волна", "Излом", "Перегибы", "Все другие"
-    ];
 
-    const TOP_5_CLASSES = ["Сквозной разр", "Кромочный де", "Складка", "Сварные швы", "Крайчатость"];
+     const SYSTEM_TOP_5_MAP = {
+        "DQS_CAL2": ["Кромочный дефект", "Складка", "Сварочные швы", "Окисление", "Вдавлины"],
+        "DQS_CAL4": ["Сквозной разрыв", "Кромочный дефект", "Складка", "Сварочные швы", "Волна"],
+        "DQS_CAL6": ["Сквозной разрыв", "Кромочный дефект", "Складка", "Сварочные швы", "Вдавлины"]
+    };
+
+    window.TOP_5_CLASSES = [];
+
 
     const CAMERA_STRUCTURE = [
         { group: "Верх BF", cams: ["11 Верх BF", "10 Верх BF", "09 Верх BF"] },
@@ -1595,22 +1699,64 @@
         content.style.display = content.style.display === 'none' ? 'block' : 'none';
     }
 
+    let currentSystem = "DQS_CAL2"; // По умолчанию
+    let activeSubclassesState = {};
+    let editingClassName = "";
+    window.ALL_CLASSES = []; // Инициализация глобального массива, чтобы не сломался генератор
+
+   function resetSubclassStates(systemName) {
+        currentSystem = systemName;
+        activeSubclassesState = {};
+        const classes = SYSTEM_CLASSES_MAP[systemName];
+
+        for (let cls in classes) {
+            // По умолчанию включаем все подклассы
+            activeSubclassesState[cls] = new Set(classes[cls]);
+        }
+
+        window.ALL_CLASSES = Object.keys(classes);
+        // Заряжаем актуальный список ТОП-5 для этой системы
+        window.TOP_5_CLASSES = SYSTEM_TOP_5_MAP[systemName] || [];
+    }
+    // Вызов для дефолтной системы
+    resetSubclassStates(currentSystem);
+
+    // --- 2. РЕНДЕР ПАНЕЛИ ФИЛЬТРОВ И ОБРАБОТКА КЛИКОВ ---
     function renderFilterBlocks() {
         const classContainer = document.getElementById('classes-grid-container');
-        const camContainer = document.getElementById('content-cameras');
-
         classContainer.innerHTML = '';
-        ALL_CLASSES.forEach(cls => {
-            const isYellow = cls === "Электроизол";
-            const stateClass = isYellow ? "yellow" : (TOP_5_CLASSES.includes(cls) ? "active" : "inactive");
+
+        const classes = SYSTEM_CLASSES_MAP[currentSystem];
+        window.ALL_CLASSES = Object.keys(classes);
+
+        // Рендер классов (кубики дефектов)
+        for (let cls in classes) {
+            const allSubs = classes[cls];
+            const activeSubs = activeSubclassesState[cls];
+
+            let stateClass = "active";
+            let prefix = "";
+
+            if (activeSubs.size === 0) {
+                stateClass = "inactive";
+            } else if (activeSubs.size < allSubs.length) {
+                // Если выбраны подклассы частично - меняем цвет на желтый
+                stateClass = "yellow";
+                prefix = "* ";
+            }
+
             classContainer.innerHTML += `
-                <div class="filter-block ${stateClass}" data-type="class" data-value="${cls}" onclick="toggleBlock(this)">
-                    <span class="fb-name">${cls}</span>
+                <div class="filter-block ${stateClass}" data-type="class" data-value="${cls}"
+                     onclick="toggleMainBlock(this, '${cls}')"
+                     oncontextmenu="openSubclassModal(event, '${cls}')">
+                    <span class="fb-name">${prefix}${cls}</span>
                     <span class="fb-count" id="count-${cls.replace(/\s+/g, '')}">0/ 0</span>
                 </div>
             `;
-        });
+        }
 
+        // Рендер камер (оставляем твою старую логику)
+        const camContainer = document.getElementById('content-cameras');
         camContainer.innerHTML = '';
         CAMERA_STRUCTURE.forEach(row => {
             let html = `<div class="camera-row">`;
@@ -1630,6 +1776,93 @@
         });
     }
 
+    // Левый клик - вкл/выкл всей группы
+    window.toggleMainBlock = function(block, cls) {
+        const allSubs = SYSTEM_CLASSES_MAP[currentSystem][cls];
+
+        if (block.classList.contains('active') || block.classList.contains('yellow')) {
+            activeSubclassesState[cls].clear();
+        } else {
+            activeSubclassesState[cls] = new Set(allSubs);
+        }
+
+        renderFilterBlocks();
+        applyFilters();
+    };
+
+    // --- 3. ЛОГИКА ОКНА ПОДКЛАССОВ (ПРАВЫЙ КЛИК) ---
+    window.openSubclassModal = function(e, cls) {
+        e.preventDefault(); // Остановить стандартное меню браузера (контекстное меню Windows)
+        editingClassName = cls;
+
+        const allSubs = SYSTEM_CLASSES_MAP[currentSystem][cls];
+        const activeSubs = activeSubclassesState[cls];
+        const container = document.getElementById('subclass-list-container');
+
+        container.innerHTML = '';
+
+        allSubs.forEach((sub, idx) => {
+            const isChecked = activeSubs.has(sub);
+            const mockCount = Math.floor(Math.random() * 3);  // Имитация счетчика
+
+            container.innerHTML += `
+                <label>
+                    <div style="display:flex; align-items:center;">
+                        <input type="checkbox" id="subcb-${idx}" value="${sub}" ${isChecked ? 'checked' : ''}>
+                        <span>${sub}</span>
+                    </div>
+                    <span>${mockCount}</span>
+                </label>
+            `;
+        });
+
+        document.getElementById('subclass-modal').style.display = 'flex';
+    };
+
+    window.closeSubclassModal = function() {
+        document.getElementById('subclass-modal').style.display = 'none';
+        editingClassName = "";
+    };
+
+    window.toggleAllSubclasses = function(state) {
+        document.querySelectorAll('#subclass-list-container input[type="checkbox"]').forEach(cb => {
+            cb.checked = state;
+        });
+    };
+
+    window.submitSubclassModal = function() {
+        const checkboxes = document.querySelectorAll('#subclass-list-container input[type="checkbox"]');
+        activeSubclassesState[editingClassName].clear();
+
+        checkboxes.forEach(cb => {
+            if (cb.checked) {
+                activeSubclassesState[editingClassName].add(cb.value);
+            }
+        });
+
+        closeSubclassModal();
+        renderFilterBlocks();
+        applyFilters();
+    };
+
+    // --- Интеграция со сменой системы (из Файл -> Выбор системы) ---
+    const originalRegenerate = window.regenerateSystemData || function(){};
+    window.regenerateSystemData = function(systemName) {
+        // Устанавливаем и сбрасываем правильные классы под новую систему "DQS_CAL4" или "DQS_CAL6"
+        resetSubclassStates(systemName);
+        originalRegenerate(systemName);
+        renderFilterBlocks();
+    };
+
+
+
+
+
+
+
+
+
+
     function toggleBlock(block) {
         if (block.classList.contains('active') || block.classList.contains('yellow')) {
             block.classList.remove('active', 'yellow');
@@ -1642,27 +1875,41 @@
         applyFilters();
     }
 
-    function setAllFilters(containerId, isActive) {
-        document.querySelectorAll(`#${containerId} .filter-block`).forEach(block => {
-            block.classList.remove('active', 'inactive', 'yellow');
-            if (isActive) {
-                if(block.dataset.value === "Электроизол") block.classList.add('yellow');
-                else block.classList.add('active');
-            } else {
-                block.classList.add('inactive');
+     window.setAllFilters = function(containerId, isActive) {
+        if (containerId === 'content-classes') {
+            // Если это фильтры классов, используем новую логику с подклассами
+            for (let cls in activeSubclassesState) {
+                if (isActive) {
+                    activeSubclassesState[cls] = new Set(SYSTEM_CLASSES_MAP[currentSystem][cls]);
+                } else {
+                    activeSubclassesState[cls].clear();
+                }
             }
-        });
-        applyFilters();
-    }
+            renderFilterBlocks();
+            applyFilters();
+        } else {
+            // Если это фильтры камер, оставляем старую логику работы со стилями
+            document.querySelectorAll(`#${containerId} .filter-block`).forEach(block => {
+                block.classList.remove('active', 'inactive', 'yellow');
+                block.classList.add(isActive ? 'active' : 'inactive');
+            });
+            applyFilters();
+        }
+    };
 
-    function activateTop5() {
-        document.querySelectorAll('#content-classes .filter-block').forEach(block => {
-            block.classList.remove('active', 'inactive', 'yellow');
-            if (TOP_5_CLASSES.includes(block.dataset.value)) block.classList.add('active');
-            else block.classList.add('inactive');
-        });
+    window.activateTop5 = function() {
+        for (let cls in activeSubclassesState) {
+            if (window.TOP_5_CLASSES.includes(cls)) {
+                // Если класс в ТОП-5, включаем все его подклассы
+                activeSubclassesState[cls] = new Set(SYSTEM_CLASSES_MAP[currentSystem][cls]);
+            } else {
+                // Иначе полностью выключаем
+                activeSubclassesState[cls].clear();
+            }
+        }
+        renderFilterBlocks();
         applyFilters();
-    }
+    };
 
     function toggleCameraGroup(btn, groupName) {
         const cams = document.querySelectorAll(`#content-cameras .filter-block[data-type="camera"]`);
@@ -3244,12 +3491,12 @@ function modalSetAllClasses(state) {
     document.querySelectorAll('#modal-class-list input[type="checkbox"]').forEach(cb => cb.checked = state);
 }
 
-function modalSetStandard() {
-    // Кнопка "Стандарт" - включает только ТОР 5
-    document.querySelectorAll('#modal-class-list input[type="checkbox"]').forEach(cb => {
-        cb.checked = TOP_5_CLASSES.includes(cb.value);
-    });
-}
+window.modalSetStandard = function() {
+        // Галочка ставится только если класс входит в Топ-5 текущей системы
+        document.querySelectorAll('#modal-class-list input[type="checkbox"]').forEach(cb => {
+            cb.checked = window.TOP_5_CLASSES.includes(cb.value);
+        });
+    };
 
 function modalApplyClasses() {
     const checkboxes = document.querySelectorAll('#modal-class-list input[type="checkbox"]');
@@ -3497,5 +3744,34 @@ function editAction3() {
         }
     });
 </script>
+
+ <!-- Модальное окно выбора ПОДКЛАССОВ дефекта (по правому клику) -->
+    <div id="subclass-modal" class="modal-overlay">
+        <div style="background-color: #f0f0f0; border: 1px solid #a0a0a0; border-radius: 6px; width: 380px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column;">
+            <!-- Шапка окна -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 12px 5px 12px;">
+                <span style="color: #000; font-size: 12px;">Выбрать класс дефектов</span>
+                <button onclick="closeSubclassModal()" style="background: transparent; border: none; font-size: 18px; color: #555; cursor: pointer; padding: 0; line-height: 10px;" onmouseover="this.style.color='#000'" onmouseout="this.style.color='#555'">×</button>
+            </div>
+
+            <div style="padding: 10px 15px 15px 15px; display: flex; gap: 10px;">
+                <!-- Список сбоку -->
+                <div class="subclass-list-box" style="flex: 1;" id="subclass-list-container">
+                    <!-- Заполняется динамически -->
+                </div>
+
+                <!-- Кнопки управления справа -->
+                <div style="width: 85px; display: flex; flex-direction: column; gap: 6px;">
+                    <button class="cam-modal-btn" onclick="toggleAllSubclasses(true)">Все</button>
+                    <button class="cam-modal-btn" onclick="toggleAllSubclasses(false)">Нет</button>
+
+                    <div style="flex: 1;"></div>
+
+                    <button class="cam-modal-btn" style="border: 2px solid #404040;" onclick="submitSubclassModal()">Ok</button>
+                    <button class="cam-modal-btn" onclick="closeSubclassModal()">Выход</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
