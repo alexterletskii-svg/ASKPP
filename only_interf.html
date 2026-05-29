@@ -2097,8 +2097,6 @@
         const defects = [];
         let defectIdCounter = 40000;
 
-        // Рассчитываем количество кластеров на основе общего количества дефектов
-        // В среднем в кластере 2-6 дефектов, поэтому делим на среднее (4)
         const avgDefectsPerCluster = 4;
         const clusterCount = Math.max(5, Math.ceil(defectsCount / avgDefectsPerCluster));
 
@@ -2108,12 +2106,24 @@
             const clusterSize = 2 + Math.floor(rand() * 5);
 
             for (let i = 0; i < clusterSize; i++) {
-                // Если достигли нужного количества дефектов - выходим
                 if (defects.length >= defectsCount) break;
 
                 let classCode = ALL_CLASSES[Math.floor(rand() * ALL_CLASSES.length)];
                 let camera = ALL_CAMERAS[Math.floor(rand() * ALL_CAMERAS.length)];
                 let top = Math.max(0.5, Math.min(99.5, clusterTop + (rand() - 0.5) * 2));
+
+                // --- НОВАЯ ЛОГИКА ГЕНЕРАЦИИ ЯРЛЫКА (БЕРЕМ РЕАЛЬНЫЕ ПОДКЛАССЫ) ---
+                let validSubclassesArr = SYSTEM_CLASSES_MAP[currentSystem][classCode] || ["Класс : 000 (ID=0)"];
+
+                // Функция вытаскивает "019(a)" из строки "Класс : 019(a) (ID=15)"
+                const generateRealLabel = () => {
+                    let randomSubStr = validSubclassesArr[Math.floor(rand() * validSubclassesArr.length)];
+                    let extracted = randomSubStr.replace("Класс : ", "").split(" (ID=")[0].trim();
+                    return extracted === "-" ? classCode : extracted; // Если там просто "-", берем имя класса
+                };
+
+                const shortCode = generateRealLabel();
+                // ---------------------------------------------------------------
 
                 let realLengthMeters = (5 + Math.floor(rand() * 20)) / 1000;
                 let isHuge = false;
@@ -2123,8 +2133,6 @@
                     realLengthMeters = (50 + Math.floor(rand() * 300));
                     isHuge = true;
                 }
-
-                const shortCode = Math.floor(100 + rand() * 899).toString();
 
                 let mapStyle = 'md-red';
                 let isGroup = false;
@@ -2137,14 +2145,14 @@
                     isGroup = true;
                     const groupSize = 2 + Math.floor(rand() * 3);
                     for(let j=0; j<groupSize; j++) {
-                        groupItems.push({ id: defectIdCounter++, classCode: shortCode });
+                        groupItems.push({ id: defectIdCounter++, label: generateRealLabel() });
                     }
                 } else if (typeRand < 0.2 && !isHuge) {
                     mapStyle = 'md-hatched';
                     isHatched = true;
                     const groupSize = 3 + Math.floor(rand() * 5);
                     for(let j=0; j<groupSize; j++) {
-                        groupItems.push({ id: defectIdCounter++, classCode: shortCode });
+                        groupItems.push({ id: defectIdCounter++, label: generateRealLabel() });
                     }
                 }
 
@@ -2152,9 +2160,8 @@
                     isGroup = true;
                     const groupSize = 2 + Math.floor(rand() * 4);
                     for(let j=0; j<groupSize; j++) {
-                        groupItems.push({ id: defectIdCounter++, classCode: Math.floor(100 + rand() * 899).toString() });
+                        groupItems.push({ id: defectIdCounter++, label: generateRealLabel() });
                     }
-                    // Исправлено: теперь мы еще и класс задаем правильно!
                     if (rand() < 0.5) {
                         isHatched = true;
                         mapStyle = 'md-hatched';
@@ -2211,23 +2218,29 @@
         }
 
         // ====== ГЕНЕРАЦИЯ ЭКСТРА ДЛИННЫХ ДЕФЕКТОВ ДЛЯ НАЛОЖЕНИЯ ======
-        // Добавляем дополнительные длинные дефекты, но не больше, чем нужно до DEFECT_MAX
         const extraDefects = Math.min(10, DEFECT_MAX - defects.length);
         for (let i = 0; i < extraDefects; i++) {
             let classCode = ALL_CLASSES[Math.floor(rand() * ALL_CLASSES.length)];
             let camera = ALL_CAMERAS[Math.floor(rand() * ALL_CAMERAS.length)];
-            let mapZone = zonePool[Math.floor(rand() * 2) === 0 ? 0 : 4]; // Форсируем кромки, чтобы наслаивались
+            let mapZone = zonePool[Math.floor(rand() * 2) === 0 ? 0 : 4];
 
-            let top = rand() * 40; // Старт в верхней половине
-            let realLengthMeters = length * (0.3 + rand() * 0.5); // От 30% до 80% всего рулона
+            let validSubclassesArr = SYSTEM_CLASSES_MAP[currentSystem][classCode] || ["Класс : 000 (ID=0)"];
+            const generateRealLabel = () => {
+                let randomSubStr = validSubclassesArr[Math.floor(rand() * validSubclassesArr.length)];
+                let extracted = randomSubStr.replace("Класс : ", "").split(" (ID=")[0].trim();
+                return extracted === "-" ? classCode : extracted;
+            };
+
+            let top = rand() * 40;
+            let realLengthMeters = length * (0.3 + rand() * 0.5);
             let isHuge = true;
             let isHatched = rand() > 0.4;
-            const shortCode = Math.floor(100 + rand() * 899).toString();
+            const shortCode = generateRealLabel();
 
             let groupItems = [];
             const groupSize = 2 + Math.floor(rand() * 4);
             for(let j=0; j<groupSize; j++) {
-                groupItems.push({ id: defectIdCounter++, classCode: Math.floor(100 + rand() * 899).toString() });
+                groupItems.push({ id: defectIdCounter++, label: generateRealLabel() });
             }
 
             defects.push({
@@ -2356,7 +2369,8 @@ function markDefectAsViewed(defectId) {
         });
     }
 
-    function showDefectPopup(e, defect) {
+    // Попап для режима "Ярлыки"
+function showDefectPopup(e, defect) {
     e.stopPropagation();
     const popup = document.getElementById('defect-popup');
     popup.innerHTML = '';
@@ -2364,13 +2378,13 @@ function markDefectAsViewed(defectId) {
     defect.groupItems.forEach((item, idx) => {
         const div = document.createElement('div');
         div.className = 'popup-item';
-        let txt = `* ${item.id} - ${item.classCode}`;
+        let txt = `* ${item.id} - ${item.label}`; // <- Теперь используем label вместо classCode
         if (defect.isHatched && idx === defect.groupItems.length - 1) txt += ' x';
         div.innerText = txt;
         div.onclick = (ev) => {
             ev.stopPropagation();
             markDefectAsViewed(defect.id);
-            fillDefectProps({...defect, id: item.id, classCode: item.classCode});
+            fillDefectProps({...defect, id: item.id, label: item.label}); // <- Также обновляем панель свойств
             popup.style.display = 'none';
         };
         popup.appendChild(div);
@@ -2378,41 +2392,32 @@ function markDefectAsViewed(defectId) {
 
     popup.style.display = 'block';
 
-    // Используем clientX/clientY для правильного позиционирования
     let left = e.clientX + 2;
     let top = e.clientY + 2;
-
-    // Проверяем, не выходит ли меню за правый край экрана
     const popupRect = popup.getBoundingClientRect();
-    if (left + popupRect.width > window.innerWidth) {
-        left = e.clientX - popupRect.width - 2;
-    }
-
-    // Проверяем, не выходит ли меню за нижний край экрана
-    if (top + popupRect.height > window.innerHeight) {
-        top = window.innerHeight - popupRect.height - 2;
-    }
+    if (left + popupRect.width > window.innerWidth) left = e.clientX - popupRect.width - 2;
+    if (top + popupRect.height > window.innerHeight) top = window.innerHeight - popupRect.height - 2;
 
     popup.style.left = left + 'px';
     popup.style.top = top + 'px';
 }
 
-    function showRealModePopup(e, defect) {
+// Попап для "Реального" режима
+function showRealModePopup(e, defect) {
     e.stopPropagation();
     const popup = document.getElementById('defect-popup');
     popup.innerHTML = '';
 
-    // Для длинных дефектов с группами показываем меню
     if (defect.groupItems && defect.groupItems.length > 0) {
         defect.groupItems.forEach((item, idx) => {
             const div = document.createElement('div');
             div.className = 'popup-item';
-            let txt = `* ${item.id} - ${item.classCode}`;
+            let txt = `* ${item.id} - ${item.label}`; // <- Теперь используем label
             if (defect.isHatched && idx === defect.groupItems.length - 1) txt += ' x';
             div.innerText = txt;
             div.onclick = (ev) => {
                 ev.stopPropagation();
-                fillDefectProps({...defect, id: item.id, classCode: item.classCode});
+                fillDefectProps({...defect, id: item.id, label: item.label}); // <- И тут
                 popup.style.display = 'none';
             };
             popup.appendChild(div);
@@ -2420,25 +2425,15 @@ function markDefectAsViewed(defectId) {
 
         popup.style.display = 'block';
 
-        // Используем clientX/clientY для правильного позиционирования
         let left = e.clientX + 2;
         let top = e.clientY + 2;
-
-        // Проверяем, не выходит ли меню за правый край экрана
         const popupRect = popup.getBoundingClientRect();
-        if (left + popupRect.width > window.innerWidth) {
-            left = e.clientX - popupRect.width - 2;
-        }
-
-        // Проверяем, не выходит ли меню за нижний край экрана
-        if (top + popupRect.height > window.innerHeight) {
-            top = window.innerHeight - popupRect.height - 2;
-        }
+        if (left + popupRect.width > window.innerWidth) left = e.clientX - popupRect.width - 2;
+        if (top + popupRect.height > window.innerHeight) top = window.innerHeight - popupRect.height - 2;
 
         popup.style.left = left + 'px';
         popup.style.top = top + 'px';
     }
-    // Для крестиков (точечных дефектов) меню не показываем - просто заполняем свойства
     else {
         fillDefectProps(defect);
         popup.style.display = 'none';
