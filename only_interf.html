@@ -2245,6 +2245,25 @@
         return coilDataStore[coilId];
     }
 
+
+    // --- ОТМЕТКА О ПРОСМОТРЕ ДЕФЕКТА ---
+function markDefectAsViewed(defectId) {
+    if (!currentActiveCoilData || !currentActiveCoilData.defects) return;
+
+    // Ищем оригинальный дефект (по которому строится ярлык на карте)
+    const defect = currentActiveCoilData.defects.find(d => d.id === defectId);
+    if (defect && !defect.isViewed) {
+        defect.isViewed = true; // Запоминаем в данных
+
+        // Если сейчас открыт режим ярлыков, сразу дописываем ' x' в DOM
+        const mapEl = document.querySelector(`.defect-lbl[data-defect-id="${defect.id}"]`);
+        if (mapEl) {
+            mapEl.innerText += ' x';
+        }
+    }
+}
+
+
     function fillDefectProps(defect) {
         const set = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
         set('p-id', defect.id); set('p-class', defect.classCode); set('p-prod', defect.label);
@@ -2296,6 +2315,7 @@
             tr.addEventListener('click', () => {
                 document.querySelectorAll('#defects-tbody tr').forEach(r => r.classList.remove('selected'));
                 tr.classList.add('selected');
+                markDefectAsViewed(defect.id);
                 fillDefectProps(defect);
             });
 
@@ -2349,6 +2369,7 @@
         div.innerText = txt;
         div.onclick = (ev) => {
             ev.stopPropagation();
+            markDefectAsViewed(defect.id);
             fillDefectProps({...defect, id: item.id, classCode: item.classCode});
             popup.style.display = 'none';
         };
@@ -2532,13 +2553,19 @@
                         case 'right-edge': d.style.left = '95%'; break;
                     }
                 }
-            } else {
+             } else {
                 // РЕЖИМ ЯРЛЫКОВ
                 d.className = `defect-lbl class-filter-target ${defect.mapStyle}`;
                 let labelText = defect.label;
                 if (defect.mapStyle === 'md-hatched') {
                     labelText += ' (x)';
                 }
+
+                // НОВОЕ: Если мы уже осматривали его, сразу добавляем ' x'
+                if (defect.isViewed) {
+                    labelText += ' x';
+                }
+
                 d.innerText = labelText;
                 d.style.top = defect.top + '%';
 
@@ -2560,6 +2587,9 @@
 
             d.addEventListener('click', function(e) {
                 e.stopPropagation();
+
+                // Фиксируем просмотр ярлыка
+                markDefectAsViewed(defect.id);
 
                 if (isRealMode) {
                     // В реальном режиме для крестиков (точечных дефектов) сразу заполняем свойства
@@ -3731,6 +3761,7 @@ function editAction3() {
             if (nextIndex !== sameSideIndex || e.key) {
                 const targetRow = sameSideRows[nextIndex]; // Берем следующую строку с ТАКОЙ ЖЕ стороны
                 const defectId = Number(targetRow.dataset.defectId);
+                markDefectAsViewed(defectId);
 
                 // 1. Выделяем строку в таблице
                 document.querySelectorAll('#defects-tbody tr').forEach(r => r.classList.remove('selected'));
