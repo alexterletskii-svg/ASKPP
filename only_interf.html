@@ -2412,12 +2412,12 @@ function showRealModePopup(e, defect) {
         defect.groupItems.forEach((item, idx) => {
             const div = document.createElement('div');
             div.className = 'popup-item';
-            let txt = `* ${item.id} - ${item.label}`; // <- Теперь используем label
+            let txt = `* ${item.id} - ${item.label}`;
             if (defect.isHatched && idx === defect.groupItems.length - 1) txt += ' x';
             div.innerText = txt;
             div.onclick = (ev) => {
                 ev.stopPropagation();
-                fillDefectProps({...defect, id: item.id, label: item.label}); // <- И тут
+                fillDefectProps({...defect, id: item.id, label: item.label});
                 popup.style.display = 'none';
             };
             popup.appendChild(div);
