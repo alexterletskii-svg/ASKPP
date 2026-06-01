@@ -747,6 +747,29 @@
         /* Желтый блок, когда выбрана только часть подклассов */
         .filter-block.yellow { background-color: #ffff00; color: black; }
 
+
+         /* --- Стили для статичной мини-карты --- */
+        .minimap-sticky {
+            position: sticky;
+            top: 28px; /* Высота шапки заголовков */
+            width: 100%;
+            background-color: #5a5a5a;
+            z-index: 90;
+            cursor: pointer;
+            /* Плавное позиционирование для красоты */
+            /* behavior: smooth не нужен тут, но рамка будет двигаться быстро */
+        }
+        .minimap-indicator {
+            position: absolute;
+            width: 100%;
+            border: 1px solid #ffffff;
+            background-color: rgba(255, 255, 255, 0.2);
+            z-index: 100;
+            pointer-events: none; /* Чтоб клики проходили сквозь него на карту */
+            box-shadow: 0px 0px 3px rgba(0,0,0,0.5);
+            box-sizing: border-box;
+            left: 0;
+        }
     </style>
 </head>
 <body>
@@ -834,13 +857,13 @@
                 <div class="submenu">
                     <div class="dropdown-item" onclick="toggleRadioMenu(this)">0.1 Meter</div>
                     <div class="dropdown-item" onclick="toggleRadioMenu(this)">1 Meter</div>
-                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">10 Meter</div>
+                    <div class="dropdown-item " onclick="toggleRadioMenu(this)">10 Meter</div>
                     <div class="dropdown-item" onclick="toggleRadioMenu(this)">50 Meter</div>
-                    <div class="dropdown-item checked" onclick="toggleRadioMenu(this)">100 Meter</div>
-                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">200 Meter</div>
+                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">100 Meter</div>
+                    <div class="dropdown-item checked" onclick="toggleRadioMenu(this)">200 Meter</div>
                     <div class="dropdown-item" onclick="toggleRadioMenu(this)">500 Meter</div>
-                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">1000 Meter</div>
-                    <div class="dropdown-item" onclick="toggleRadioMenu(this)">2500 Meter</div>
+                    <div class="dropdown-item " onclick="toggleRadioMenu(this)">1000 Meter</div>
+                    <div class="dropdown-item " onclick="toggleRadioMenu(this)">2500 Meter</div>
                     <div class="dropdown-item" onclick="toggleRadioMenu(this)">5000 Meter</div>
                     <div class="dropdown-item" onclick="toggleRadioMenu(this)">10000 Meter</div>
                     <div class="dropdown-item" onclick="toggleRadioMenu(this)">100000 Meter</div>
@@ -1698,8 +1721,8 @@
     let activeMaxTop = 100; // Показываем всю длину рулона
 
     // --- НАСТРОЙКИ ГЕНЕРАЦИИ ДЕФЕКТОВ ---
-    const DEFECT_MIN = 150; // Минимальное количество дефектов на рулон
-    const DEFECT_MAX = 350; // Максимальное количество дефектов на рулон
+    const DEFECT_MIN = 300; // Минимальное количество дефектов на рулон
+    const DEFECT_MAX = 500; // Максимальное количество дефектов на рулон
 
     document.addEventListener('click', function(e) {
         const popup = document.getElementById('defect-popup');
@@ -2440,7 +2463,12 @@ function showRealModePopup(e, defect) {
     }
 }
 
-    function generateMapData(coilData) {
+
+
+
+
+
+     function generateMapData(coilData) {
         if (!coilData) return;
         const c1 = document.getElementById('mc1'); const c2 = document.getElementById('mc2');
         const c3 = document.getElementById('mc3'); const c4 = document.getElementById('mc4');
@@ -2450,27 +2478,23 @@ function showRealModePopup(e, defect) {
         let html1 = '<div class="red-guide"></div>';
         let html2 = '';
         let html3 = '<div class="red-guide"></div>';
-        let html4 = '<div class="track-border track-border-l"></div><div class="track-border track-border-r"></div>';
-        let html5 = '';
+
+        let html4_inner = ''; // Контейнер для статичной мини-карты
+        let html5_inner = ''; // Контейнер для статичной линейки
+
         let html6 = '<div class="red-guide"></div>';
         let html7 = '';
         let html8 = '<div class="red-guide"></div>';
 
         let startM = 0; let totalLines = 150; let stepPct = 100 / totalLines;
 
+        // Генерация скроллящегося фона и сетки основной карты
         for(let i=0; i<=totalLines; i++) {
             let topP = i * stepPct;
 
-            if(i < totalLines) {
-                html4 += `<div class="map-segment-overlay" style="top:${topP}%; height:${stepPct}%;" onclick="toggleSegment(${topP + (stepPct/2)})" title="Показать дефекты в районе ${i*10}m"></div>`;
-            }
-
             if(i > 0) {
-                html4 += `<div class="g-line-green" style="top:${topP}%;"></div>`;
-                html5 += `<div class="g-line-b" style="top:${topP}%;"></div>`;
-                html5 += `<div class="scale-num" style="top:${topP}%;">${i*10}</div>`;
-            } else {
-                html5 += `<div class="scale-num" style="top:0%; transform:none; margin-top:0;">0</div>`;
+                // Сетка для миникарты
+                html4_inner += `<div class="g-line-green" style="top:${topP}%;"></div>`;
             }
 
             if(i % 5 === 0 && i > 0) {
@@ -2484,6 +2508,31 @@ function showRealModePopup(e, defect) {
             }
         }
 
+        // --- ГЕНЕРАЦИЯ ЦИФР И ЛИНИЙ В ЦЕНТРЕ (Привязано к рулону, без слипания!) ---
+        let realCoilLen = coilData.length || 5000;
+
+        // Шагаем каждые 50 метров: 50м - короткая черта, 100м - длинная черта + цифра
+        for (let m = 0; m <= realCoilLen; m += 50) {
+            let topP = (m / realCoilLen) * 100;
+
+            if (m % 100 === 0) {
+                // Большая черточка (на всю ширину) и цифра
+                html5_inner += `<div class="g-line-b" style="top:${topP}%; width:100%; left:0;"></div>`;
+                let displayVal = m / 10; // 100м -> 10, 200m -> 20
+
+                if (m === 0) {
+                    html5_inner += `<div class="scale-num" style="top:0%; transform:none; margin-top:0;">0</div>`;
+                } else {
+                    html5_inner += `<div class="scale-num" style="top:${topP}%;">${displayVal}</div>`;
+                }
+            } else {
+                // Короткая промежуточная черточка (чтобы смотрелось как линейка)
+                html5_inner += `<div class="g-line-b" style="top:${topP}%; width:40%; left:0;"></div>`;
+            }
+        }
+        // -------------------------------------------------------------------------
+
+        // Точки дефектов для мини-карты
         coilData.defects.forEach(defect => {
             const isFace = defect.camera.includes('Верх');
             const dotClass = isFace ? 'face' : 'back';
@@ -2491,15 +2540,31 @@ function showRealModePopup(e, defect) {
             defect.minimapLines.forEach(line => {
                 const lineTop = defect.top + line.topOffset;
                 const lineLeft = defect.baseLeft + line.leftOffset;
-
                 if(lineTop >= 0 && lineTop <= 100 && lineLeft >= 0 && (lineLeft + line.width) <= 100) {
-                    html4 += `<div class="minimap-dot ${dotClass}" style="top:${lineTop}%; left:${lineLeft}%; width:${line.width}%;" data-class-code="${defect.classCode}" data-camera="${defect.camera}"></div>`;
+                    html4_inner += `<div class="minimap-dot ${dotClass}" style="top:${lineTop}%; left:${lineLeft}%; width:${line.width}%;" data-class-code="${defect.classCode}" data-camera="${defect.camera}"></div>`;
                 }
             });
         });
 
+        // Создаем статичную обертку для колонки мини-карты
+        let html4 = `
+            <div class="minimap-sticky" id="minimap-sticky" onclick="seekFromMinimap(event)">
+                <div class="track-border track-border-l"></div>
+                <div class="track-border track-border-r"></div>
+                ${html4_inner}
+                <div id="minimap-indicator" class="minimap-indicator"></div>
+            </div>`;
+
+        // Создаем статичную обертку для колонки с цифрами-линейкой
+        let html5 = `
+            <div class="minimap-sticky" id="scale-sticky" style="background-color: transparent; cursor: default;">
+                ${html5_inner}
+            </div>`;
+
         c1.innerHTML = html1; c2.innerHTML = html2; c3.innerHTML = html3; c4.innerHTML = html4;
         c5.innerHTML = html5; c6.innerHTML = html6; c7.innerHTML = html7; c8.innerHTML = html8;
+
+        setTimeout(() => { if(typeof updateMapZoom === 'function') updateMapZoom(); }, 50);
 
         const mkDefect = (parent, defect) => {
             const d = document.createElement('div');
@@ -2509,7 +2574,6 @@ function showRealModePopup(e, defect) {
                 if (defect.isHuge || defect.realLength > 10) {
                     d.className = 'defect-real-block class-filter-target';
 
-                    // Z-index: заштрихованные поверх сплошных
                     if (defect.isHatched) {
                         d.classList.add('hatched-bg');
                         d.style.zIndex = '12';
@@ -2519,7 +2583,6 @@ function showRealModePopup(e, defect) {
 
                     d.style.top = defect.top + '%';
 
-                    // Высота в рамках колонки. Ограничиваем, чтобы не вылезло за 100%
                     let heightPct = (defect.realLength / coilData.length) * 100;
                     if (defect.top + heightPct > 100) {
                         heightPct = 100 - defect.top;
@@ -2527,19 +2590,17 @@ function showRealModePopup(e, defect) {
                     d.style.height = heightPct + '%';
                     d.style.width = '7%'; // Широкий блок
 
-                    // Позиционирование по ширине с прижатием к краям
                     if (defect.mapZone.includes('left')) d.style.left = '0%';
                     else if (defect.mapZone.includes('right')) d.style.left = '93%';
                     else d.style.left = '46.5%';
 
                 } else {
-                    // Точечные дефекты (крестики) на самом верхнем слое
+                    // Точечные дефекты
                     d.className = 'defect-real-cross class-filter-target';
                     d.style.zIndex = '15';
                     d.style.top = defect.top + '%';
                     d.innerText = '+';
 
-                    // Точное позиционирование крестиков
                     switch(defect.mapZone) {
                         case 'left-edge': d.style.left = '5%'; break;
                         case 'left-mid': d.style.left = '25%'; break;
@@ -2556,7 +2617,6 @@ function showRealModePopup(e, defect) {
                     labelText += ' (x)';
                 }
 
-                // НОВОЕ: Если мы уже осматривали его, сразу добавляем ' x'
                 if (defect.isViewed) {
                     labelText += ' x';
                 }
@@ -2579,15 +2639,12 @@ function showRealModePopup(e, defect) {
             d.dataset.defectId = defect.id;
             d.title = `* ${defect.id} - ${defect.classCode}`;
 
-
             d.addEventListener('click', function(e) {
                 e.stopPropagation();
 
-                // Фиксируем просмотр ярлыка
                 markDefectAsViewed(defect.id);
 
                 if (isRealMode) {
-                    // В реальном режиме для крестиков (точечных дефектов) сразу заполняем свойства
                     if (defect.isHuge || defect.realLength > 10) {
                         if (defect.groupItems && defect.groupItems.length > 0) {
                             showRealModePopup(e, defect);
@@ -2600,23 +2657,18 @@ function showRealModePopup(e, defect) {
                         document.getElementById('defect-popup').style.display = 'none';
                     }
                 } else {
-                    // === ИСПРАВЛЕНИЕ ЗДЕСЬ ===
-                    // В режиме ярлыков: показываем меню ТОЛЬКО если стиль ярлыка белый или заштрихованный
                     if (defect.mapStyle === 'md-white-group' || defect.mapStyle === 'md-hatched') {
                         showDefectPopup(e, defect);
                     } else {
-                        // Красный 'md-red' всегда одиночный, меню прячем
                         document.getElementById('defect-popup').style.display = 'none';
                     }
                     fillDefectProps(defect);
                 }
 
-                // Очищаем старую подсветку со всех дефектов
                 document.querySelectorAll('.class-filter-target').forEach(el => {
                     el.classList.remove('active-defect-label', 'active-defect-real');
                 });
 
-                // Добавляем белую подсветку
                 if (!isRealMode) {
                     this.classList.add('active-defect-label');
                 } else {
@@ -2631,24 +2683,22 @@ function showRealModePopup(e, defect) {
                 }
             });
 
-
-
-
-
-
             parent.appendChild(d);
         };
 
-        // Генерируем дефекты на обеих сторонах
         coilData.defects.forEach(defect => {
             const isFace = defect.camera.includes('Верх');
             if (isFace) {
-                mkDefect(c2, defect);  // Лицевая сторона
+                mkDefect(c2, defect);
             } else {
-                mkDefect(c7, defect);  // Обратная сторона
+                mkDefect(c7, defect);
             }
         });
     }
+
+
+
+
 
     function openRollModal() {
         const modal = document.getElementById('roll-search-modal');
@@ -3058,19 +3108,22 @@ function closeAllMenus() {
 
 
     // Переключатель галочек (радио-режим) для подменю "Карта рулона"
-function toggleRadioMenu(clickedElement) {
-    // 1. Находим блок подменю (родительский контейнер .submenu)
-    const submenuBlock = clickedElement.parentElement;
+let currentMapScale = 500;
 
-    // 2. Убираем класс 'checked' у всех элементов внутри этого подменю
+function toggleRadioMenu(clickedElement) {
+    const submenuBlock = clickedElement.parentElement;
     const items = submenuBlock.querySelectorAll('.dropdown-item');
     items.forEach(item => item.classList.remove('checked'));
-
-    // 3. Добавляем класс 'checked' тому элементу, по которому кликнули
     clickedElement.classList.add('checked');
 
-    // Здесь можно вызывать логику приложения в зависимости от того, что мы выбрали
-    console.log('Выбрана опция:', clickedElement.innerText.replace('✓ ', '').trim());
+    // ТУТ ИЗМЕНЕНИЕ: Если кликнули на размер в метрах, вытаскиваем число
+    let text = clickedElement.innerText.replace('✓ ', '').trim();
+    if (text.includes('Meter')) {
+        currentMapScale = parseFloat(text);
+        if (typeof updateMapZoom === 'function') updateMapZoom();
+    }
+
+    console.log('Выбрана опция:', text);
 }
 
 // Обработчик пунктов меню
@@ -3831,6 +3884,121 @@ function editAction3() {
             }
         }
     });
+
+
+
+
+   // =========================================================
+    // СТАТИЧНАЯ МИНИ-КАРТА (Белый ползунок и клики)
+    // =========================================================
+    function updateMinimap() {
+        const scrollEl = document.querySelector('.map-unified-scroll');
+        const stickyEl = document.getElementById('minimap-sticky');
+        const scaleStickyEl = document.getElementById('scale-sticky'); // <-- Наша новая линейка
+        const indicatorEl = document.getElementById('minimap-indicator');
+
+        if(!scrollEl || !stickyEl || !indicatorEl || !currentActiveCoilData) return;
+
+        // 1. Делаем контейнеры липкими по размеру видимого экрана
+        const visibleHeight = scrollEl.clientHeight - 28;
+        stickyEl.style.height = visibleHeight + 'px';
+        if (scaleStickyEl) scaleStickyEl.style.height = visibleHeight + 'px'; // <-- Применяем и к линейке
+
+
+
+
+
+        // 2. Считаем ВЫСОТУ белого прямоугольника на основе меню
+        // currentMapScale (например, 100m). Длина рулона: currentActiveCoilData.length (например, 4500m)
+        const totalLen = currentActiveCoilData.length || 5000;
+        let boxHeightPct = (currentMapScale / totalLen) * 100;
+
+        // Ограничиваем, чтобы рамка не была больше 100% и не меньше 0.5% (чтобы её не потерять из виду)
+        boxHeightPct = Math.max(0.5, Math.min(boxHeightPct, 100));
+
+        // 3. Считаем ПОЗИЦИЮ белого прямоугольника (top)
+        // Процент прокрутки (от 0 до 1), с учетом того, что мы не можем прокрутить ниже нижней границы
+        const scrollableDistance = scrollEl.scrollHeight - scrollEl.clientHeight;
+        let scrollPct = 0;
+        if (scrollableDistance > 0) {
+            scrollPct = scrollEl.scrollTop / scrollableDistance;
+        }
+
+        // Позиция рамки: двигается так, чтобы на 100% прокрутки упираться строго в нижний край
+        const boxTopPct = scrollPct * (100 - boxHeightPct);
+
+        // Применяем
+        indicatorEl.style.height = `${boxHeightPct}%`;
+        indicatorEl.style.top = `${boxTopPct}%`;
+    }
+
+    document.querySelector('.map-unified-scroll').addEventListener('scroll', updateMinimap);
+    window.addEventListener('resize', updateMinimap);
+
+    // Функция: перескок к дефектам по клику на миникарте
+    window.seekFromMinimap = function(e) {
+        const stickyEl = document.getElementById('minimap-sticky');
+        const scrollEl = document.querySelector('.map-unified-scroll');
+        if(!stickyEl || !scrollEl) return;
+
+        const rect = stickyEl.getBoundingClientRect();
+        // В каком месте по высоте кликнул пользователь (процент 0..1)
+        const clickY = e.clientY - rect.top;
+        const percentY = clickY / rect.height;
+
+        // <-- ИСПРАВЛЕНИЕ: Больше нет жестких 2500, берем динамическую высоту скролла!
+        let targetScrollTop = (percentY * scrollEl.scrollHeight) - (scrollEl.clientHeight / 2);
+
+        // Не даем уйти за границы экрана
+        targetScrollTop = Math.max(0, Math.min(targetScrollTop, scrollEl.scrollHeight - scrollEl.clientHeight));
+
+        scrollEl.scrollTo({ top: targetScrollTop, behavior: 'smooth' });
+
+        setTimeout(updateMinimap, 50); // перерисовываем рамку в месте скачка
+    };
+
+    // =========================================================
+    // ЛОГИКА ДИНАМИЧЕСКОГО ЗУМА (Растягивание карты)
+    // =========================================================
+    function updateMapZoom() {
+        const scrollEl = document.querySelector('.map-unified-scroll');
+        const mapGrid = document.getElementById('map-lanes-inner');
+
+        if (!scrollEl || !mapGrid || !currentActiveCoilData) return;
+
+        // Вычисляем видимую высоту без учета заголовка 28px
+        const visibleHeight = scrollEl.clientHeight > 28 ? scrollEl.clientHeight - 28 : 800;
+        const coilLength = currentActiveCoilData.length || 5000;
+
+        // Математика зума: если пользователь выбрал 100 Meter, то эти 100 м
+        // должны занимать 1 экран (visibleHeight). Следовательно, рулон в 5000 м
+        // должен занимать в 50 раз больше пикселей по высоте.
+        let calculatedHeight = (coilLength / currentMapScale) * 500;
+
+        // Карта не должна сплющиваться меньше физического размера экрана
+        let finalHeight = Math.max(visibleHeight, calculatedHeight);
+
+        // Запоминаем центр, чтобы при зумировании экран не улетал в начало
+        let centerPct = 0;
+        if (scrollEl.scrollHeight > scrollEl.clientHeight) {
+            centerPct = (scrollEl.scrollTop + (scrollEl.clientHeight / 2)) / scrollEl.scrollHeight;
+        }
+
+        // --- ГЛАВНАЯ МАГИЯ: МЕНЯЕМ ВЫСОТУ DOM-ЭЛЕМЕНТА ЧЕРЕЗ CSS ---
+        mapGrid.style.gridTemplateRows = `28px ${finalHeight}px`;
+
+        // Возвращаем скролл туда, куда смотрел человек
+        if (centerPct > 0) {
+            scrollEl.scrollTop = (centerPct * scrollEl.scrollHeight) - (scrollEl.clientHeight / 2);
+        }
+
+        // Обновляем ползунок под новые размеры
+        if (typeof updateMinimap === 'function') updateMinimap();
+    }
+
+    // Заставляем систему пересчитывать масштаб при изменении размеров окна
+    window.addEventListener('resize', updateMapZoom);
+
 </script>
 
  <!-- Модальное окно выбора ПОДКЛАССОВ дефекта (по правому клику) -->
