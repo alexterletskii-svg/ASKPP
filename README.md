@@ -3,3 +3,5 @@
 NL-L-2351N38086
 
 `Вынести js код в отдельный файл`
+
+# let currentMapScale
