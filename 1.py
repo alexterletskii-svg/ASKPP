@@ -64,22 +64,47 @@
 #     # Запускаем сканирование
 #     scan_and_write_paths(root_folder)
 
+#
+# input_file = "file_paths.txt"  # Твой файл с путями
+# output_file = "massiv bez roi.txt"  # Файл для вставки в HTML
+#
+# with open(input_file, "r", encoding="utf-8") as f:
+#     paths = [line.strip() for line in f if line.strip()]
+#
+# # Добавляем префикс "picture" к каждому пути, если надо добавить /
+# prefixed_paths = [f"picture{path}" for path in paths]
+#
+# # Форматируем как JavaScript массив
+# with open(output_file, "w", encoding="utf-8") as f:
+#     f.write("const allFilePaths = [\n")
+#     for i, path in enumerate(prefixed_paths):
+#         # Экранируем кавычки если есть
+#         escaped_path = path.replace('"', '\\"')
+#         comma = "," if i < len(prefixed_paths) - 1 else ""
+#         f.write(f'    "{escaped_path}"{comma}\n')
+#     f.write("];\n")
+#
+# print(f"Готово! Скопируй содержимое {output_file} в свой HTML")
 
-# Создай файл convert_paths.py и положи рядом с file_paths.txt
-input_file = "file_paths.txt"  # Твой файл с путями
-output_file = "massiv bez roi.txt"  # Файл для вставки в HTML
 
-with open(input_file, "r", encoding="utf-8") as f:
-    paths = [line.strip() for line in f if line.strip()]
 
-# Форматируем как JavaScript массив
-with open(output_file, "w", encoding="utf-8") as f:
-    f.write("const allFilePaths = [\n")
-    for i, path in enumerate(paths):
-        # Экранируем кавычки если есть
-        escaped_path = path.replace('"', '\\"')
-        comma = "," if i < len(paths) - 1 else ""
-        f.write(f'    "{escaped_path}"{comma}\n')
-    f.write("];\n")
-
-print(f"Готово! Скопируй содержимое {output_file} в свой HTML")
+#без кирилицы, кодирвка url
+# from urllib.parse import quote
+#
+# input_file = "file_paths.txt"
+# output_file = "massiv bez roi.txt"
+#
+# with open(input_file, "r", encoding="utf-8") as f:
+#     paths = [line.strip() for line in f if line.strip()]
+#
+# # Добавляем префикс и кодируем спецсимволы
+# prefixed_paths = [f"picture/{quote(path, safe='/')}" for path in paths]
+#
+# with open(output_file, "w", encoding="utf-8") as f:
+#     f.write("const allFilePaths = [\n")
+#     for i, path in enumerate(prefixed_paths):
+#         comma = "," if i < len(prefixed_paths) - 1 else ""
+#         f.write(f'    "{path}"{comma}\n')
+#     f.write("];\n")
+#
+# print(f"✅ Готово! {len(prefixed_paths)} путей с кодировкой")
