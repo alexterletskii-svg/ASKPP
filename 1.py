@@ -53,7 +53,7 @@
 #
 # if __name__ == "__main__":
 #     # Указываем ваш путь
-#     root_folder = r"D:\Тренажер АСКПП\АЭИП-ы\АЭИП-ы"
+#     root_folder = r"D:\Тренажер АСКПП\АЭИП-ы ROI\АЭИП-ы ROI"
 #
 #     # Проверяем существование папки
 #     if not os.path.exists(root_folder):
@@ -67,7 +67,7 @@
 
 # Создай файл convert_paths.py и положи рядом с file_paths.txt
 input_file = "file_paths.txt"  # Твой файл с путями
-output_file = "massiv bez roi.txt"  # Файл для вставки в HTML
+output_file = "massiv s roi.txt"  # Файл для вставки в HTML
 
 with open(input_file, "r", encoding="utf-8") as f:
     paths = [line.strip() for line in f if line.strip()]
