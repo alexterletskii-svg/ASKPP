@@ -5351,10 +5351,10 @@ document.addEventListener('keydown', function(e) {
 
     // --- ПЕРЕМЕННЫЕ ДЛЯ ЛИНЕЙКИ ---
     let isMeasuring = false;
-    let startX = 0, startY = 0;
+    let baseStartX = 0, baseStartY = 0, baseEndX = 0, baseEndY = 0; // храним "чистые" координаты без зума
     let rulerLine = null;
     let rulerText = null;
-    const PIXELS_TO_MM_RATIO = 0.05; // Коэффициент перевода пикселей в миллиметры
+    const PIXELS_TO_MM_RATIO = 0.05;
 
     if (btnSmall) btnSmall.classList.add('active-tab');
 
@@ -5396,7 +5396,7 @@ document.addEventListener('keydown', function(e) {
             transform-origin: 0 0; /* Точка отсчета вращения - левый край линии */
             pointer-events: none;
             z-index: 1000;
-            box-shadow: 0 0 2px rgba(0,0,0,0.5); /* Легкая тень, чтобы линию было видно на светлом фоне */
+            box-shadow: 0 0 2px rgba(0,0,0,0.5);
         }
 
         .img-ruler-text {
@@ -5420,22 +5420,30 @@ document.addEventListener('keydown', function(e) {
         rulerText = null;
     }
 
+    // Перерисовка при смене масштаба
+    function updateRulerOnZoom() {
+        if (rulerLine && rulerText) {
+            drawRuler(baseStartX * currentZoom, baseStartY * currentZoom, baseEndX * currentZoom, baseEndY * currentZoom);
+        }
+    }
+
     // --- ОБРАБОТЧИКИ МЫШИ ДЛЯ ЗУМА И ЛИНЕЙКИ ---
 
     // 1. Колесико мыши: Зуммирование (+/-)
     imgContainer.addEventListener('wheel', (e) => {
         if (!isLargeMode) return;
-        e.preventDefault(); // Выключаем стандартный скролл страницы/блока
+        e.preventDefault();
 
         if (e.deltaY < 0) {
-            currentZoom += 0.25; // Крутим вверх - приближаем
+            currentZoom += 0.25;
             if (currentZoom > 4) currentZoom = 4;
         } else {
-            currentZoom -= 0.25; // Крутим вниз - отдаляем
+            currentZoom -= 0.25;
             if (currentZoom < 0.5) currentZoom = 0.5;
         }
-        clearRuler();
+
         imgContainer.style.setProperty('--img-zoom', currentZoom);
+        updateRulerOnZoom(); // Перерисовываем масштабированную линейку
     }, { passive: false });
 
     // 2. Левый клик
@@ -5461,8 +5469,14 @@ document.addEventListener('keydown', function(e) {
             innerImgWrapper.appendChild(rulerText);
 
             const rect = innerImgWrapper.getBoundingClientRect();
-            startX = e.clientX - rect.left;
-            startY = e.clientY - rect.top;
+            let startX = e.clientX - rect.left;
+            let startY = e.clientY - rect.top;
+
+            // Фиксируем координаты без учета масштаба для последующего зума
+            baseStartX = startX / currentZoom;
+            baseStartY = startY / currentZoom;
+            baseEndX = baseStartX;
+            baseEndY = baseStartY;
 
             drawRuler(startX, startY, startX, startY);
             return;
@@ -5471,8 +5485,9 @@ document.addEventListener('keydown', function(e) {
         // Обычный клик - зум плюс
         currentZoom += 0.25;
         if (currentZoom > 4) currentZoom = 4;
-        clearRuler();
+
         imgContainer.style.setProperty('--img-zoom', currentZoom);
+        updateRulerOnZoom();
     });
 
     // 3. Движение мыши (меняем длину и наклон линии)
@@ -5489,7 +5504,11 @@ document.addEventListener('keydown', function(e) {
         currentX = Math.max(0, Math.min(currentX, rect.width));
         currentY = Math.max(0, Math.min(currentY, rect.height));
 
-        drawRuler(startX, startY, currentX, currentY);
+        // Обновляем позицию "безмасштабного" конца мыши
+        baseEndX = currentX / currentZoom;
+        baseEndY = currentY / currentZoom;
+
+        drawRuler(baseStartX * currentZoom, baseStartY * currentZoom, currentX, currentY);
     });
 
     // Отпускаем клик (заканчиваем рисовать)
@@ -5503,8 +5522,9 @@ document.addEventListener('keydown', function(e) {
         e.preventDefault();
         currentZoom -= 0.25;
         if (currentZoom < 0.5) currentZoom = 0.5;
-        clearRuler();
+
         imgContainer.style.setProperty('--img-zoom', currentZoom);
+        updateRulerOnZoom();
     });
 
     // --- ФУНКЦИЯ ОТРИСОВКИ ЛИНЕЙКИ ---
@@ -5590,8 +5610,6 @@ document.addEventListener('keydown', function(e) {
         }
     };
 })();
-
-
 
 
 
