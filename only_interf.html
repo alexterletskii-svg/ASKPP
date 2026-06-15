@@ -4916,13 +4916,25 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Устанавливаем начальные состояния для меню "Изображение дефекта"
+     // Устанавливаем начальные состояния для меню "Изображение дефекта"
     const defectImageMenuItems = document.querySelectorAll('#defect-image-menu .dropdown-item');
     defectImageMenuItems.forEach(item => {
         // Устанавливаем галочку для "Первоначальное" по умолчанию
         if (item.innerText.trim() === 'Первоначальное') {
             defectViewStates.original = true;
             item.classList.add('checked');
+        }
+        // ДОБАВЛЕНО: Устанавливаем галочку для ROI
+        if (item.innerText.trim() === 'Показатель "регион интересов" (Rol)') {
+            item.classList.add('checked');
+        }
+    });
+
+    // ДОБАВЛЕНО: Делаем кнопку "Rol" нажатой (серой) в панели снизу при запуске
+    const sbPanels = document.querySelectorAll('.sb-section.sb-left-section .sb-panel');
+    sbPanels.forEach(p => {
+        if (p.innerText.trim() === 'Rol') {
+            p.classList.add('active-tab');
         }
     });
 });
@@ -5087,7 +5099,7 @@ const defectViewStates = {
     aligned: false,
     stretched: false,
     '3d': false,
-    roi: false
+    roi: true
 };
 
 function toggleDefectView(viewType) {
