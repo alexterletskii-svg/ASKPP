@@ -5324,11 +5324,6 @@ document.addEventListener('keydown', function(e) {
 });
 
 
-
-
-
-
-
 // =========================================================
 // ЛОГИКА ПЕРЕКЛЮЧЕНИЯ РЕЖИМА "БОЛЬШОЕ ИЗОБРАЖЕНИЕ" С ЗУМОМ
 // =========================================================
@@ -5351,7 +5346,9 @@ document.addEventListener('keydown', function(e) {
 
     // --- ПЕРЕМЕННЫЕ ДЛЯ ЛИНЕЙКИ ---
     let isMeasuring = false;
-    let baseStartX = 0, baseStartY = 0, baseEndX = 0, baseEndY = 0; // храним "чистые" координаты без зума
+    let hasDragged = false; // Флаг для определения того, тянул ли пользователь мышкой
+    let tempStartX = 0, tempStartY = 0; // Временные координаты начала клика
+    let baseStartX = 0, baseStartY = 0, baseEndX = 0, baseEndY = 0; // Координаты без зума
     let rulerLine = null;
     let rulerText = null;
     const PIXELS_TO_MM_RATIO = 0.05;
@@ -5392,8 +5389,8 @@ document.addEventListener('keydown', function(e) {
         .img-ruler-line {
             position: absolute;
             background-color: #ffffff;
-            height: 1px; /* Толщина белой линии */
-            transform-origin: 0 0; /* Точка отсчета вращения - левый край линии */
+            height: 1px;
+            transform-origin: 0 0;
             pointer-events: none;
             z-index: 1000;
             box-shadow: 0 0 2px rgba(0,0,0,0.5);
@@ -5420,7 +5417,6 @@ document.addEventListener('keydown', function(e) {
         rulerText = null;
     }
 
-    // Перерисовка при смене масштаба
     function updateRulerOnZoom() {
         if (rulerLine && rulerText) {
             drawRuler(baseStartX * currentZoom, baseStartY * currentZoom, baseEndX * currentZoom, baseEndY * currentZoom);
@@ -5429,7 +5425,6 @@ document.addEventListener('keydown', function(e) {
 
     // --- ОБРАБОТЧИКИ МЫШИ ДЛЯ ЗУМА И ЛИНЕЙКИ ---
 
-    // 1. Колесико мыши: Зуммирование (+/-)
     imgContainer.addEventListener('wheel', (e) => {
         if (!isLargeMode) return;
         e.preventDefault();
@@ -5443,42 +5438,27 @@ document.addEventListener('keydown', function(e) {
         }
 
         imgContainer.style.setProperty('--img-zoom', currentZoom);
-        updateRulerOnZoom(); // Перерисовываем масштабированную линейку
+        updateRulerOnZoom();
     }, { passive: false });
 
-    // 2. Левый клик
+    // 2. Левый клик (начало отслеживания)
     imgContainer.addEventListener('mousedown', (e) => {
         if (!isLargeMode || e.button !== 0) return;
 
         const innerImgWrapper = imgContainer.querySelector('div');
         if (!innerImgWrapper) return;
 
-        // Линейка привязана к Ctrl
         if (e.ctrlKey) {
             e.preventDefault();
             isMeasuring = true;
+            hasDragged = false; // Сбрасываем флаг перетаскивания мышью
+
+            // Если была старая линейка, убираем ее немедленно
             clearRuler();
 
-            rulerLine = document.createElement('div');
-            rulerLine.className = 'img-ruler-line';
-
-            rulerText = document.createElement('div');
-            rulerText.className = 'img-ruler-text';
-
-            innerImgWrapper.appendChild(rulerLine);
-            innerImgWrapper.appendChild(rulerText);
-
             const rect = innerImgWrapper.getBoundingClientRect();
-            let startX = e.clientX - rect.left;
-            let startY = e.clientY - rect.top;
-
-            // Фиксируем координаты без учета масштаба для последующего зума
-            baseStartX = startX / currentZoom;
-            baseStartY = startY / currentZoom;
-            baseEndX = baseStartX;
-            baseEndY = baseStartY;
-
-            drawRuler(startX, startY, startX, startY);
+            tempStartX = e.clientX - rect.left;
+            tempStartY = e.clientY - rect.top;
             return;
         }
 
@@ -5490,7 +5470,7 @@ document.addEventListener('keydown', function(e) {
         updateRulerOnZoom();
     });
 
-    // 3. Движение мыши (меняем длину и наклон линии)
+    // 3. Движение мыши
     imgContainer.addEventListener('mousemove', (e) => {
         if (!isMeasuring || !isLargeMode) return;
 
@@ -5498,25 +5478,53 @@ document.addEventListener('keydown', function(e) {
         if (!innerImgWrapper) return;
 
         const rect = innerImgWrapper.getBoundingClientRect();
-
         let currentX = e.clientX - rect.left;
         let currentY = e.clientY - rect.top;
+
+        // Если элементы линейки еще не созданы, проверяем, сдвинулся ли курсор
+        if (!hasDragged) {
+            const threshold = 3; // Порог в пикселях: если сдвинуто меньше, считаем простым кликом
+            if (Math.abs(currentX - tempStartX) > threshold || Math.abs(currentY - tempStartY) > threshold) {
+                hasDragged = true; // Курсор сдвинулся, начинаем рисовать
+
+                rulerLine = document.createElement('div');
+                rulerLine.className = 'img-ruler-line';
+
+                rulerText = document.createElement('div');
+                rulerText.className = 'img-ruler-text';
+
+                innerImgWrapper.appendChild(rulerLine);
+                innerImgWrapper.appendChild(rulerText);
+
+                baseStartX = tempStartX / currentZoom;
+                baseStartY = tempStartY / currentZoom;
+            } else {
+                // Если сдвиг минимальный - игнорируем
+                return;
+            }
+        }
+
+        // Если процесс рисования активирован
         currentX = Math.max(0, Math.min(currentX, rect.width));
         currentY = Math.max(0, Math.min(currentY, rect.height));
 
-        // Обновляем позицию "безмасштабного" конца мыши
         baseEndX = currentX / currentZoom;
         baseEndY = currentY / currentZoom;
 
         drawRuler(baseStartX * currentZoom, baseStartY * currentZoom, currentX, currentY);
     });
 
-    // Отпускаем клик (заканчиваем рисовать)
+    // 4. Отпускаем клик мыши
     window.addEventListener('mouseup', () => {
+        // Если пользователь зажал Ctrl, кликнул, но не потянул, мы ничего не нарисовали (hasDragged == false)
+        // В этот момент старая линейка уже была удалена в mousedown.
+        // Поэтому "просто клик" сработает как сброс линейки.
+
         isMeasuring = false;
+        hasDragged = false;
     });
 
-    // 4. Правый клик - ЗУМ МИНУС
+    // 5. Правый клик - ЗУМ МИНУС
     imgContainer.addEventListener('contextmenu', (e) => {
         if (!isLargeMode) return;
         e.preventDefault();
@@ -5531,28 +5539,22 @@ document.addEventListener('keydown', function(e) {
     function drawRuler(x1, y1, x2, y2) {
         if (!rulerLine || !rulerText) return;
 
-        // Вычисляем дельты координат
         const pxX = Math.abs(x2 - x1);
         const pxY = Math.abs(y2 - y1);
-        // Вычисляем длину гипотенузы в пикселях
         const pxLength = Math.sqrt(pxX * pxX + pxY * pxY);
-        // Вычисляем угол наклона линии в градусах
         const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
 
-        // Позиционируем линию
         rulerLine.style.left = x1 + 'px';
         rulerLine.style.top = y1 + 'px';
         rulerLine.style.width = pxLength + 'px';
         rulerLine.style.transform = `rotate(${angle}deg)`;
 
-        // Переводим данные в мм (со скидкой на текущий зум, чтобы размер был реальным)
         const mmX = (pxX / currentZoom) * PIXELS_TO_MM_RATIO;
         const mmY = (pxY / currentZoom) * PIXELS_TO_MM_RATIO;
         const lengthMm = (pxLength / currentZoom) * PIXELS_TO_MM_RATIO;
 
         rulerText.innerHTML = `X: ${mmX.toFixed(2)} mm, Y: ${mmY.toFixed(2)} mm<br>Length: ${lengthMm.toFixed(2)} mm`;
 
-        // Текст "приклеиваем" около курсора (конечной точки)
         rulerText.style.left = (x2 + 15) + 'px';
         rulerText.style.top = (y2 + 15) + 'px';
     }
@@ -5610,6 +5612,11 @@ document.addEventListener('keydown', function(e) {
         }
     };
 })();
+
+
+
+
+
 
 
 
