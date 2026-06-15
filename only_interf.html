@@ -770,9 +770,67 @@
             box-sizing: border-box;
             left: 0;
         }
+
+
+
+        #initial-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #808080; /* Серый цвет */
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#initial-screen.hidden {
+    display: none;
+}
     </style>
 </head>
 <body>
+
+<div id="initial-screen">
+    <div style="background-color: #f0f0f0; border: 1px solid #a0a0a0; border-radius: 6px; width: 320px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column;">
+        <!-- Системная шапка -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 12px 5px 12px;">
+            <span style="color: #000; font-size: 12px;">Выбор системы</span>
+        </div>
+
+        <!-- Тело окна -->
+        <div style="padding: 15px 20px 25px 20px;">
+
+            <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                <label style="width: 120px; font-size: 12px; color: black;">Имя пользователя</label>
+                <input type="text" id="init-username" value="" style="flex: 1; height: 21px; padding: 2px 4px; box-sizing: border-box; background: #fff; border-top: 1px solid #808080; border-left: 1px solid #808080; border-bottom: 1px solid #ffffff; border-right: 1px solid #ffffff; outline: none; font-size: 12px;">
+            </div>
+
+            <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                <label style="width: 120px; font-size: 12px; color: black;">Пароль</label>
+                <input type="password" id="init-password" style="flex: 1; height: 21px; padding: 2px 4px; letter-spacing: 2px; box-sizing: border-box; background: #fff; border-top: 1px solid #808080; border-left: 1px solid #808080; border-bottom: 1px solid #ffffff; border-right: 1px solid #ffffff; outline: none; font-size: 12px;">
+            </div>
+
+            <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                <label style="width: 120px; font-size: 12px; color: black;">система</label>
+                <select id="init-select" style="flex: 1; height: 21px; padding: 0 2px; box-sizing: border-box; background: #fff; border-top: 1px solid #808080; border-left: 1px solid #808080; border-bottom: 1px solid #ffffff; border-right: 1px solid #ffffff; outline: none; font-size: 12px; font-family: Tahoma, sans-serif;">
+                    <option value="DQS_CAL2">DQS_CAL2</option>
+                    <option value="DQS_CAL4">DQS_CAL4</option>
+                    <option value="DQS_CAL6">DQS_CAL6</option>
+                    <option value="ANO7">ANO7</option>
+                </select>
+            </div>
+
+            <!-- Блок с кнопкой -->
+            <div style="display: flex; justify-content: flex-start; padding-left: 60px;">
+                <button onclick="submitInitialSelection()" style="width: 75px; height: 24px; cursor: pointer; color: black; background: #f0f0f0; border-top: 1px solid white; border-left: 1px solid white; border-bottom: 2px solid #808080; border-right: 2px solid #808080; font-size: 12px;" onmousedown="this.style.borderTop='2px solid #808080'; this.style.borderLeft='2px solid #808080'; this.style.borderBottom='1px solid white'; this.style.borderRight='1px solid white'; this.style.paddingTop='1px'; this.style.paddingLeft='1px';" onmouseup="this.style.borderTop='1px solid white'; this.style.borderLeft='1px solid white'; this.style.borderBottom='2px solid #808080'; this.style.borderRight='2px solid #808080'; this.style.paddingTop='0'; this.style.paddingLeft='0';"><u>O</u>k</button>
+            </div>
+
+        </div>
+    </div>
+</div>
 
     <div class="os-header">
         <div class="os-header-icon"></div>
@@ -4871,10 +4929,11 @@ document.addEventListener('DOMContentLoaded', function() {
 // Функция открытия окна выбора системы
 function selectSystem() {
     closeAllMenus();
-    document.getElementById('system-select-modal').style.display = 'flex';
+    // Вместо открытия модального окна, показываем начальный экран снова
+    document.getElementById('initial-screen').classList.remove('hidden');
 
     // Автоматически ставим фокус на список выбора для удобства
-    document.getElementById('sys-select').focus();
+    document.getElementById('init-select').focus();
 }
 
 // Функция закрытия окна
@@ -6006,6 +6065,61 @@ function editAction3() {
     // Заставляем систему пересчитывать масштаб при изменении размеров окна
     window.addEventListener('resize', updateMapZoom);
 
+
+
+
+    function submitInitialSelection() {
+    const user = document.getElementById('init-username').value;
+    const pass = document.getElementById('init-password').value;
+    const sys = document.getElementById('init-select').value;
+
+    // ПРОВERКА ЛОГИНА И ПАРОЛЯ
+    if (user !== 'Admin' || pass !== 'Admin') {
+        alert('Неверное имя пользователя или пароль!\nДоступ запрещен.');
+
+        // Очищаем пароль для повторного ввода и ставим туда курсор
+        const passInput = document.getElementById('init-password');
+        passInput.value = '';
+        passInput.focus();
+
+        return; // Прерываем выполнение, окно не закрывается
+    }
+
+    console.log(`[Начальный экран] Авторизация успешна. Начинается загрузка: ${sys}`);
+
+    // Скрываем начальный экран
+    document.getElementById('initial-screen').classList.add('hidden');
+
+    // Показываем окно прогресс-бара
+    const loadModal = document.getElementById('loading-modal');
+    const loadFill = document.getElementById('loading-bar-fill');
+    const loadText = document.getElementById('loading-text');
+
+    loadModal.style.display = 'flex';
+    loadText.innerText = `Загрузка базы данных ${sys}...`;
+    loadFill.style.width = '0%';
+
+    // Имитация процесса загрузки
+    let progress = 0;
+    const loadingInterval = setInterval(() => {
+        // Случайный шаг от 5 до 15%
+        progress += Math.floor(Math.random() * 10) + 5;
+
+        if (progress >= 100) {
+            progress = 100;
+            clearInterval(loadingInterval);
+            loadFill.style.width = progress + '%';
+
+            // Небольшая задержка перед закрытием для красоты
+            setTimeout(() => {
+                loadModal.style.display = 'none';
+                regenerateSystemData(sys); // Вызываем функцию из вашего кода
+            }, 400);
+        } else {
+            loadFill.style.width = progress + '%';
+        }
+    }, 150); // Скорость обновления
+}
 </script>
 
  <!-- Модальное окно выбора ПОДКЛАССОВ дефекта (по правому клику) -->
