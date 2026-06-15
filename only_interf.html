@@ -5324,6 +5324,11 @@ document.addEventListener('keydown', function(e) {
 });
 
 
+
+
+
+
+
 // =========================================================
 // ЛОГИКА ПЕРЕКЛЮЧЕНИЯ РЕЖИМА "БОЛЬШОЕ ИЗОБРАЖЕНИЕ" С ЗУМОМ
 // =========================================================
@@ -5342,11 +5347,22 @@ document.addEventListener('keydown', function(e) {
                       .find(b => b.innerText.trim() === 'Маленький');
 
     let isLargeMode = false;
-    let currentZoom = 1; // Переменная для отслеживания текущего масштаба
+    let currentZoom = 1;
+
+    // --- ПЕРЕМЕННЫЕ ДЛЯ ЛИНЕЙКИ ---
+    let isMeasuring = false;
+    let startX = 0, startY = 0;
+    let rulerLine = null;
+    let rulerText = null;
+    const PIXELS_TO_MM_RATIO = 0.05; // Коэффициент перевода пикселей в миллиметры
 
     if (btnSmall) btnSmall.classList.add('active-tab');
 
+    const oldStyle = document.getElementById('large-image-style');
+    if (oldStyle) oldStyle.remove();
+
     const style = document.createElement('style');
+    style.id = 'large-image-style';
     style.innerHTML = `
         .panel-left .box.h-25 { min-height: 0; display: flex; flex-direction: column; }
         .panel-left .box.h-40 { flex-shrink: 0; }
@@ -5359,11 +5375,9 @@ document.addEventListener('keydown', function(e) {
             flex: 1; border: 1px solid var(--sys-border);
             background-color: #8b8c91 !important;
             display: flex; align-items: flex-start; justify-content: center;
-            overflow: auto; /* Позволяем контейнеру скроллиться при зуме */
-            cursor: zoom-in; /* Меняем курсор для понятности */
+            overflow: auto;
         }
 
-        /* Заставляем картинку расти в зависимости от переменной --img-zoom */
         #defect-image-box.large-mode > div {
             position: relative !important;
             width: calc(100% * var(--img-zoom, 1)) !important;
@@ -5371,38 +5385,165 @@ document.addEventListener('keydown', function(e) {
             height: auto !important; aspect-ratio: 4 / 3 !important; border: 2px solid white;
             box-shadow: 2px 2px 10px rgba(0,0,0,0.5);
             margin: auto;
-            transition: width 0.15s ease-out, max-width 0.15s ease-out; /* Плавное увеличение */
+            transition: width 0.1s ease-out, max-width 0.1s ease-out;
+        }
+
+        /* --- Стили для линейки измерений --- */
+        .img-ruler-line {
+            position: absolute;
+            background-color: #ffffff;
+            height: 1px; /* Толщина белой линии */
+            transform-origin: 0 0; /* Точка отсчета вращения - левый край линии */
+            pointer-events: none;
+            z-index: 1000;
+            box-shadow: 0 0 2px rgba(0,0,0,0.5); /* Легкая тень, чтобы линию было видно на светлом фоне */
+        }
+
+        .img-ruler-text {
+            position: absolute;
+            color: #ffffff;
+            font-family: 'Tahoma', sans-serif;
+            font-size: 11px;
+            text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 1000;
+            line-height: 1.3;
         }
     `;
     document.head.appendChild(style);
 
-    // --- ОБРАБОТЧИКИ МЫШИ ДЛЯ ЗУМА ---
+    function clearRuler() {
+        if (rulerLine) rulerLine.remove();
+        if (rulerText) rulerText.remove();
+        rulerLine = null;
+        rulerText = null;
+    }
 
-    // 1. Левый клик (Увеличение)
-    imgContainer.addEventListener('click', (e) => {
+    // --- ОБРАБОТЧИКИ МЫШИ ДЛЯ ЗУМА И ЛИНЕЙКИ ---
+
+    // 1. Колесико мыши: Зуммирование (+/-)
+    imgContainer.addEventListener('wheel', (e) => {
         if (!isLargeMode) return;
-        currentZoom += 0.25; // Шаг зума
-        if (currentZoom > 4) currentZoom = 4; // Максимально увеличиваем в 4 раза
+        e.preventDefault(); // Выключаем стандартный скролл страницы/блока
+
+        if (e.deltaY < 0) {
+            currentZoom += 0.25; // Крутим вверх - приближаем
+            if (currentZoom > 4) currentZoom = 4;
+        } else {
+            currentZoom -= 0.25; // Крутим вниз - отдаляем
+            if (currentZoom < 0.5) currentZoom = 0.5;
+        }
+        clearRuler();
+        imgContainer.style.setProperty('--img-zoom', currentZoom);
+    }, { passive: false });
+
+    // 2. Левый клик
+    imgContainer.addEventListener('mousedown', (e) => {
+        if (!isLargeMode || e.button !== 0) return;
+
+        const innerImgWrapper = imgContainer.querySelector('div');
+        if (!innerImgWrapper) return;
+
+        // Линейка привязана к Ctrl
+        if (e.ctrlKey) {
+            e.preventDefault();
+            isMeasuring = true;
+            clearRuler();
+
+            rulerLine = document.createElement('div');
+            rulerLine.className = 'img-ruler-line';
+
+            rulerText = document.createElement('div');
+            rulerText.className = 'img-ruler-text';
+
+            innerImgWrapper.appendChild(rulerLine);
+            innerImgWrapper.appendChild(rulerText);
+
+            const rect = innerImgWrapper.getBoundingClientRect();
+            startX = e.clientX - rect.left;
+            startY = e.clientY - rect.top;
+
+            drawRuler(startX, startY, startX, startY);
+            return;
+        }
+
+        // Обычный клик - зум плюс
+        currentZoom += 0.25;
+        if (currentZoom > 4) currentZoom = 4;
+        clearRuler();
         imgContainer.style.setProperty('--img-zoom', currentZoom);
     });
 
-    // 2. Правый клик (Уменьшение)
+    // 3. Движение мыши (меняем длину и наклон линии)
+    imgContainer.addEventListener('mousemove', (e) => {
+        if (!isMeasuring || !isLargeMode) return;
+
+        const innerImgWrapper = imgContainer.querySelector('div');
+        if (!innerImgWrapper) return;
+
+        const rect = innerImgWrapper.getBoundingClientRect();
+
+        let currentX = e.clientX - rect.left;
+        let currentY = e.clientY - rect.top;
+        currentX = Math.max(0, Math.min(currentX, rect.width));
+        currentY = Math.max(0, Math.min(currentY, rect.height));
+
+        drawRuler(startX, startY, currentX, currentY);
+    });
+
+    // Отпускаем клик (заканчиваем рисовать)
+    window.addEventListener('mouseup', () => {
+        isMeasuring = false;
+    });
+
+    // 4. Правый клик - ЗУМ МИНУС
     imgContainer.addEventListener('contextmenu', (e) => {
         if (!isLargeMode) return;
-        e.preventDefault(); // Запрещаем стандартное контекстное меню браузера
-
+        e.preventDefault();
         currentZoom -= 0.25;
-        if (currentZoom < 0.5) currentZoom = 0.5; // Минимальный лимит (меньше обычного)
+        if (currentZoom < 0.5) currentZoom = 0.5;
+        clearRuler();
         imgContainer.style.setProperty('--img-zoom', currentZoom);
     });
 
-    // Функция переключения
+    // --- ФУНКЦИЯ ОТРИСОВКИ ЛИНЕЙКИ ---
+    function drawRuler(x1, y1, x2, y2) {
+        if (!rulerLine || !rulerText) return;
+
+        // Вычисляем дельты координат
+        const pxX = Math.abs(x2 - x1);
+        const pxY = Math.abs(y2 - y1);
+        // Вычисляем длину гипотенузы в пикселях
+        const pxLength = Math.sqrt(pxX * pxX + pxY * pxY);
+        // Вычисляем угол наклона линии в градусах
+        const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+
+        // Позиционируем линию
+        rulerLine.style.left = x1 + 'px';
+        rulerLine.style.top = y1 + 'px';
+        rulerLine.style.width = pxLength + 'px';
+        rulerLine.style.transform = `rotate(${angle}deg)`;
+
+        // Переводим данные в мм (со скидкой на текущий зум, чтобы размер был реальным)
+        const mmX = (pxX / currentZoom) * PIXELS_TO_MM_RATIO;
+        const mmY = (pxY / currentZoom) * PIXELS_TO_MM_RATIO;
+        const lengthMm = (pxLength / currentZoom) * PIXELS_TO_MM_RATIO;
+
+        rulerText.innerHTML = `X: ${mmX.toFixed(2)} mm, Y: ${mmY.toFixed(2)} mm<br>Length: ${lengthMm.toFixed(2)} mm`;
+
+        // Текст "приклеиваем" около курсора (конечной точки)
+        rulerText.style.left = (x2 + 15) + 'px';
+        rulerText.style.top = (y2 + 15) + 'px';
+    }
+
+    // --- Логика включения/отключения режимов ---
     function setMode(makeLarge) {
         if (isLargeMode === makeLarge) return;
         isLargeMode = makeLarge;
 
-        // При переключении режима сбрасываем зум к 1x
         currentZoom = 1;
+        clearRuler();
         imgContainer.style.setProperty('--img-zoom', currentZoom);
 
         if (isLargeMode) {
@@ -5420,7 +5561,7 @@ document.addEventListener('keydown', function(e) {
             leftBoxTitle.innerText = "Изображение дефекта";
 
             imgContainer.classList.remove('large-mode');
-            imgContainer.style.cursor = ''; // Сбрасываем курсор
+            imgContainer.style.cursor = '';
             leftSmallBox.appendChild(imgContainer);
             mapContainer.classList.remove('shrunk-mode');
             rightPanel.insertBefore(mapContainer, tableContainer);
@@ -5449,7 +5590,6 @@ document.addEventListener('keydown', function(e) {
         }
     };
 })();
-
 
 
 
