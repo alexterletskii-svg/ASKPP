@@ -6300,6 +6300,9 @@ function editAction3() {
 }
 </script>
 
+
+
+
  <!-- Модальное окно выбора ПОДКЛАССОВ дефекта (по правому клику) -->
     <div id="subclass-modal" class="modal-overlay">
         <div style="background-color: #f0f0f0; border: 1px solid #a0a0a0; border-radius: 6px; width: 380px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column;">
@@ -6328,5 +6331,22 @@ function editAction3() {
             </div>
         </div>
     </div>
+
+
+
+<!--Выбор сценариев обучния-->
+ <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const scenarioName = urlParams.get('scenario');
+
+            if (scenarioName) {
+                console.log(`Запуск образовательного сценария: ${scenarioName}.js`);
+                const script = document.createElement('script');
+                script.src = scenarioName + '.js';  // подгружаем scenario_1.js
+                document.body.appendChild(script);
+            }
+        });
+    </script>
 </body>
 </html>

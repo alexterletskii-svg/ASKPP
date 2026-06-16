@@ -77,7 +77,7 @@
             position: relative;
             overflow: hidden;
             box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-            height: 100%; /* Чтобы все карточки в ряду были одной высоты */
+            height: 100%;
         }
 
         .sim-card::before {
@@ -89,7 +89,7 @@
             transition: background-color 0.2s;
         }
 
-        /* Эффекты при наведении (применяются к карточке, когда наводят на ссылку) */
+        /* Эффекты при наведении */
         .card-link:hover .sim-card {
             border-color: var(--brand-blue);
             box-shadow: 0 8px 20px rgba(0, 86, 164, 0.1);
@@ -132,7 +132,7 @@
             line-height: 1.5;
             color: var(--text-desc);
             margin-bottom: 25px;
-            flex: 1; /* Толкает кнопку вниз */
+            flex: 1;
         }
 
         .card-action {
@@ -145,8 +145,8 @@
             transition: color 0.2s ease;
         }
 
-        .card-link:hover .card-action { 
-            color: var(--accent); 
+        .card-link:hover .card-action {
+            color: var(--accent);
         }
 
     </style>
@@ -160,29 +160,29 @@
         </div>
 
         <div class="simulation-grid">
-            
-            <!-- Карточка 1 -->
-            <a href="simulator.html" target="main_player" class="card-link">
+
+            <!-- Карточка 1: Передает параметр scenario=scenario_1 -->
+            <a href="only_interf.html?scenario=scenario_1" target="main_player" class="card-link">
                 <div class="sim-card">
                     <div class="card-icon">1</div>
-                    <div class="card-title">Оценка качества металла</div>
-                    <div class="card-desc">Базовый сценарий. Анализ рулона по выявленным дефектам. Работа с картой рулона и таблицей свойств.</div>
+                    <div class="card-title">Вход в систему</div>
+                    <div class="card-desc">Базовый сценарий. Авторизация в системе, выбор рабочей базы данных (DQS_CAL6) для начала инспекции.</div>
                     <div class="card-action">Запустить сценарий →</div>
                 </div>
             </a>
 
             <!-- Карточка 2 -->
-            <a href="sim_cameras.html" target="main_player" class="card-link">
+            <a href="only_interf.html?scenario=scenario_2" target="main_player" class="card-link">
                 <div class="sim-card">
                     <div class="card-icon">2</div>
-                    <div class="card-title">Работа с камерами</div>
-                    <div class="card-desc">Углубленная настройка фильтров. Сценарий по включению/отключению обзора специфических камер инспекции.</div>
+                    <div class="card-title">Работа с рулонами</div>
+                    <div class="card-desc">Базовый сценарий. Поиск рулона по номеру в программе.</div>
                     <div class="card-action">Запустить сценарий →</div>
                 </div>
             </a>
 
             <!-- Карточка 3 -->
-            <a href="sim_tables.html" target="main_player" class="card-link">
+            <a href="only_interf.html?scenario=scenario_3" target="main_player" class="card-link">
                 <div class="sim-card">
                     <div class="card-icon">3</div>
                     <div class="card-title">Работа с таблицами</div>
@@ -192,7 +192,7 @@
             </a>
 
             <!-- Карточка 4 -->
-            <a href="sim_defects.html" target="main_player" class="card-link">
+            <a href="only_interf.html?scenario=scenario_4" target="main_player" class="card-link">
                 <div class="sim-card">
                     <div class="card-icon">4</div>
                     <div class="card-title">Классификация дефектов</div>
