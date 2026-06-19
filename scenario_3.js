@@ -197,12 +197,12 @@
             validate: () => true
         },
 
-        // --- 2. ВЫКЛЮЧЕНИЕ ВСЕХ КЛАССОВ ---
+        // --- 2. ВЫКЛЮЧЕНИЕ ВСЕХ КЛАССОВ (ИСПРАВЛЕНО НА BOTTOM) ---
         {
-            delay: 2500, // Рассчитываем, что рулон появится в фоне
-            targetSelector: '.filter-group:nth-child(1) .filter-actions button:nth-child(2)', // Кнопка "Все выкл." в блоке классов
+            delay: 2500,
+            targetSelector: '.filter-group:nth-child(1) .filter-actions button:nth-child(2)',
             eventType: 'click',
-            placement: 'top', // Подсказка всплывет снизу, указывая наверх
+            placement: 'bottom', // <--- ИСПРАВЛЕНИЕ: Теперь плашка появится ПОД кнопкой и сдвинется чуть левее
             text: 'Система загружена. Давайте изучим тонкую фильтрацию.<br><br>Сначала отчистим карту от всех базовых классов. Нажмите кнопку <span class="action-badge">Все выкл.</span>',
             validate: () => true
         },
@@ -210,8 +210,8 @@
         // --- 3. ИЗУЧЕНИЕ РАЗБИЕНИЯ (ПРАВЫЙ КЛИК) ---
         {
             delay: 200,
-            targetSelector: '.filter-block[data-value="Кромочный дефект"]', // Значок Кромочный дефект
-            eventType: 'contextmenu', // ЖДЕМ ПРАВОГО КЛИКА
+            targetSelector: '.filter-block[data-value="Кромочный дефект"]',
+            eventType: 'contextmenu',
             placement: 'bottom',
             text: 'Все метки отключены. Теперь углубимся в детализацию.<br><br>Нажмите <span class="action-badge">ПРАВОЙ КНОПКОЙ МЫШИ</span> по классу <b>Кромочный дефект</b>, чтобы открыть меню его подклассов.',
             validate: () => true
@@ -220,12 +220,11 @@
         // --- 4. РАБОТА С ГАЛОЧКАМИ В МОДАЛЬНОМ ОКНЕ ---
         {
             delay: 300,
-            targetSelector: '#subclass-modal > div', // Берем всё окошко под защиту
+            targetSelector: '#subclass-modal > div',
             eventType: 'click',
             placement: 'bottom',
             text: 'В этом меню находятся отдельные подклассы кромочного дефекта.<br><br>Отметьте галочками только <span class="action-badge">Класс: 054</span> и <span class="action-badge">Класс: 030</span>, а затем нажмите <b>Ok</b>.',
             validate: (e) => {
-                // Если кликнуто по зоне галочек - разрешаем (пусть человек кликает)
                 if (e.target.closest('#subclass-list-container') || e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL') {
                     return false;
                 }
@@ -233,7 +232,6 @@
                 const btnText = e.target.innerText ? e.target.innerText.trim().toLowerCase() : '';
                 const isOkClick = e.type === 'click' && e.target.tagName === 'BUTTON' && (btnText === 'ок' || btnText === 'ok');
 
-                // Если нажали "ОК"
                 if (isOkClick) {
                     const cbs = document.querySelectorAll('#subclass-list-container input[type="checkbox"]');
                     let has054 = false, has030 = false, other = false;
@@ -246,9 +244,8 @@
                         }
                     });
 
-                    // Условие: выбраны ИМЕННО 054 и 030 (и больше никаких лишних)
                     if (has054 && has030 && !other) {
-                        return true; // Валидация успешна! Идет дальше, а системный код закроет модалку.
+                        return true;
                     } else {
                         if (!window.alertShown) {
                             window.alertShown = true;
@@ -261,7 +258,6 @@
                     }
                 }
 
-                // Защита от кнопки "Выход", "Все", "Нет" и тд.
                 if (e.target.tagName === 'BUTTON') {
                     if (!window.alertShown) {
                         window.alertShown = true;
