@@ -12,23 +12,23 @@
     <script src="SCORM_API_wrapper.js"></script>
     <style>
         :root {
-            --bg-page: #e8ecef;        /* Фон за окном программы */
-            --window-bg: #ffffff;      /* Фон самого окна */
-            --header-bg: #0056a4;      /* Синяя шапка окна */
-            --border-color: #d1d9e2;   /* Линии-разделители */
-            --menu-hover: #f0f5fa;     /* Подсветка меню */
-            --menu-active: #e3edf7;    /* Активный пункт меню */
-            --text-main: #333333;      /* Основной текст */
-            --text-desc: #666666;      /* Текст описания */
-            --accent: #f26522;         /* Оранжевая кнопка */
+            --bg-page: #e8ecef;
+            --window-bg: #ffffff;
+            --header-bg: #0056a4;
+            --border-color: #d1d9e2;
+            --menu-hover: #f0f5fa;
+            --menu-active: #e3edf7;
+            --text-main: #333333;
+            --text-desc: #666666;
+            --accent: #f26522;
             --accent-hover: #e05512;
         }
 
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
-            font-family: 'Roboto', Tahoma, Arial, sans-serif; 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', Tahoma, Arial, sans-serif;
             user-select: none;
         }
 
@@ -40,13 +40,11 @@
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            /* Легкий технический паттерн фона */
             background-image: linear-gradient(var(--border-color) 1px, transparent 1px),
                               linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
             background-size: 40px 40px;
         }
 
-        /* --- ЭКРАН 1: ЦЕНТРАЛЬНОЕ ОКНО ЗАПУСКА --- */
         #menu-screen {
             width: 760px;
             background-color: var(--window-bg);
@@ -58,7 +56,6 @@
             border: 1px solid #c2cdd8;
         }
 
-        /* Синяя строгая шапка */
         .launcher-header {
             background-color: var(--header-bg);
             padding: 16px 24px;
@@ -89,13 +86,11 @@
             letter-spacing: 0.5px;
         }
 
-        /* Тело программы (меню слева, описание справа) */
         .launcher-body {
             display: flex;
             height: 360px;
         }
 
-        /* Левая часть: Список режимов */
         .menu-list {
             width: 280px;
             border-right: 1px solid var(--border-color);
@@ -127,7 +122,6 @@
             font-weight: 700;
         }
 
-        /* Правая часть: Описание */
         .desc-panel {
             flex: 1;
             padding: 30px;
@@ -151,7 +145,6 @@
             margin-bottom: auto;
         }
 
-        /* Подвал с кнопкой запуска */
         .launcher-footer {
             background-color: #f4f6f8;
             padding: 16px 30px;
@@ -175,8 +168,6 @@
 
         .launch-btn:hover { background-color: var(--accent-hover); }
 
-
-        /* --- ЭКРАН 2: РАБОЧАЯ СРЕДА (IFRAME) --- */
         #player-screen {
             display: none;
             flex-direction: column;
@@ -206,7 +197,7 @@
             cursor: pointer;
             transition: background 0.1s;
         }
-        
+
         .back-btn:hover { background-color: #e2e8f0; }
 
         .player-title {
@@ -226,26 +217,23 @@
 
     <!-- ЭКРАН 1: ЛАУНЧЕР -->
     <div id="menu-screen">
-        
-        <!-- Шапка -->
+
         <div class="launcher-header">
             <div class="header-icon"></div>
             <div class="header-title">ODIS-Raccs: Симулятор контроля качества</div>
         </div>
 
-        <!-- Центральная часть -->
         <div class="launcher-body">
-            
-            <!-- Меню слева (4 пункта) -->
+
             <div class="menu-list">
                 <button class="menu-btn active" onclick="selectMode(1, this)">1. Как работать с тренажером</button>
                 <button class="menu-btn" onclick="selectMode(2, this)">2. Видеоинструкция (Теория)</button>
                 <button class="menu-btn" onclick="selectMode(3, this)">3. Обучающий тренажер</button>
                 <button class="menu-btn" onclick="selectMode(4, this)">4. Закрепление навыков</button>
-                 <button class="menu-btn" onclick="selectMode(5, this)">5. Атлас дефектов</button>
+                <button class="menu-btn" onclick="selectMode(5, this)">5. Атлас дефектов</button>
+                <button class="menu-btn" onclick="selectMode(6, this)">6. Свободное ознакомление с интерфейсом</button>
             </div>
 
-            <!-- Описание справа -->
             <div class="desc-panel">
                 <div id="desc-title" class="desc-title">Как работать с тренажером</div>
                 <div id="desc-text" class="desc-text">Справочная информация по навигации внутри симулятора. Ознакомьтесь с техническими требованиями, правилами прохождения модулей и порядком начисления баллов за практические задания.</div>
@@ -253,12 +241,10 @@
 
         </div>
 
-        <!-- Подвал с кнопкой -->
         <div class="launcher-footer">
             <button class="launch-btn" onclick="startModule()">ЗАПУСТИТЬ</button>
         </div>
     </div>
-
 
     <!-- ЭКРАН 2: ПЛЕЕР -->
     <div id="player-screen">
@@ -269,8 +255,7 @@
         <iframe id="module-frame" name="main_player" src=""></iframe>
     </div>
 
-            <script>
-        // --- ДАННЫЕ О РЕЖИМАХ ---
+    <script>
         const modes = {
             1: {
                 title: "Как работать с тренажером",
@@ -285,7 +270,7 @@
             3: {
                 title: "Обучающий тренажер",
                 desc: "Свободная практика в симулированной среде терминала. Доступны все таблицы рулонов и инструменты анализа дефектов без ограничений времени. Идеально для самостоятельного изучения.",
-                url: "select_simulation.html" 
+                url: "select_simulation.html"
             },
             4: {
                 title: "Закрепление навыков",
@@ -293,19 +278,23 @@
                 url: "exam.html"
             },
             5: {
-        title: "Атлас дефектов",
-        desc: "Визуальный справочник по типам брака. Используйте этот раздел для изучения внешнего вида дефектов и их технической классификации перед началом работы на симуляторе.",
-        url: "atlas.html"
-    }
+                title: "Атлас дефектов",
+                desc: "Визуальный справочник по типам брака. Используйте этот раздел для изучения внешнего вида дефектов и их технической классификации перед началом работы на симуляторе.",
+                url: "atlas.html"
+            },
+            6: {
+                title: "Знакомство с интерфейсом (свободная)",
+                desc: "Изучение интерфейса системы ISRA VISION без ограничений и обучающих сценариев. Свободный режим для ознакомления с расположением элементов управления.",
+                url: "only_interf.html"
+            }
         };
 
         let currentMode = 1;
-        // Счетчик глубины истории внутри iframe
         let iframeHistorySteps = 0;
 
         function selectMode(id, btnElement) {
             currentMode = id;
-            
+
             document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
             btnElement.classList.add('active');
 
@@ -313,41 +302,33 @@
             document.getElementById('desc-text').innerText = modes[id].desc;
         }
 
-        // Запуск из главного меню
         function startModule() {
-            iframeHistorySteps = 0; // Сбрасываем счетчик истории при новом запуске
+            iframeHistorySteps = 0;
             updateBackButtonText();
 
             document.getElementById('current-module-title').innerText = "Текущий модуль: " + modes[currentMode].title;
             document.getElementById('module-frame').src = modes[currentMode].url;
-            
+
             document.getElementById('menu-screen').style.display = 'none';
             document.getElementById('player-screen').style.display = 'flex';
         }
 
-        // Ловим загрузку iframe, чтобы считать шаги
         document.getElementById('module-frame').addEventListener('load', function() {
-            // При первой загрузке (карточки) шаг будет 1. При переходе в симулятор — шаг 2.
             iframeHistorySteps++;
             updateBackButtonText();
         });
 
-        // --- УМНАЯ КНОПКА НАЗАД (РАБОТАЕТ ЧЕРЕЗ ИСТОРИЮ) ---
         function closeModule() {
-            // Если мы сделали больше 1 шага внутри iframe (значит провалились в симулятор)
             if (iframeHistorySteps > 1) {
-                // Командуем iframe вернуться на 1 страницу назад (к карточкам)
                 try {
                     window.frames["main_player"].history.back();
-                    iframeHistorySteps -= 2; // Корректируем счетчик, так как сработает событие load
+                    iframeHistorySteps -= 2;
                 } catch(e) {
-                    // Если браузер заблокировал history, перезагружаем принудительно на корень
                     document.getElementById('module-frame').src = modes[currentMode].url;
                     iframeHistorySteps = 0;
                 }
             } else {
-                // Если мы в корне (на карточках или видео) -> Выходим в лаунчер
-                document.getElementById('module-frame').src = ""; 
+                document.getElementById('module-frame').src = "";
                 document.getElementById('player-screen').style.display = 'none';
                 document.getElementById('menu-screen').style.display = 'flex';
             }
@@ -355,7 +336,6 @@
 
         function updateBackButtonText() {
             const backBtn = document.querySelector('.back-btn');
-            // Шаг 1 = загрузился select_simulation.html. Шаг 2 = загрузился simulator.html
             if (iframeHistorySteps > 1) {
                 backBtn.innerText = "← Назад к выбору задания";
             } else {
@@ -363,12 +343,11 @@
             }
         }
 
-        // --- ЛОГИКА SCORM ---
         window.onload = function() {
             try {
                 var isConnected = pipwerks.SCORM.init();
                 if (isConnected) {
-                    pipwerks.SCORM.set("cmi.core.lesson_status", "incomplete"); 
+                    pipwerks.SCORM.set("cmi.core.lesson_status", "incomplete");
                     pipwerks.SCORM.save();
                 }
             } catch(e) {}
@@ -378,7 +357,6 @@
             try { pipwerks.SCORM.quit(); } catch(e) {}
         };
     </script>
-
 
 </body>
 </html>
