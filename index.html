@@ -343,12 +343,23 @@
             }
         }
 
-        window.onload = function() {
+        wwindow.onload = function() {
             try {
                 var isConnected = pipwerks.SCORM.init();
                 if (isConnected) {
-                    pipwerks.SCORM.set("cmi.core.lesson_status", "incomplete");
-                    pipwerks.SCORM.save();
+                    // 1. Получаем текущий статус из Websoft
+                    var currentStatus = pipwerks.SCORM.get("cmi.core.lesson_status");
+
+                    // 2. Проверяем: если статус "не начинал", "неизвестно" или пустой
+                    if (currentStatus === "not attempted" || currentStatus === "unknown" || currentStatus === "") {
+                        // То ставим "в процессе" (incomplete)
+                        pipwerks.SCORM.set("cmi.core.lesson_status", "incomplete");
+                        pipwerks.SCORM.save();
+                        console.log("Тренажер запущен впервые. Статус изменен на incomplete.");
+                    } else {
+                        // Если статус passed, failed или уже incomplete - ничего не трогаем!
+                        console.log("Текущий статус: " + currentStatus + ". Изменения не требуются.");
+                    }
                 }
             } catch(e) {}
         };
