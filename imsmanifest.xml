@@ -6,9 +6,9 @@
           xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd
                               http://www.imsglobal.org/xsd/imsmd_rootv1p2p1 imsmd_rootv1p2p1.xsd
                               http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
-  <organizations default="ISRA_ORG">
-    <organization identifier="ISRA_ORG">
-      <title>Симулятор контроля качества ISRA VISION</title>
+  <organizations default="NLMK_DEV">
+  <organization identifier="NLMK_DEV">
+    <title>Обучающий комплекс. Тренажер для контроллеров.</title>
       <item identifier="ITEM1" identifierref="RESOURCE1">
         <title>Обучающий комплекс</title>
       </item>
