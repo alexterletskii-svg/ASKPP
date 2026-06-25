@@ -1,6 +1,4 @@
 // --- ДВИЖОК ОБУЧАЮЩИХ СЦЕНАРИЕВ: СЦЕНАРИЙ №4 ---
-// Тема: Работа с фильтрами камер (включение/выключение, группировка)
-
 (function initScenarioEngine() {
     const style = document.createElement('style');
     style.innerHTML = `
@@ -79,6 +77,14 @@
     tooltip.id = 'tutorial-tooltip';
     tooltip.style.display = 'none';
     document.body.appendChild(tooltip);
+
+    // ==========================================
+    // ПРОПУСК АВТОРИЗАЦИИ И ЗАГРУЗКА БАЗЫ
+    // ==========================================
+    document.getElementById('initial-screen').classList.add('hidden');
+    if (typeof regenerateSystemData === 'function') {
+        regenerateSystemData('DQS_CAL4');
+    }
 
     // ==========================================
     // БЛОКИРОВЩИК
@@ -192,46 +198,24 @@
     }
 
     // ==========================================
-    // ЛОГИКА ШАГОВ (Работа с камерами)
+    // ЛОГИКА ШАГОВ
     // ==========================================
     let currentStep = 0;
     let activeListener = null;
 
     const steps = [
-        // --- 1. АВТОРИЗАЦИЯ ---
+        // --- 1. ВЫКЛЮЧЕНИЕ ВСЕХ КАМЕР ---
         {
-            targetSelector: '#init-select', eventType: 'change', placement: 'right',
-            text: 'Тренировка работы с фильтрами камер.<br><br>Выберите рабочую систему:<br><span class="action-badge">DQS_CAL4</span>',
-            validate: (e) => e.target.value === 'DQS_CAL4'
-        },
-        {
-            targetSelector: '#init-username', eventType: 'input', placement: 'right',
-            text: 'Логин:<br><span class="action-badge">Admin</span>',
-            validate: (e) => e.target.value === 'Admin'
-        },
-        {
-            targetSelector: '#init-password', eventType: 'input', placement: 'right',
-            text: 'Пароль:<br><span class="action-badge">Admin</span>',
-            validate: (e) => e.target.value === 'Admin'
-        },
-        {
-            targetSelector: '#initial-screen button', eventType: 'click', placement: 'right',
-            text: 'Загрузите данные базы:<br><span class="action-badge">Ok</span>',
-            validate: () => true
-        },
-
-        // --- 2. ВЫКЛЮЧЕНИЕ ВСЕХ КАМЕР ---
-        {
-            delay: 2500,
+            delay: 500,
             targetSelector: '.filter-group:nth-child(2) .filter-actions button:nth-child(2)',
             eventType: 'click',
             placement: 'bottom',
-            text: 'Система загружена. Давайте изучим фильтрацию по камерам.<br><br>Сначала отключим все камеры, чтобы очистить карту для анализа.<br><br>Нажмите кнопку <span class="action-badge">Все выкл.</span>',
+            text: 'Тренировка работы с фильтрами камер.<br><br>Сначала отключим все камеры, чтобы очистить карту для анализа.<br><br>Нажмите кнопку <span class="action-badge">Все выкл.</span>',
             purpose: 'Это действие отключит отображение дефектов со всех камер, чтобы мы могли постепенно включать нужные камеры и анализировать их по отдельности.',
             validate: () => true
         },
 
-        // --- 3. ВКЛЮЧЕНИЕ ОДНОЙ КАМЕРЫ ---
+        // --- 2. ВКЛЮЧЕНИЕ ОДНОЙ КАМЕРЫ ---
         {
             delay: 200,
             targetSelector: '#content-cameras',
@@ -247,7 +231,7 @@
             }
         },
 
-        // --- 4. ВКЛЮЧЕНИЕ ВТОРОЙ КАМЕРЫ ---
+        // --- 3. ВКЛЮЧЕНИЕ ВТОРОЙ КАМЕРЫ ---
         {
             delay: 300,
             targetSelector: '#content-cameras',
@@ -263,7 +247,7 @@
             }
         },
 
-        // --- 5. ВКЛЮЧЕНИЕ ГРУППЫ КАМЕР ---
+        // --- 4. ВКЛЮЧЕНИЕ ГРУППЫ КАМЕР ---
         {
             delay: 300,
             targetSelector: '#content-cameras',
@@ -279,7 +263,7 @@
             }
         },
 
-        // --- 6. ПРОВЕРКА РЕЗУЛЬТАТА (КЛИКИ ПО ДЕФЕКТАМ) ---
+        // --- 5. ПРОВЕРКА РЕЗУЛЬТАТА (КЛИКИ ПО ДЕФЕКТАМ) ---
         {
             delay: 1000,
             onEnter: () => { window.tutCameraDefectClicks = 0; },
@@ -340,7 +324,6 @@
         activeTarget = targetEl;
         currentPlacement = step.placement;
 
-        // Формируем HTML с учетом purpose
         let tooltipHTML = typeof step.text === 'function' ? step.text() : step.text;
         if (step.purpose) {
             tooltipHTML += `<div class="purpose-text"><span class="purpose-title"></span>${step.purpose}</div>`;
@@ -351,9 +334,6 @@
         updateTooltipPosition();
 
         if (typeof targetEl.focus === 'function') targetEl.focus();
-        if (step.targetSelector === '#init-username' || step.targetSelector === '#init-password') {
-            targetEl.value = '';
-        }
 
         const eventsToListen = Array.isArray(step.eventType) ? step.eventType : [step.eventType];
 

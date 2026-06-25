@@ -22,7 +22,6 @@
             width: max-content;
             max-width: 350px;
             pointer-events: none;
-            /* Убрана задержка opacity для максимальной скорости отклика */
             line-height: 1.5;
         }
         #tutorial-tooltip::after {
@@ -55,6 +54,14 @@
     tooltip.id = 'tutorial-tooltip';
     tooltip.style.display = 'none';
     document.body.appendChild(tooltip);
+
+    // ==========================================
+    // ПРОПУСК АВТОРИЗАЦИИ И ЗАГРУЗКА БАЗЫ
+    // ==========================================
+    document.getElementById('initial-screen').classList.add('hidden');
+    if (typeof regenerateSystemData === 'function') {
+        regenerateSystemData('DQS_CAL6');
+    }
 
     // ==========================================
     // БЛОКИРОВЩИК
@@ -96,9 +103,6 @@
         }
     }, true);
 
-    // ==========================================
-    // УМНОЕ ПОЗИЦИОНИРОВАНИЕ
-    // ==========================================
     function updateTooltipPosition() {
         if (!activeTarget || tooltip.style.display === 'none') return;
         const rect = activeTarget.getBoundingClientRect();
@@ -178,35 +182,9 @@
     let activeListener = null;
 
     const steps = [
-        // --- 1. АВТОРИЗАЦИЯ ---
+        // --- 1. РЕЖИМ БОЛЬШОГО ИЗОБРАЖЕНИЯ ---
         {
-            delay: 10,
-            targetSelector: '#init-select', eventType: 'change', placement: 'right',
-            text: 'Тренировка работы с изображениями и масштабированием.<br><br>Выберите рабочую систему:<br><span class="action-badge">DQS_CAL6</span>',
-            validate: (e) => e.target.value === 'DQS_CAL6'
-        },
-        {
-            delay: 10,
-            targetSelector: '#init-username', eventType: 'input', placement: 'right',
-            text: 'Логин:<br><span class="action-badge">Admin</span>',
-            validate: (e) => e.target.value === 'Admin'
-        },
-        {
-            delay: 10,
-            targetSelector: '#init-password', eventType: 'input', placement: 'right',
-            text: 'Пароль:<br><span class="action-badge">Admin</span>',
-            validate: (e) => e.target.value === 'Admin'
-        },
-        {
-            delay: 10,
-            targetSelector: '#initial-screen button', eventType: 'click', placement: 'right',
-            text: 'Загрузите данные базы:<br><span class="action-badge">Ok</span>',
-            validate: (e) => e.target.closest('#initial-screen button') !== null
-        },
-
-        // --- 2. РЕЖИМ БОЛЬШОГО ИЗОБРАЖЕНИЯ ---
-        {
-            delay: 2500, // Пауза на анимацию загрузки
+            delay: 500,
             onEnter: () => {
                 document.querySelectorAll('.sb-panel').forEach(b => {
                     const txt = b.innerText.trim();
@@ -217,13 +195,13 @@
             targetSelector: '#tut-btn-big',
             eventType: 'click',
             placement: 'top',
-            text: 'База загружена. Переведем рабочую область в режим детального просмотра дефекта.<br><br>Нажмите кнопку <span class="action-badge">Большой</span> в правой части нижней панели. <br><br>Если вы захотите вернуть вид по умолчанию, необходимо будет нажать кнопку <span class="action-badge">Маленький</span>',
+            text: 'Тренировка работы с изображениями и масштабированием.<br><br>Переведем рабочую область в режим детального просмотра дефекта.<br><br>Нажмите кнопку <span class="action-badge">Большой</span> в правой части нижней панели.',
             validate: (e) => e.target.closest('#tut-btn-big') !== null
         },
 
-        // --- 3. ЗУМ НА ФОТОГРАФИИ ---
+        // --- 2. ЗУМ НА ФОТОГРАФИИ ---
         {
-            delay: 800, // Даем секунду на перестроение интерфейса
+            delay: 800,
             onEnter: () => { window.tutZoomHits = 0; },
             targetSelector: '#defect-image-box',
             eventType: ['mousedown', 'wheel', 'contextmenu'],
@@ -241,7 +219,6 @@
 
                 if (act) {
                     window.tutZoomHits++;
-                    // Мгновенное обновление текста без задержек:
                     tooltip.innerHTML = steps[currentStep].text();
                     if (window.tutZoomHits >= 2) return true;
                 }
@@ -249,7 +226,7 @@
             }
         },
 
-        // --- 4. ПРОЛИСТЫВАНИЕ (3 РАЗА) ---
+        // --- 3. ПРОЛИСТЫВАНИЕ (3 РАЗА) ---
         {
             delay: 50,
             onEnter: () => { window.tutNavHits1 = 0; },
@@ -260,14 +237,14 @@
             validate: (e) => {
                 if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
                     window.tutNavHits1++;
-                    tooltip.innerHTML = steps[currentStep].text(); // Мгновенно обновляем
+                    tooltip.innerHTML = steps[currentStep].text();
                     if (window.tutNavHits1 >= 3) return true;
                 }
                 return false;
             }
         },
 
-        // --- 5. ЗАКРЕПЛЕНИЕ ROI: ПЕРЕКЛЮЧИТЬ НА 1 ДЕФЕКТ ---
+        // --- 4. ЗАКРЕПЛЕНИЕ ROI: ПЕРЕКЛЮЧИТЬ НА 1 ДЕФЕКТ ---
         {
             delay: 50,
             targetSelector: '.workspace',
@@ -277,7 +254,7 @@
             validate: (e) => (e.key === 'ArrowDown' || e.key === 'ArrowUp')
         },
 
-        // --- 6. ЗАКРЕПЛЕНИЕ ROI: ОТКЛЮЧИТЬ ---
+        // --- 5. ЗАКРЕПЛЕНИЕ ROI: ОТКЛЮЧИТЬ ---
         {
             delay: 50,
             targetSelector: '#tut-btn-rol',
@@ -287,7 +264,7 @@
             validate: (e) => e.target.closest('#tut-btn-rol') !== null
         },
 
-        // --- 7. ЗАКРЕПЛЕНИЕ ROI: ВКЛЮЧИТЬ ---
+        // --- 6. ЗАКРЕПЛЕНИЕ ROI: ВКЛЮЧИТЬ ---
         {
             delay: 50,
             targetSelector: '#tut-btn-rol',
@@ -297,7 +274,7 @@
             validate: (e) => e.target.closest('#tut-btn-rol') !== null
         },
 
-        // --- 8. ЗАКРЕПЛЕНИЕ ROI: ПЕРЕКЛЮЧИТЬ НА СЛЕДУЮЩИЙ ДЕФЕКТ ---
+        // --- 7. ЗАКРЕПЛЕНИЕ ROI: ПЕРЕКЛЮЧИТЬ НА СЛЕДУЮЩИЙ ДЕФЕКТ ---
         {
             delay: 50,
             targetSelector: '.workspace',
@@ -307,7 +284,7 @@
             validate: (e) => (e.key === 'ArrowDown' || e.key === 'ArrowUp')
         },
 
-        // --- 9. ЗАКРЕПЛЕНИЕ ROI: ОТКЛЮЧИТЬ ---
+        // --- 8. ЗАКРЕПЛЕНИЕ ROI: ОТКЛЮЧИТЬ ---
         {
             delay: 50,
             targetSelector: '#tut-btn-rol',
@@ -317,7 +294,7 @@
             validate: (e) => e.target.closest('#tut-btn-rol') !== null
         },
 
-        // --- 10. ЗАКРЕПЛЕНИЕ ROI: ВКЛЮЧИТЬ И ЗАВЕРШИТЬ ---
+        // --- 9. ЗАКРЕПЛЕНИЕ ROI: ВКЛЮЧИТЬ И ЗАВЕРШИТЬ ---
         {
             delay: 50,
             targetSelector: '#tut-btn-rol',
@@ -340,7 +317,7 @@
         if (step.delay && !step._delayed) {
             step._delayed = true;
             tooltip.style.display = 'none';
-            isTransitioning = true; // Замораживаем весь экран на время загрузок
+            isTransitioning = true;
             if (activeTarget) activeTarget.classList.remove('tutorial-target');
             setTimeout(renderStep, step.delay);
             return;
@@ -369,19 +346,14 @@
         if (typeof targetEl.focus === 'function' && !step.eventType.includes('keydown')) {
             targetEl.focus({ preventScroll: true });
         }
-        if (step.targetSelector === '#init-username' || step.targetSelector === '#init-password') {
-            targetEl.value = '';
-        }
 
         const eventsToListen = Array.isArray(step.eventType) ? step.eventType : [step.eventType];
 
         activeListener = function(e) {
             if (step.validate(e)) {
-                // Сигнал верный - отключаем слушатели и мгновенно идем дальше
                 eventsToListen.forEach(evt => window.removeEventListener(evt, activeListener, true));
                 if (activeTarget) activeTarget.classList.remove('tutorial-target');
 
-                // Микро-таймер 10 мс просто чтобы ОС успела достроить DOM
                 setTimeout(() => {
                     currentStep++;
                     renderStep();

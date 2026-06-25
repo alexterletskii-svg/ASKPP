@@ -57,6 +57,14 @@
     document.body.appendChild(tooltip);
 
     // ==========================================
+    // ПРОПУСК АВТОРИЗАЦИИ И ЗАГРУЗКА БАЗЫ
+    // ==========================================
+    document.getElementById('initial-screen').classList.add('hidden');
+    if (typeof regenerateSystemData === 'function') {
+        regenerateSystemData('DQS_CAL6');
+    }
+
+    // ==========================================
     // БЛОКИРОВЩИК
     // ==========================================
     let activeTarget = null;
@@ -79,7 +87,6 @@
         }
     }, true);
 
-    // Поддержка правой кнопки мыши (contextmenu) в образовательных целях
     document.addEventListener('contextmenu', function(e) {
         if (!e.isTrusted) return;
         if (isTransitioning) { e.preventDefault(); e.stopPropagation(); return; }
@@ -169,45 +176,23 @@
     }
 
     // ==========================================
-    // ЛОГИКА ШАГОВ (Фильтрация и подклассы)
+    // ЛОГИКА ШАГОВ
     // ==========================================
     let currentStep = 0;
     let activeListener = null;
 
     const steps = [
-        // --- 1. АВТОРИЗАЦИЯ ---
+        // --- 1. ВЫКЛЮЧЕНИЕ ВСЕХ КЛАССОВ ---
         {
-            targetSelector: '#init-select', eventType: 'change', placement: 'right',
-            text: 'Тренировка работы с фильтрами классов.<br><br>Выберите рабочую систему:<br><span class="action-badge">DQS_CAL6</span>',
-            validate: (e) => e.target.value === 'DQS_CAL6'
-        },
-        {
-            targetSelector: '#init-username', eventType: 'input', placement: 'right',
-            text: 'Логин:<br><span class="action-badge">Admin</span>',
-            validate: (e) => e.target.value === 'Admin'
-        },
-        {
-            targetSelector: '#init-password', eventType: 'input', placement: 'right',
-            text: 'Пароль:<br><span class="action-badge">Admin</span>',
-            validate: (e) => e.target.value === 'Admin'
-        },
-        {
-            targetSelector: '#initial-screen button', eventType: 'click', placement: 'right',
-            text: 'Загрузите данные базы:<br><span class="action-badge">Ok</span>',
-            validate: () => true
-        },
-
-        // --- 2. ВЫКЛЮЧЕНИЕ ВСЕХ КЛАССОВ (ИСПРАВЛЕНО НА BOTTOM) ---
-        {
-            delay: 2500,
+            delay: 500,
             targetSelector: '.filter-group:nth-child(1) .filter-actions button:nth-child(2)',
             eventType: 'click',
-            placement: 'bottom', // <--- ИСПРАВЛЕНИЕ: Теперь плашка появится ПОД кнопкой и сдвинется чуть левее
-            text: 'Система загружена. Давайте изучим тонкую фильтрацию.<br><br>Сначала отчистим карту от всех базовых классов. Нажмите кнопку <span class="action-badge">Все выкл.</span>',
+            placement: 'bottom',
+            text: 'Тренировка работы с фильтрами классов.<br><br>Сначала отчистим карту от всех базовых классов. Нажмите кнопку <span class="action-badge">Все выкл.</span>',
             validate: () => true
         },
 
-        // --- 3. ИЗУЧЕНИЕ РАЗБИЕНИЯ (ПРАВЫЙ КЛИК) ---
+        // --- 2. ИЗУЧЕНИЕ РАЗБИЕНИЯ (ПРАВЫЙ КЛИК) ---
         {
             delay: 200,
             targetSelector: '.filter-block[data-value="Кромочный дефект"]',
@@ -217,7 +202,7 @@
             validate: () => true
         },
 
-        // --- 4. РАБОТА С ГАЛОЧКАМИ В МОДАЛЬНОМ ОКНЕ ---
+        // --- 3. РАБОТА С ГАЛОЧКАМИ В МОДАЛЬНОМ ОКНЕ ---
         {
             delay: 300,
             targetSelector: '#subclass-modal > div',
@@ -272,7 +257,7 @@
             }
         },
 
-        // --- 5. ФИНАЛЬНАЯ ПРОВЕРКА (КЛИКИ) ---
+        // --- 4. ФИНАЛЬНАЯ ПРОВЕРКА (КЛИКИ) ---
         {
             delay: 1000,
             onEnter: () => { window.tutDefectClicks = 0; },
@@ -337,9 +322,6 @@
         updateTooltipPosition();
 
         if (typeof targetEl.focus === 'function') targetEl.focus();
-        if (step.targetSelector === '#init-username' || step.targetSelector === '#init-password') {
-            targetEl.value = '';
-        }
 
         const eventsToListen = Array.isArray(step.eventType) ? step.eventType : [step.eventType];
 
