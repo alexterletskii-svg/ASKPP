@@ -14,7 +14,7 @@ xml_header = """<?xml version="1.0" encoding="UTF-8"?>
                               http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
   <organizations default="NLMK_DEV">
     <organization identifier="NLMK_DEV">
-      <title>Обучающий комплекс. Тренажер для контроллеров.</title>
+      <title>Обучающий комплекс. Тренажер для контроллеров за качеством металлов</title>
       <item identifier="ITEM1" identifierref="RESOURCE1">
         <title>Обучающий комплекс</title>
       </item>
