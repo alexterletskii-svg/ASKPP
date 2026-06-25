@@ -16,6 +16,47 @@
     const measuredDefects = new Set();
     const NEEDED_MEASUREMENTS = 2; // Сколько разных дефектов надо измерить
 
+    // ==========================================
+    // 🌐 ИНТЕГРАЦИЯ С WEBSOFT (WEBTUTOR / SCORM)
+    // ==========================================
+    function getScormAPI(win) {
+        let attempts = 0;
+        while ((win.API == null && win.API_1484_11 == null) && win.parent != null && win.parent != win) {
+            attempts++;
+            if (attempts > 10) break;
+            win = win.parent;
+        }
+        if (win.API) return win.API; // SCORM 1.2
+        if (win.API_1484_11) return win.API_1484_11; // SCORM 2004
+        return null;
+    }
+
+    function sendCourseCompletedToWebSoft() {
+        const api = getScormAPI(window);
+        if (api) {
+            try {
+                const isScorm2004 = (api === window.API_1484_11);
+
+                // Отправляем 100 баллов и статус "Пройден"
+                if (isScorm2004) {
+                    api.SetValue("cmi.score.raw", "100");
+                    api.SetValue("cmi.completion_status", "completed");
+                    api.SetValue("cmi.success_status", "passed");
+                    api.Commit("");
+                } else {
+                    api.LMSSetValue("cmi.core.score.raw", "100");
+                    api.LMSSetValue("cmi.core.lesson_status", "passed");
+                    api.LMSCommit("");
+                }
+                console.log("✅ Данные об успешном прохождении отправлены в WebSoft!");
+            } catch (e) {
+                console.error("❌ Ошибка при отправке данных в LMS:", e);
+            }
+        } else {
+            console.warn("⚠️ SCORM API не найден. Скрипт запущен вне плеера WebTutor?");
+        }
+    }
+
     // --- 1. СОЗДАНИЕ ИНТЕРФЕЙСА ЗАДАНИЙ (ПАНЕЛЬ ЭКЗАМЕНА) ---
     function initExamUI() {
         const style = document.createElement('style');
@@ -111,7 +152,7 @@
             <div id="exam-body">
                 <div class="exam-task" id="task-0">
                     <div class="exam-task-checkbox"></div>
-                    <div class="exam-task-text"><b>Шаг 1:</b> Войдите в систему <b>${targetSystem}</b> (УЗ: Admin / Пароль: Admin)</div>
+                    <div class="exam-task-text"><b>Шаг 1:</b> Войдите в систему <b>${targetSystem}</b> (Учетная запись: Admin / Пароль: Admin)</div>
                 </div>
                 <div class="exam-task" id="task-1" style="display: none;">
                     <div class="exam-task-checkbox"></div>
@@ -261,6 +302,9 @@
                     document.getElementById('task-4').classList.add('done');
                     document.getElementById('exam-congratulations').style.display = 'block';
                     currentStep = 5;
+
+                    // Отправляем данные в WebTutor
+                    sendCourseCompletedToWebSoft();
                 }
                 break;
         }
