@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Закрепление навыков</title>
+    <title>Выбор симуляции</title>
+    <!-- Подключаем шрифт Roboto -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
 
+    <style>
         :root {
             --bg-page: #f4f6f8;
             --card-bg: #ffffff;
@@ -76,7 +77,7 @@
             position: relative;
             overflow: hidden;
             box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-            height: 100%; /* Чтобы все карточки в ряду были одной высоты */
+            height: 100%;
         }
 
         .sim-card::before {
@@ -88,7 +89,7 @@
             transition: background-color 0.2s;
         }
 
-        /* Эффекты при наведении (применяются к карточке, когда наводят на ссылку) */
+        /* Эффекты при наведении */
         .card-link:hover .sim-card {
             border-color: var(--brand-blue);
             box-shadow: 0 8px 20px rgba(0, 86, 164, 0.1);
@@ -131,7 +132,7 @@
             line-height: 1.5;
             color: var(--text-desc);
             margin-bottom: 25px;
-            flex: 1; /* Толкает кнопку вниз */
+            flex: 1;
         }
 
         .card-action {
@@ -144,57 +145,35 @@
             transition: color 0.2s ease;
         }
 
-        .card-link:hover .card-action { 
-            color: var(--accent); 
+        .card-link:hover .card-action {
+            color: var(--accent);
         }
 
-    
-        .exam-warning {
-            background-color: #fff3cd;
-            color: #856404;
-            padding: 15px;
-            border-left: 5px solid #ffeeba;
-            border-radius: 4px;
-            margin-bottom: 30px;
-            font-size: 15px;
-            line-height: 1.5;
-        }
     </style>
 </head>
 <body>
+
     <div class="container">
         <div class="page-header">
-            <h1>Закрепление навыков (Экзамен)</h1>
-            <div class="subtitle">Итоговое тестирование без подсказок. Результаты будут отправлены в систему обучения для оценки. Время на выполнение ограничено.</div>
-        </div>
-
-        <div class="exam-warning">
-            <strong>Внимание:</strong> В режиме закрепления навыков обучающие подсказки и подсветки отключены. Вам предстоит самостоятельно проанализировать рулоны, найти критические дефекты и принять решение о дальнейшей судьбе металла. У вас будет только 1 попытка.
+            <h1>Выбор модуля итогового задания</h1>
+            <div class="subtitle">Выберите конкретный сценарий для отработки практических навыков работы с терминалом.</div>
         </div>
 
         <div class="simulation-grid">
 
-            <!-- Экзамен 1 -->
-            <a href="exam_simulator.html?mode=exam" target="main_player" class="card-link">
+            <!-- Карточка 1: Передает параметр scenario=scenario_1 -->
+            <a href="only_interf.html?scenario=scenario_exam_1" target="main_player" class="card-link">
                 <div class="sim-card">
-                    <div class="card-icon" style="background-color: #f26522;">!</div>
-                    <div class="card-title">Итоговая аттестация: Анализ рулонов</div>
-                    <div class="card-desc">Комплексная проверка навыков. Вам предоставлено 5 рулонов с различными типами дефектов. Необходимо найти все критические дефекты 1970 и 022, и отправить рулоны в изолятор.</div>
-                    <div class="card-action" style="color: #f26522;">Начать экзамен →</div>
+                    <div class="card-icon">1</div>
+                    <div class="card-title">Закрепление навыков</div>
+                    <div class="card-desc">Итоговое тестирование в системе ISRA VISION. Подсказки отключены. Результаты передаются напрямую в систему webSoft</div>
+                    <div class="card-action">Запустить сценарий →</div>
                 </div>
             </a>
 
-            <!-- Экзамен 2 -->
-            <a href="sim_cameras.html?mode=exam" target="main_player" class="card-link">
-                <div class="sim-card">
-                    <div class="card-icon" style="background-color: #f26522;">!</div>
-                    <div class="card-title">Задание на время: Классификация</div>
-                    <div class="card-desc">За 5 минут необходимо просмотреть ленту дефектов и вручную изменить некорректно определенные системой классы (СИСТЕМА -> ИНСПЕКТОР).</div>
-                    <div class="card-action" style="color: #f26522;">Начать экзамен →</div>
-                </div>
-            </a>
 
         </div>
     </div>
+
 </body>
 </html>

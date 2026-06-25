@@ -5037,6 +5037,11 @@ function regenerateSystemData(systemName) {
     const mapCells = [document.getElementById('mc1'), document.getElementById('mc2'), document.getElementById('mc3'), document.getElementById('mc4'), document.getElementById('mc5'), document.getElementById('mc6'), document.getElementById('mc7'), document.getElementById('mc8')];
     mapCells.forEach(cell => { if(cell) cell.innerHTML = ''; });
 
+    // Сбрасываем заголовки карты
+    document.getElementById('map-header-title').innerText = 'Карта рулона - Выберите рулон';
+    document.getElementById('map-header-defects').innerText = 'Дефекты: 0(0)';
+    document.getElementById('header-length').innerHTML = 'Длина<br>0 m';
+
     // 2. Устанавливаем базовые параметры в зависимости от системы
     let baseId, baseCoilNumber;
     if (systemName === 'DQS_CAL2') {
@@ -5064,11 +5069,6 @@ function regenerateSystemData(systemName) {
     // Меняем заголовок окна чтобы было видно, в какой мы системе
     document.querySelector('.os-header div:nth-child(2)').innerText = `Терминал-Режим Offline - [Система: ${systemName}]`;
 
-    // 4. Автоматически кликаем на первый рулон в списке, чтобы сгенерировать его дефекты и отрисовать карту
-    const firstRow = coilTbody.querySelector('tr');
-    if (firstRow) {
-        firstRow.click();
-    }
 }
 
 
@@ -6375,5 +6375,7 @@ function editAction3() {
             }
         });
     </script>
+
+
 </body>
 </html>
