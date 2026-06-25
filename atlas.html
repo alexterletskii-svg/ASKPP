@@ -34,7 +34,7 @@
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
         }
 
@@ -47,6 +47,7 @@
             transition: transform 0.2s, box-shadow 0.2s;
             display: flex;
             flex-direction: column;
+            cursor: pointer;
         }
 
         .card:hover {
@@ -57,30 +58,41 @@
         /* Область картинки с эффектом наведения */
         .card-img {
             width: 100%;
-            height: 160px;
-            background-color: #e8ecef;
+            height: 180px;
+            background-color: #000;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #999;
-            font-size: 13px;
             position: relative;
-            cursor: pointer;
         }
 
         .card-img img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
             position: absolute;
             top: 0;
             left: 0;
             z-index: 1;
         }
 
-        /* Подсказка "Увеличить" при наведении */
+        /* Счетчик фото на карточке */
+        .photo-count {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        /* Подсказка "Смотреть галерею" при наведении */
         .card-img::after {
-            content: '🔍 Увеличить';
+            content: '📸 Открыть галерею';
             position: absolute;
             bottom: 10px;
             right: 10px;
@@ -94,7 +106,7 @@
             z-index: 2;
         }
 
-        .card-img:hover::after {
+        .card:hover .card-img::after {
             opacity: 1;
         }
 
@@ -117,13 +129,8 @@
             align-self: flex-start;
         }
 
-        .defect-class.critical {
-            background: #d32f2f;
-        }
-
-        .defect-class.warning {
-            background: #f57c00;
-        }
+        .defect-class.critical { background: #d32f2f; }
+        .defect-class.warning { background: #f57c00; }
 
         .card-title {
             margin: 0 0 8px 0;
@@ -138,7 +145,7 @@
             line-height: 1.4;
         }
 
-        /* Стили модального окна (Lightbox) */
+        /* Стили модального окна (Lightbox / Слайдер) */
         .modal {
             display: none;
             position: fixed;
@@ -147,7 +154,7 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.85);
+            background-color: rgba(0,0,0,0.9);
             opacity: 0;
             transition: opacity 0.3s ease;
         }
@@ -160,33 +167,63 @@
             opacity: 1;
         }
 
-        .modal-content {
-            max-width: 90%;
-            max-height: 80vh;
-            border-radius: 4px;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.5);
-        }
-
-        .modal-placeholder {
-            width: 80%;
-            max-width: 600px;
-            height: 300px;
-            background-color: #333;
-            color: #888;
-            display: none;
+        .slider-container {
+            position: relative;
+            width: 90%;
+            max-width: 1000px;
+            height: 75vh;
+            display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+        }
+
+        .modal-content {
+            max-width: 100%;
+            max-height: 100%;
             border-radius: 4px;
-            border: 2px dashed #555;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+            object-fit: contain;
+            user-select: none;
+        }
+
+        /* Кнопки перелистывания */
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: none;
+            font-size: 40px;
+            padding: 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.2s;
+            z-index: 10;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .prev-btn { left: -60px; }
+        .next-btn { right: -60px; }
+
+        .modal-info {
+            text-align: center;
+            margin-top: 15px;
+            color: #fff;
         }
 
         #modal-caption {
-            margin-top: 20px;
-            color: #fff;
             font-size: 18px;
             font-weight: 500;
-            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        #modal-counter {
+            font-size: 14px;
+            color: #aaa;
         }
 
         .close-modal {
@@ -198,6 +235,7 @@
             font-weight: bold;
             cursor: pointer;
             transition: color 0.2s;
+            z-index: 1001;
         }
 
         .close-modal:hover {
@@ -208,188 +246,239 @@
 <body>
 
     <div class="header">
-        <h1>Атлас дефектов продукции</h1>
-        <p>Визуальный справочник для изучения классов брака в системе ISRA VISION</p>
+        <h1>Атлас дефектов продукции (Перечень ТОП-5 грубых дефектов)</h1>
+        <p>Визуальный справочник для изучения наиболее критичных классов брака. Нажмите на карточку, чтобы посмотреть все примеры.</p>
     </div>
 
     <div class="grid">
-        <!-- КАРТОЧКА 1 -->
-        <div class="card">
+        <!-- КАРТОЧКА 1: Складка 020 -->
+        <div class="card" data-gallery="020" onclick="openGallery('020')">
             <div class="card-img">
-                <span>Нет фото</span>
-                <!-- <img src="images/scratch.jpg" alt="Продольная царапина"> -->
+                <div class="photo-count">10 фото</div>
+                <img src="picture/3. Складка/1. Класс 020 (ID=20)/3_20_6044207_18.jpg" alt="Складка">
             </div>
             <div class="card-content">
-                <span class="defect-class">Класс 4517</span>
-                <h3 class="card-title">Продольная царапина</h3>
-                <p class="card-desc">Механическое повреждение поверхности в виде длинной полосы. Возникает при трении полосы о валки или проводки.</p>
+                <span class="defect-class warning">Код 020</span>
+                <h3 class="card-title">Складка</h3>
+                <p class="card-desc">Дефект имеет вид гофрированной поверхности с участками прикатанных складок.</p>
             </div>
         </div>
 
-        <!-- КАРТОЧКА 2 -->
-        <div class="card">
+        <!-- КАРТОЧКА 2: Пятно слипания сварки 023 -->
+        <div class="card" data-gallery="023" onclick="openGallery('023')">
             <div class="card-img">
-                <span>Нет фото</span>
-                <!-- <img src="images/scale.jpg" alt="Вкатанная окалина"> -->
+                <div class="photo-count">10 фото</div>
+                <img src="picture/10. Пятна слипания сварки/1. Класс 023 (ID=23)/13_23_6042798_1713.jpg" alt="Пятно слипания сварки">
             </div>
             <div class="card-content">
-                <span class="defect-class">Класс 4520</span>
-                <h3 class="card-title">Вкатанная окалина</h3>
-                <p class="card-desc">Темные шероховатые пятна на поверхности. Появляются при нарушении работы систем гидросбива.</p>
+                <span class="defect-class warning">Код 023</span>
+                <h3 class="card-title">Пятно слипания сварки</h3>
+                <p class="card-desc">Дефект поверхности в виде тёмно-серых участков налипания или отрыва металла, образовавшихся при разматывании слипшихся или сварившихся участков рулона.</p>
             </div>
         </div>
 
-        <!-- КАРТОЧКА 3 -->
-        <div class="card">
+        <!-- КАРТОЧКА 3: Разрывы по границам зёрен 047 -->
+        <div class="card" data-gallery="047" onclick="openGallery('047')">
             <div class="card-img">
-                <span>Нет фото</span>
-                <!-- <img src="images/dent.jpg" alt="Вмятина"> -->
+                <div class="photo-count">10 фото</div>
+                <img src="picture/1. Сквозной разрыв/2. Класс 047 (ID=47)/1_47_6044220_8500.jpg" alt="Разрывы по границам зёрен">
             </div>
             <div class="card-content">
-                <span class="defect-class">Класс 4505</span>
-                <h3 class="card-title">Вмятина (Отпечаток)</h3>
-                <p class="card-desc">Локальное углубление без нарушения целостности металла. Зачастую имеет циклически повторяющийся характер.</p>
+                <span class="defect-class critical">Код 047</span>
+                <h3 class="card-title">Разрывы по границам зёрен</h3>
+                <p class="card-desc">Дефект поверхности в виде сквозных и не сквозных разрывов полосы по месту внедрения металлических частиц.</p>
             </div>
         </div>
 
-        <!-- КАРТОЧКА 4 -->
-        <div class="card">
+        <!-- КАРТОЧКА 4: Сквозной разрыв 061 -->
+        <div class="card" data-gallery="061" onclick="openGallery('061')">
             <div class="card-img">
-                <span>Нет фото</span>
-                <!-- <img src="images/rust.jpg" alt="Ржавчина"> -->
+                <div class="photo-count">9 фото</div>
+                <img src="picture/1. Сквозной разрыв/4. Класс 061 (ID=61)/1_61_6044208_1110.jpg" alt="Сквозной разрыв">
             </div>
             <div class="card-content">
-                <span class="defect-class warning">Класс 4601</span>
-                <h3 class="card-title">Ржавчина / Окисление</h3>
-                <p class="card-desc">Окисление поверхности металла из-за нарушения условий транспортировки или обильного попадания эмульсии.</p>
-            </div>
-        </div>
-
-        <!-- КАРТОЧКА 5 -->
-        <div class="card">
-            <div class="card-img">
-                <span>Нет фото</span>
-                <!-- <img src="images/hole.jpg" alt="Сквозной разрыв"> -->
-            </div>
-            <div class="card-content">
-                <span class="defect-class critical">Класс 4599 (Критич.)</span>
+                <span class="defect-class critical">Код 061</span>
                 <h3 class="card-title">Сквозной разрыв</h3>
-                <p class="card-desc">Нарушение сплошности полосы металла. Срочный дефект, требующий немедленной остановки агрегата во избежание аварии.</p>
+                <p class="card-desc">Сквозные разрывы полосы.</p>
             </div>
         </div>
 
-        <!-- КАРТОЧКА 6 -->
-        <div class="card">
+        <!-- КАРТОЧКА 5: Крапчатость 692, 693 -->
+        <div class="card" data-gallery="692_693" onclick="openGallery('692_693')">
             <div class="card-img">
-                <span>Нет фото</span>
-                <!-- <img src="images/edge_crack.jpg" alt="Рваная кромка"> -->
+                <div class="photo-count">18 фото</div>
+                <img src="picture/21. Крапчатость/2. Класс 692 (ID=692)/24_692_6044342_29.jpg" alt="Крапчатость по кромке / полосе">
             </div>
             <div class="card-content">
-                <span class="defect-class warning">Класс 4550</span>
-                <h3 class="card-title">Рваная кромка</h3>
-                <p class="card-desc">Механическое разрушение краев полосы. Возникает при неправильной настройке дисковых ножниц или избыточном натяжении.</p>
-            </div>
-        </div>
-
-        <!-- КАРТОЧКА 7 -->
-        <div class="card">
-            <div class="card-img">
-                <span>Нет фото</span>
-                <!-- <img src="images/oil.jpg" alt="Пятно масла"> -->
-            </div>
-            <div class="card-content">
-                <span class="defect-class">Класс 4610</span>
-                <h3 class="card-title">Пятно масла</h3>
-                <p class="card-desc">Загрязнение поверхности смазочно-охлаждающей жидкостью или гидравлическим маслом из систем прокатного стана.</p>
-            </div>
-        </div>
-
-        <!-- КАРТОЧКА 8 -->
-        <div class="card">
-            <div class="card-img">
-                <span>Нет фото</span>
-                <!-- <img src="images/fold.jpg" alt="Складка / Залом"> -->
-            </div>
-            <div class="card-content">
-                <span class="defect-class critical">Класс 4532 (Критич.)</span>
-                <h3 class="card-title">Складка / Залом</h3>
-                <p class="card-desc">Деформация полосы с образованием нахлеста металла. Часто приводит к повреждению рабочих валков клети.</p>
-            </div>
-        </div>
-
-        <!-- КАРТОЧКА 9 -->
-        <div class="card">
-            <div class="card-img">
-                <span>Нет фото</span>
-                <!-- <img src="images/blister.jpg" alt="Вздутие / Пузырь"> -->
-            </div>
-            <div class="card-content">
-                <span class="defect-class">Класс 4540</span>
-                <h3 class="card-title">Вздутие / Пузырь</h3>
-                <p class="card-desc">Локальное расслоение металла из-за скопления газов или скрытых неметаллических включений внутри заготовки.</p>
+                <span class="defect-class">Код 692, 693</span>
+                <h3 class="card-title">Крапчатость</h3>
+                <p class="card-desc">Скопления мелких светлых точек с металлическим блеском.</p>
             </div>
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО -->
+    <!-- МОДАЛЬНОЕ ОКНО СО СЛАЙДЕРОМ -->
     <div id="image-modal" class="modal">
-        <span class="close-modal">&times;</span>
-        <img class="modal-content" id="modal-img" src="" alt="Увеличенное фото">
-        <div class="modal-placeholder" id="modal-placeholder">Фото временно отсутствует</div>
-        <div id="modal-caption"></div>
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        
+        <div class="slider-container">
+            <button class="nav-btn prev-btn" onclick="prevImage(event)">&#10094;</button>
+            <img class="modal-content" id="modal-img" src="" alt="Дефект">
+            <button class="nav-btn next-btn" onclick="nextImage(event)">&#10095;</button>
+        </div>
+
+        <div class="modal-info">
+            <div id="modal-caption">Название дефекта</div>
+            <div id="modal-counter">1 / 10</div>
+        </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const modal = document.getElementById("image-modal");
-            const modalImg = document.getElementById("modal-img");
-            const modalPlaceholder = document.getElementById("modal-placeholder");
-            const captionText = document.getElementById("modal-caption");
-            const closeBtn = document.querySelector(".close-modal");
+        // Базы изображений для каждой галереи
+        const galleries = {
+            "020": [
+                "picture/3. Складка/1. Класс 020 (ID=20)/3_20_6044207_18.jpg",
+                "picture/3. Складка/1. Класс 020 (ID=20)/3_20_6044207_20.jpg",
+                "picture/3. Складка/1. Класс 020 (ID=20)/3_20_6044219_125.jpg",
+                "picture/3. Складка/1. Класс 020 (ID=20)/3_20_6044219_126.jpg",
+                "picture/3. Складка/1. Класс 020 (ID=20)/3_20_6044219_129.jpg",
+                "picture/3. Складка/1. Класс 020 (ID=20)/3_20_6044219_143.jpg",
+                "picture/3. Складка/1. Класс 020 (ID=20)/3_20_6044219_147.jpg",
+                "picture/3. Складка/1. Класс 020 (ID=20)/3_20_6044219_167.jpg",
+                "picture/3. Складка/1. Класс 020 (ID=20)/3_20_6044219_179.jpg",
+                "picture/3. Складка/1. Класс 020 (ID=20)/3_20_6044219_91.jpg"
+            ],
+            "023": [
+                "picture/10. Пятна слипания сварки/1. Класс 023 (ID=23)/13_23_6042798_1713.jpg",
+                "picture/10. Пятна слипания сварки/1. Класс 023 (ID=23)/13_23_6042798_1714.jpg",
+                "picture/10. Пятна слипания сварки/1. Класс 023 (ID=23)/13_23_6042798_6496.jpg",
+                "picture/10. Пятна слипания сварки/1. Класс 023 (ID=23)/13_23_6042798_6497.jpg",
+                "picture/10. Пятна слипания сварки/1. Класс 023 (ID=23)/13_23_6042798_7124.jpg",
+                "picture/10. Пятна слипания сварки/1. Класс 023 (ID=23)/13_23_6042798_7127.jpg",
+                "picture/10. Пятна слипания сварки/1. Класс 023 (ID=23)/13_23_6042798_7164.jpg",
+                "picture/10. Пятна слипания сварки/1. Класс 023 (ID=23)/13_23_6042798_7645.jpg",
+                "picture/10. Пятна слипания сварки/1. Класс 023 (ID=23)/13_23_6042798_7646.jpg",
+                "picture/10. Пятна слипания сварки/1. Класс 023 (ID=23)/13_23_6042798_7647.jpg"
+            ],
+            "047": [
+                "picture/1. Сквозной разрыв/2. Класс 047 (ID=47)/1_47_6044220_8500.jpg",
+                "picture/1. Сквозной разрыв/2. Класс 047 (ID=47)/1_47_6044220_8762.jpg",
+                "picture/1. Сквозной разрыв/2. Класс 047 (ID=47)/1_47_6044220_8917.jpg",
+                "picture/1. Сквозной разрыв/2. Класс 047 (ID=47)/1_47_6044220_8926.jpg",
+                "picture/1. Сквозной разрыв/2. Класс 047 (ID=47)/1_47_6044220_8931.jpg",
+                "picture/1. Сквозной разрыв/2. Класс 047 (ID=47)/1_47_6044220_8955.jpg",
+                "picture/1. Сквозной разрыв/2. Класс 047 (ID=47)/1_47_6044220_8956.jpg",
+                "picture/1. Сквозной разрыв/2. Класс 047 (ID=47)/1_47_6044223_9765.jpg",
+                "picture/1. Сквозной разрыв/2. Класс 047 (ID=47)/1_47_6044223_9767.jpg",
+                "picture/1. Сквозной разрыв/2. Класс 047 (ID=47)/1_47_6044303_2043.jpg"
+            ],
+            "061": [
+                "picture/1. Сквозной разрыв/4. Класс 061 (ID=61)/1_61_6044208_1110.jpg",
+                "picture/1. Сквозной разрыв/4. Класс 061 (ID=61)/1_61_6044216_1191.jpg",
+                "picture/1. Сквозной разрыв/4. Класс 061 (ID=61)/1_61_6044216_1982.jpg",
+                "picture/1. Сквозной разрыв/4. Класс 061 (ID=61)/1_61_6044216_4029.jpg",
+                "picture/1. Сквозной разрыв/4. Класс 061 (ID=61)/1_61_6044216_4030.jpg",
+                "picture/1. Сквозной разрыв/4. Класс 061 (ID=61)/1_61_6044347_4096.jpg",
+                "picture/1. Сквозной разрыв/4. Класс 061 (ID=61)/1_61_6044347_4099.jpg",
+                "picture/1. Сквозной разрыв/4. Класс 061 (ID=61)/1_61_6044347_4100.jpg",
+                "picture/1. Сквозной разрыв/4. Класс 061 (ID=61)/1_61_6044347_8491.jpg"
+            ],
+            "692_693": [
+                "picture/21. Крапчатость/2. Класс 692 (ID=692)/24_692_6044342_29.jpg",
+                "picture/21. Крапчатость/2. Класс 692 (ID=692)/24_692_6044342_30.jpg",
+                "picture/21. Крапчатость/2. Класс 692 (ID=692)/24_692_6044342_31.jpg",
+                "picture/21. Крапчатость/2. Класс 692 (ID=692)/24_692_6044342_33.jpg",
+                "picture/21. Крапчатость/2. Класс 692 (ID=692)/24_692_6044342_4.jpg",
+                "picture/21. Крапчатость/2. Класс 692 (ID=692)/24_692_6044342_5.jpg",
+                "picture/21. Крапчатость/2. Класс 692 (ID=692)/24_692_6044342_6.jpg",
+                "picture/21. Крапчатость/2. Класс 692 (ID=692)/24_692_6044342_8.jpg",
+                "picture/21. Крапчатость/2. Класс 692 (ID=692)/24_692_6044348_90.jpg",
+                "picture/21. Крапчатость/3. Класс 693 (ID=700)/24_700_6044355_120.jpg",
+                "picture/21. Крапчатость/3. Класс 693 (ID=700)/24_700_6044355_121.jpg",
+                "picture/21. Крапчатость/3. Класс 693 (ID=700)/24_700_6044355_122.jpg",
+                "picture/21. Крапчатость/3. Класс 693 (ID=700)/24_700_6044355_134.jpg",
+                "picture/21. Крапчатость/3. Класс 693 (ID=700)/24_700_6044355_137.jpg",
+                "picture/21. Крапчатость/3. Класс 693 (ID=700)/24_700_6044355_249.jpg",
+                "picture/21. Крапчатость/3. Класс 693 (ID=700)/24_700_6044355_250.jpg",
+                "picture/21. Крапчатость/3. Класс 693 (ID=700)/24_700_6044355_251.jpg",
+                "picture/21. Крапчатость/3. Класс 693 (ID=700)/24_700_6044355_72.jpg"
+            ]
+        };
 
-            document.querySelectorAll('.card-img').forEach(container => {
-                container.addEventListener('click', function() {
-                    const img = this.querySelector('img');
-                    const title = this.nextElementSibling.querySelector('.card-title').innerText;
-                    const defectClassElement = this.nextElementSibling.querySelector('.defect-class');
+        // Заголовки для окна
+        const titles = {
+            "020": "Код 020 — Складка",
+            "023": "Код 023 — Пятно слипания сварки",
+            "047": "Код 047 — Разрывы по границам зёрен",
+            "061": "Код 061 — Сквозной разрыв",
+            "692_693": "Код 692, 693 — Крапчатость"
+        };
 
-                    // Извлекаем текст класса без "(Критич.)" для чистоты заголовка
-                    const defectClassText = defectClassElement.innerText.split('(')[0].trim();
+        let currentGallery = [];
+        let currentIndex = 0;
 
-                    if (img) {
-                        modalImg.style.display = 'block';
-                        modalPlaceholder.style.display = 'none';
-                        modalImg.src = img.src;
-                    } else {
-                        modalImg.style.display = 'none';
-                        modalPlaceholder.style.display = 'flex';
-                    }
+        const modal = document.getElementById("image-modal");
+        const modalImg = document.getElementById("modal-img");
+        const modalCaption = document.getElementById("modal-caption");
+        const modalCounter = document.getElementById("modal-counter");
 
-                    captionText.innerText = `${defectClassText} — ${title}`;
+        // Открытие галереи по ключу (id)
+        function openGallery(id) {
+            currentGallery = galleries[id] || [];
+            if (currentGallery.length === 0) return;
 
-                    modal.style.display = "flex";
-                    setTimeout(() => modal.classList.add('show'), 10);
-                });
-            });
+            currentIndex = 0;
+            modalCaption.innerText = titles[id];
+            updateImage();
 
-            const closeModal = () => {
-                modal.classList.remove('show');
-                setTimeout(() => modal.style.display = "none", 300);
-            };
+            modal.style.display = "flex";
+            setTimeout(() => modal.classList.add('show'), 10);
+        }
 
-            closeBtn.addEventListener('click', closeModal);
+        // Обновление картинки и счетчика
+        function updateImage() {
+            modalImg.src = currentGallery[currentIndex];
+            modalCounter.innerText = `Фото ${currentIndex + 1} из ${currentGallery.length}`;
+        }
 
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    closeModal();
-                }
-            });
+        // Кнопка Влево
+        function prevImage(e) {
+            if(e) e.stopPropagation();
+            currentIndex = (currentIndex > 0) ? currentIndex - 1 : currentGallery.length - 1;
+            updateImage();
+        }
 
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && modal.classList.contains('show')) {
-                    closeModal();
-                }
-            });
+        // Кнопка Вправо
+        function nextImage(e) {
+            if(e) e.stopPropagation();
+            currentIndex = (currentIndex < currentGallery.length - 1) ? currentIndex + 1 : 0;
+            updateImage();
+        }
+
+        // Закрытие модального окна
+        function closeModal() {
+            modal.classList.remove('show');
+            setTimeout(() => modal.style.display = "none", 300);
+        }
+
+        // Закрытие по клику вне картинки
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal || e.target.classList.contains('slider-container')) {
+                closeModal();
+            }
+        });
+
+        // Клавиатурные события (Влево, Вправо, Esc)
+        document.addEventListener('keydown', (e) => {
+            if (!modal.classList.contains('show')) return;
+            
+            if (e.key === 'ArrowLeft') {
+                prevImage();
+            } else if (e.key === 'ArrowRight') {
+                nextImage();
+            } else if (e.key === 'Escape') {
+                closeModal();
+            }
         });
     </script>
 </body>
