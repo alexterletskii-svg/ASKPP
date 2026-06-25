@@ -326,12 +326,14 @@
             border-bottom: 1px solid #a0a0a0;
         }
         .h-scale {
-            background-color: #ffffff;
-            height: 11px;
-            display: flex; align-items: center;
-            padding: 0 2px;
-            font-size: 8px; color: #000;
-        }
+    background-color: #ffffff;
+    height: 14px;
+    display: flex; align-items: center;
+    padding: 0 2px;
+    font-size: 10px;
+    color: #000;
+    font-weight: bold;
+}
 
         .t-left { justify-content: flex-start; }
         .t-center { justify-content: center; text-align: center; }
@@ -391,7 +393,17 @@
         .g-line-w { position: absolute; width: 100%; height: 1px; border-top: 1px dashed rgba(255,255,255,0.8); z-index: 2; }
         .g-txt-w { position: absolute; color: white; font-size: 10px; transform: translateY(-50%); z-index: 2; white-space: nowrap; }
         .g-line-b { position: absolute; width: 100%; height: 1px; background-color: #222; z-index: 1; }
-        .scale-num { position: absolute; width: 100%; text-align: center; font-size: 10px; color: black; transform: translateY(-50%); margin-top: -6px; z-index: 5; }
+        .scale-num {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    font-size: 12px;  /* было 10px */
+    color: black;
+    transform: translateY(-50%);
+    margin-top: -6px;
+    z-index: 5;
+    font-weight: bold;  /* добавлено */
+}
 
         #defect-popup {
             display: none; position: absolute; background: white; border: 1px solid #808080;
@@ -5401,7 +5413,7 @@ document.addEventListener('keydown', function(e) {
         .img-ruler-line {
             position: absolute;
             background-color: #ffffff;
-            height: 1px;
+            height: 2px;
             transform-origin: 0 0;
             pointer-events: none;
             z-index: 1000;
@@ -5419,6 +5431,12 @@ document.addEventListener('keydown', function(e) {
             z-index: 1000;
             line-height: 1.3;
         }
+        #defect-image-box.large-mode {
+    cursor: default;
+}
+#defect-image-box.large-mode.ctrl-measure {
+    cursor: crosshair;  /* крестик вместо курсора */
+}
     `;
     document.head.appendChild(style);
 
@@ -5455,32 +5473,39 @@ document.addEventListener('keydown', function(e) {
 
     // 2. Левый клик (начало отслеживания)
     imgContainer.addEventListener('mousedown', (e) => {
-        if (!isLargeMode || e.button !== 0) return;
+    if (!isLargeMode || e.button !== 0) return;
 
-        const innerImgWrapper = imgContainer.querySelector('div');
-        if (!innerImgWrapper) return;
+    const innerImgWrapper = imgContainer.querySelector('div');
+    if (!innerImgWrapper) return;
 
-        if (e.ctrlKey) {
-            e.preventDefault();
-            isMeasuring = true;
-            hasDragged = false; // Сбрасываем флаг перетаскивания мышью
+    // Добавляем/убираем класс для курсора-крестика при Ctrl
+    if (e.ctrlKey) {
+        imgContainer.classList.add('ctrl-measure');
+    } else {
+        imgContainer.classList.remove('ctrl-measure');
+    }
 
-            // Если была старая линейка, убираем ее немедленно
-            clearRuler();
+    if (e.ctrlKey) {
+        e.preventDefault();
+        isMeasuring = true;
+        hasDragged = false; // Сбрасываем флаг перетаскивания мышью
 
-            const rect = innerImgWrapper.getBoundingClientRect();
-            tempStartX = e.clientX - rect.left;
-            tempStartY = e.clientY - rect.top;
-            return;
-        }
+        // Если была старая линейка, убираем ее немедленно
+        clearRuler();
 
-        // Обычный клик - зум плюс
-        currentZoom += 0.25;
-        if (currentZoom > 4) currentZoom = 4;
+        const rect = innerImgWrapper.getBoundingClientRect();
+        tempStartX = e.clientX - rect.left;
+        tempStartY = e.clientY - rect.top;
+        return;
+    }
 
-        imgContainer.style.setProperty('--img-zoom', currentZoom);
-        updateRulerOnZoom();
-    });
+    // Обычный клик - зум плюс
+    currentZoom += 0.25;
+    if (currentZoom > 4) currentZoom = 4;
+
+    imgContainer.style.setProperty('--img-zoom', currentZoom);
+    updateRulerOnZoom();
+});
 
     // 3. Движение мыши
     imgContainer.addEventListener('mousemove', (e) => {
@@ -5504,6 +5529,8 @@ document.addEventListener('keydown', function(e) {
 
                 rulerText = document.createElement('div');
                 rulerText.className = 'img-ruler-text';
+rulerText.style.fontSize = '13px';
+rulerText.style.fontWeight = 'bold';
 
                 innerImgWrapper.appendChild(rulerLine);
                 innerImgWrapper.appendChild(rulerText);
@@ -5534,6 +5561,7 @@ document.addEventListener('keydown', function(e) {
 
         isMeasuring = false;
         hasDragged = false;
+        imgContainer.classList.remove('ctrl-measure');
     });
 
     // 5. Правый клик - ЗУМ МИНУС
@@ -5565,7 +5593,7 @@ document.addEventListener('keydown', function(e) {
         const mmY = (pxY / currentZoom) * PIXELS_TO_MM_RATIO;
         const lengthMm = (pxLength / currentZoom) * PIXELS_TO_MM_RATIO;
 
-        rulerText.innerHTML = `X: ${mmX.toFixed(2)} mm, Y: ${mmY.toFixed(2)} mm<br>Length: ${lengthMm.toFixed(2)} mm`;
+        rulerText.innerHTML = `X: ${mmX.toFixed(2)} мм, Y: ${mmY.toFixed(2)} мм<br>Длина: ${lengthMm.toFixed(2)} мм`;
 
         rulerText.style.left = (x2 + 15) + 'px';
         rulerText.style.top = (y2 + 15) + 'px';
