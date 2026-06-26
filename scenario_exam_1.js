@@ -31,31 +31,42 @@
         return null;
     }
 
-    function sendCourseCompletedToWebSoft() {
-        const api = getScormAPI(window);
-        if (api) {
-            try {
-                const isScorm2004 = (api === window.API_1484_11);
-
-                // Отправляем 100 баллов и статус "Пройден"
-                if (isScorm2004) {
-                    api.SetValue("cmi.score.raw", "100");
-                    api.SetValue("cmi.completion_status", "completed");
-                    api.SetValue("cmi.success_status", "passed");
-                    api.Commit("");
-                } else {
-                    api.LMSSetValue("cmi.core.score.raw", "100");
-                    api.LMSSetValue("cmi.core.lesson_status", "passed");
-                    api.LMSCommit("");
-                }
-                console.log("✅ Данные об успешном прохождении отправлены в WebSoft!");
-            } catch (e) {
-                console.error("❌ Ошибка при отправке данных в LMS:", e);
-            }
-        } else {
-            console.warn("⚠️ SCORM API не найден. Скрипт запущен вне плеера WebTutor?");
+function sendCourseCompletedToWebSoft() {
+    var scorm = null;
+    try {
+        if (window.parent && window.parent.pipwerks) {
+            scorm = window.parent.pipwerks.SCORM;
+        } else if (window.top && window.top.pipwerks) {
+            scorm = window.top.pipwerks.SCORM;
         }
+    } catch (e) {
+        console.error("Не удалось получить доступ к pipwerks из родителя:", e);
     }
+
+    if (!scorm) {
+        console.warn("⚠️ pipwerks не найден в родителе. Запуск вне плеера?");
+        return;
+    }
+
+    try {
+        // Сессия уже открыта в index.html — НЕ инициализируем заново!
+        if (scorm.version === "2004") {
+            scorm.set("cmi.score.raw", "100");
+            scorm.set("cmi.completion_status", "completed");
+            scorm.set("cmi.success_status", "passed");
+        } else {
+            // SCORM 1.2
+            scorm.set("cmi.core.score.raw", "100");
+            scorm.set("cmi.core.lesson_status", "passed");
+        }
+        scorm.save();  // принудительный commit
+        console.log("✅ Данные об успешном прохождении отправлены в WebSoft!");
+    } catch (e) {
+        console.error("❌ Ошибка при отправке данных в LMS:", e);
+    }
+}
+
+
 
     // --- 1. СОЗДАНИЕ ИНТЕРФЕЙСА ЗАДАНИЙ (ПАНЕЛЬ ЭКЗАМЕНА) ---
     function initExamUI() {
