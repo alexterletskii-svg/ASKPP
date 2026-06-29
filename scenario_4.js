@@ -204,9 +204,26 @@
     let activeListener = null;
 
     const steps = [
-        // --- 1. ВЫКЛЮЧЕНИЕ ВСЕХ КАМЕР ---
+        // --- 1. ВЫБОР РУЛОНА ---
         {
             delay: 500,
+            targetSelector: '.panel-left .box.h-35',
+            eventType: 'click',
+            placement: 'right',
+            text: 'Добро пожаловать в обучение!<br><br>Сначала давайте загрузим данные. Кликните по <span class="action-badge">ЛЮБОМУ</span> рулону в таблице слева.',
+            purpose: 'Выбор рулона подгрузит его карту дефектов, чтобы мы могли анализировать данные и фильтровать информацию с разных камер.',
+            validate: (e) => {
+                const tr = e.target.closest('#coil-tbody tr');
+                if (tr) {
+                    return true;
+                }
+                return false;
+            }
+        },
+
+        // --- 2. ВЫКЛЮЧЕНИЕ ВСЕХ КАМЕР ---
+        {
+            delay: 800,
             targetSelector: '.filter-group:nth-child(2) .filter-actions button:nth-child(2)',
             eventType: 'click',
             placement: 'bottom',
@@ -215,7 +232,7 @@
             validate: () => true
         },
 
-        // --- 2. ВКЛЮЧЕНИЕ ОДНОЙ КАМЕРЫ ---
+        // --- 3. ВКЛЮЧЕНИЕ ОДНОЙ КАМЕРЫ ---
         {
             delay: 200,
             targetSelector: '#content-cameras',
@@ -231,7 +248,7 @@
             }
         },
 
-        // --- 3. ВКЛЮЧЕНИЕ ВТОРОЙ КАМЕРЫ ---
+        // --- 4. ВКЛЮЧЕНИЕ ВТОРОЙ КАМЕРЫ ---
         {
             delay: 300,
             targetSelector: '#content-cameras',
@@ -247,7 +264,7 @@
             }
         },
 
-        // --- 4. ВКЛЮЧЕНИЕ ГРУППЫ КАМЕР ---
+        // --- 5. ВКЛЮЧЕНИЕ ГРУППЫ КАМЕР ---
         {
             delay: 300,
             targetSelector: '#content-cameras',
@@ -263,7 +280,7 @@
             }
         },
 
-        // --- 5. ПРОВЕРКА РЕЗУЛЬТАТА (КЛИКИ ПО ДЕФЕКТАМ) ---
+        // --- 6. ПРОВЕРКА РЕЗУЛЬТАТА (КЛИКИ ПО ДЕФЕКТАМ) ---
         {
             delay: 1000,
             onEnter: () => { window.tutCameraDefectClicks = 0; },

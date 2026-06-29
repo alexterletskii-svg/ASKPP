@@ -179,7 +179,23 @@
     let activeListener = null;
 
     const steps = [
-        // --- 1. ПЕРЕХОД В РЕЖИМ БОЛЬШОГО ИЗОБРАЖЕНИЯ ---
+        // --- 1. ВЫБОР РУЛОНА ---
+        {
+            delay: 500,
+            targetSelector: '.panel-left .box.h-35',
+            eventType: 'click',
+            placement: 'right',
+            text: 'Добро пожаловать в обучение работе с линейкой!<br><br>Сперва необходимо загрузить данные рулона в рабочую область.<br>Кликните по <span class="action-badge">ЛЮБОМУ</span> рулону в таблице слева.',
+            validate: (e) => {
+                const tr = e.target.closest('#coil-tbody tr');
+                if (tr) {
+                    return true;
+                }
+                return false;
+            }
+        },
+
+        // --- 2. ПЕРЕХОД В РЕЖИМ БОЛЬШОГО ИЗОБРАЖЕНИЯ ---
         {
             delay: 500,
             onEnter: () => {
@@ -195,7 +211,7 @@
             validate: (e) => e.target.closest('#tut-btn-big') !== null
         },
 
-        // --- 2. ИСПОЛЬЗОВАНИЕ ЛИНЕЙКИ (ПЕРВЫЙ ЗАМЕР) ---
+        // --- 3. ИСПОЛЬЗОВАНИЕ ЛИНЕЙКИ (ПЕРВЫЙ ЗАМЕР) ---
         {
             delay: 800,
             targetSelector: '#defect-image-box',
@@ -210,7 +226,7 @@
             }
         },
 
-        // --- 3. ЗАКРЕПЛЕНИЕ (РАЗБОР ПАРАМЕТРОВ И ВТОРОЙ ЗАМЕР) ---
+        // --- 4. ЗАКРЕПЛЕНИЕ (РАЗБОР ПАРАМЕТРОВ И ВТОРОЙ ЗАМЕР) ---
         {
             delay: 100,
             onEnter: () => {

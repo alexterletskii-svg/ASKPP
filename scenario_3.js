@@ -182,17 +182,53 @@
     let activeListener = null;
 
     const steps = [
-        // --- 1. ВЫКЛЮЧЕНИЕ ВСЕХ КЛАССОВ ---
+        // --- 1. ВЫБОР РУЛОНА ---
         {
             delay: 500,
+            onEnter: () => {
+                // Выбираем 4-ю строку сверху (index 3) и берем её номер (колонка 1)
+                const rows = document.querySelectorAll('#coil-tbody tr');
+                if (rows.length > 3) {
+                    window.tutTargetCoil = rows[3].cells[1].innerText;
+                } else {
+                    window.tutTargetCoil = "Неизвестно";
+                }
+            },
+            targetSelector: '.panel-left .box.h-35',
+            eventType: 'click',
+            placement: 'right',
+            text: () => `Добро пожаловать в обучение!<br><br>Сначала давайте выберем рулон для инспекции.<br>Найдите в таблице рулон <span class="action-badge">№ ${window.tutTargetCoil}</span> и кликните по нему левой кнопкой мыши.`,
+            validate: (e) => {
+                const tr = e.target.closest('#coil-tbody tr');
+                if (tr) {
+                    const clickedCoil = tr.cells[1].innerText;
+                    if (clickedCoil === window.tutTargetCoil) {
+                        return true;
+                    } else {
+                        if (!window.alertShown) {
+                            window.alertShown = true;
+                            e.preventDefault(); e.stopPropagation();
+                            showCustomAlert(`Вам нужен рулон <b>${window.tutTargetCoil}</b>! Вы кликнули на ${clickedCoil}.`, () => {
+                                window.alertShown = false;
+                            });
+                        }
+                    }
+                }
+                return false;
+            }
+        },
+
+        // --- 2. ВЫКЛЮЧЕНИЕ ВСЕХ КЛАССОВ ---
+        {
+            delay: 800,
             targetSelector: '.filter-group:nth-child(1) .filter-actions button:nth-child(2)',
             eventType: 'click',
             placement: 'bottom',
-            text: 'Тренировка работы с фильтрами классов.<br><br>Сначала отчистим карту от всех базовых классов. Нажмите кнопку <span class="action-badge">Все выкл.</span>',
+            text: 'Тренировка работы с фильтрами классов.<br><br>Сначала отключим карту от всех базовых классов. Нажмите кнопку <span class="action-badge">Все выкл.</span>',
             validate: () => true
         },
 
-        // --- 2. ИЗУЧЕНИЕ РАЗБИЕНИЯ (ПРАВЫЙ КЛИК) ---
+        // --- 3. ИЗУЧЕНИЕ РАЗБИЕНИЯ (ПРАВЫЙ КЛИК) ---
         {
             delay: 200,
             targetSelector: '.filter-block[data-value="Кромочный дефект"]',
@@ -202,7 +238,7 @@
             validate: () => true
         },
 
-        // --- 3. РАБОТА С ГАЛОЧКАМИ В МОДАЛЬНОМ ОКНЕ ---
+        // --- 4. РАБОТА С ГАЛОЧКАМИ В МОДАЛЬНОМ ОКНЕ ---
         {
             delay: 300,
             targetSelector: '#subclass-modal > div',
@@ -257,7 +293,7 @@
             }
         },
 
-        // --- 4. ФИНАЛЬНАЯ ПРОВЕРКА (КЛИКИ) ---
+        // --- 5. ФИНАЛЬНАЯ ПРОВЕРКА (КЛИКИ) ---
         {
             delay: 1000,
             onEnter: () => { window.tutDefectClicks = 0; },
@@ -340,7 +376,7 @@
     function finishScenario() {
         tooltip.style.display = 'none';
         activeTarget = null;
-        showCustomAlert('<b>Сценарий #3 успешно завершен!</b><br><br>Вы научились детально фильтровать метки по подклассам и проверили их. Точно таким же образом вы можете детализировать <b>абсолютно все классы дефектов</b>, чтобы сократить объем ненужной визуальной информации.');
+        showCustomAlert('<b>Сценарий #3 успешно завершен!</b><br><br>Вы научились загружать рулон, детально фильтровать метки по подклассам и проверять их. Точно таким же образом вы можете детализировать <b>абсолютно все классы дефектов</b>, чтобы сократить объем ненужной визуальной информации.');
     }
 
     setTimeout(renderStep, 500);

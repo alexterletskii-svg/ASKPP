@@ -182,7 +182,23 @@
     let activeListener = null;
 
     const steps = [
-        // --- 1. РЕЖИМ БОЛЬШОГО ИЗОБРАЖЕНИЯ ---
+        // --- 1. ВЫБОР РУЛОНА ---
+        {
+            delay: 500,
+            targetSelector: '.panel-left .box.h-35',
+            eventType: 'click',
+            placement: 'right',
+            text: 'Добро пожаловать в обучение по детальному осмотру!<br><br>Сперва необходимо загрузить данные рулона в рабочую область.<br>Кликните по <span class="action-badge">ЛЮБОМУ</span> рулону в таблице слева.',
+            validate: (e) => {
+                const tr = e.target.closest('#coil-tbody tr');
+                if (tr) {
+                    return true;
+                }
+                return false;
+            }
+        },
+
+        // --- 2. РЕЖИМ БОЛЬШОГО ИЗОБРАЖЕНИЯ ---
         {
             delay: 500,
             onEnter: () => {
@@ -199,7 +215,7 @@
             validate: (e) => e.target.closest('#tut-btn-big') !== null
         },
 
-        // --- 2. ЗУМ НА ФОТОГРАФИИ ---
+        // --- 3. ЗУМ НА ФОТОГРАФИИ ---
         {
             delay: 800,
             onEnter: () => { window.tutZoomHits = 0; },
@@ -226,7 +242,7 @@
             }
         },
 
-        // --- 3. ПРОЛИСТЫВАНИЕ (3 РАЗА) ---
+        // --- 4. ПРОЛИСТЫВАНИЕ (3 РАЗА) ---
         {
             delay: 50,
             onEnter: () => { window.tutNavHits1 = 0; },
@@ -244,7 +260,7 @@
             }
         },
 
-        // --- 4. ЗАКРЕПЛЕНИЕ ROI: ПЕРЕКЛЮЧИТЬ НА 1 ДЕФЕКТ ---
+        // --- 5. ЗАКРЕПЛЕНИЕ ROI: ПЕРЕКЛЮЧИТЬ НА 1 ДЕФЕКТ ---
         {
             delay: 50,
             targetSelector: '.workspace',
@@ -254,7 +270,7 @@
             validate: (e) => (e.key === 'ArrowDown' || e.key === 'ArrowUp')
         },
 
-        // --- 5. ЗАКРЕПЛЕНИЕ ROI: ОТКЛЮЧИТЬ ---
+        // --- 6. ЗАКРЕПЛЕНИЕ ROI: ОТКЛЮЧИТЬ ---
         {
             delay: 50,
             targetSelector: '#tut-btn-rol',
@@ -264,7 +280,7 @@
             validate: (e) => e.target.closest('#tut-btn-rol') !== null
         },
 
-        // --- 6. ЗАКРЕПЛЕНИЕ ROI: ВКЛЮЧИТЬ ---
+        // --- 7. ЗАКРЕПЛЕНИЕ ROI: ВКЛЮЧИТЬ ---
         {
             delay: 50,
             targetSelector: '#tut-btn-rol',
@@ -274,7 +290,7 @@
             validate: (e) => e.target.closest('#tut-btn-rol') !== null
         },
 
-        // --- 7. ЗАКРЕПЛЕНИЕ ROI: ПЕРЕКЛЮЧИТЬ НА СЛЕДУЮЩИЙ ДЕФЕКТ ---
+        // --- 8. ЗАКРЕПЛЕНИЕ ROI: ПЕРЕКЛЮЧИТЬ НА СЛЕДУЮЩИЙ ДЕФЕКТ ---
         {
             delay: 50,
             targetSelector: '.workspace',
@@ -284,7 +300,7 @@
             validate: (e) => (e.key === 'ArrowDown' || e.key === 'ArrowUp')
         },
 
-        // --- 8. ЗАКРЕПЛЕНИЕ ROI: ОТКЛЮЧИТЬ ---
+        // --- 9. ЗАКРЕПЛЕНИЕ ROI: ОТКЛЮЧИТЬ ---
         {
             delay: 50,
             targetSelector: '#tut-btn-rol',
@@ -294,7 +310,7 @@
             validate: (e) => e.target.closest('#tut-btn-rol') !== null
         },
 
-        // --- 9. ЗАКРЕПЛЕНИЕ ROI: ВКЛЮЧИТЬ И ЗАВЕРШИТЬ ---
+        // --- 10. ЗАКРЕПЛЕНИЕ ROI: ВКЛЮЧИТЬ И ЗАВЕРШИТЬ ---
         {
             delay: 50,
             targetSelector: '#tut-btn-rol',
