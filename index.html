@@ -360,9 +360,15 @@
             } catch(e) {}
         };
 
+<!--        window.onunload = function() {-->
+<!--            try { pipwerks.SCORM.quit(); } catch(e) {}-->
+<!--        };-->
+
         window.onunload = function() {
-            try { pipwerks.SCORM.quit(); } catch(e) {}
-        };
+    if (!window._courseCompleted) {
+        try { pipwerks.SCORM.quit(); } catch(e) {}
+    }
+};
     </script>
 
 </body>

@@ -31,40 +31,87 @@
         return null;
     }
 
+//function sendCourseCompletedToWebSoft() {
+//    var scorm = null;
+//    try {
+//        if (window.parent && window.parent.pipwerks) {
+//            scorm = window.parent.pipwerks.SCORM;
+//        } else if (window.top && window.top.pipwerks) {
+//            scorm = window.top.pipwerks.SCORM;
+//        }
+//    } catch (e) {
+//        console.error("Не удалось получить доступ к pipwerks из родителя:", e);
+//    }
+//
+//    if (!scorm) {
+//        console.warn("⚠️ pipwerks не найден в родителе. Запуск вне плеера?");
+//        return;
+//    }
+//
+//    try {
+//        // Сессия уже открыта в index.html — НЕ инициализируем заново!
+//        if (scorm.version === "2004") {
+//            scorm.set("cmi.score.raw", "100");
+//            scorm.set("cmi.completion_status", "completed");
+//            scorm.set("cmi.success_status", "passed");
+//        } else {
+//            // SCORM 1.2
+//            scorm.set("cmi.core.score.raw", "100");
+//            scorm.set("cmi.core.lesson_status", "passed");
+//        }
+//        scorm.save();  // принудительный commit
+//        console.log("✅ Данные об успешном прохождении отправлены в WebSoft!");
+//    } catch (e) {
+//        console.error("❌ Ошибка при отправке данных в LMS:", e);
+//    }
+//}
+//
+
 function sendCourseCompletedToWebSoft() {
     var scorm = null;
     try {
+        // Пытаемся получить pipwerks из родителя
         if (window.parent && window.parent.pipwerks) {
             scorm = window.parent.pipwerks.SCORM;
         } else if (window.top && window.top.pipwerks) {
             scorm = window.top.pipwerks.SCORM;
         }
     } catch (e) {
-        console.error("Не удалось получить доступ к pipwerks из родителя:", e);
+        console.error("Доступ к родительскому окну запрещён:", e);
+        return;
     }
 
     if (!scorm) {
-        console.warn("⚠️ pipwerks не найден в родителе. Запуск вне плеера?");
+        console.warn("⚠️ pipwerks не найден. Возможно, курс запущен вне LMS.");
         return;
     }
 
     try {
-        // Сессия уже открыта в index.html — НЕ инициализируем заново!
+        // Устанавливаем статус и оценку
         if (scorm.version === "2004") {
-            scorm.set("cmi.score.raw", "100");
             scorm.set("cmi.completion_status", "completed");
             scorm.set("cmi.success_status", "passed");
+            scorm.set("cmi.score.raw", "100");
         } else {
             // SCORM 1.2
-            scorm.set("cmi.core.score.raw", "100");
             scorm.set("cmi.core.lesson_status", "passed");
+            scorm.set("cmi.core.score.raw", "100");
         }
-        scorm.save();  // принудительный commit
-        console.log("✅ Данные об успешном прохождении отправлены в WebSoft!");
+
+        // Принудительно отправляем данные
+        scorm.commit();   // или scorm.save()
+        scorm.quit();     // завершаем сессию сразу
+
+        console.log("✅ Данные отправлены в LMS, сессия завершена.");
+        // Устанавливаем флаг, чтобы onunload не пытался повторно завершить
+        window._courseCompleted = true;
     } catch (e) {
         console.error("❌ Ошибка при отправке данных в LMS:", e);
     }
 }
+
+
+
 
 
 
