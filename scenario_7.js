@@ -20,7 +20,7 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             z-index: 100002;
             width: max-content;
-            max-width: 420px;
+            max-width: 520px; /* Увеличено для вмещения расширенного текста */
             pointer-events: none;
             line-height: 1.5;
             border: 1px solid #4a90d9;
@@ -47,12 +47,21 @@
         }
         .purpose-text {
             background-color: rgba(0, 86, 164, 0.5);
-            padding: 8px 12px;
+            padding: 12px;
             border-radius: 4px;
             margin-top: 10px;
+            margin-bottom: 10px;
             border-left: 3px solid #ffda44;
             font-size: 12px;
             line-height: 1.4;
+        }
+        .tutorial-list {
+            margin: 6px 0 0 16px;
+            padding: 0;
+            list-style-type: disc;
+        }
+        .tutorial-list li {
+            margin-bottom: 6px;
         }
     `;
     document.head.appendChild(style);
@@ -183,7 +192,17 @@
             targetSelector: '.workspace',
             eventType: 'click',
             placement: 'bottom-right',
-            text: () => `По умолчанию активен графический режим <span class="action-badge">Ярлык</span>.<br><br><div class="purpose-text">В этом виде система собирает рядом стоящие дефекты в удобные бирки, предотвращая визуальную «кашу».</div><br>Кликните по <b>2 любым биркам</b> на карте.<br><br>Осталось кликнуть: <span class="action-badge">${2 - window.tutLabelClicks}</span>`,
+            text: () => `По умолчанию активен режим <span class="action-badge">Ярлык</span> (внутри указан номер класса).<br>
+            <div class="purpose-text">
+                <b>Главная цель:</b> Мгновенная ситуационная осведомленность без погружения в детали.<br>
+                <ul class="tutorial-list">
+                    <li><b>Светофор (Красный, Желтый, Зеленый):</b> Приоритетное кодирование критичности. Позволяет за доли секунды оценить риски всего рулона — проблемные зоны видны мгновенно.</li>
+                    <li><b>Белый цвет:</b> Оповещение о «скоплении». Сигнализирует, что под ярлыком скрыто несколько записей дефектов (нажмите для выбора нужного), что экономит время.</li>
+                    <li><b>Штриховка:</b> Индикация системных проблем. Заштрихованный ярлык означает, что дефект повторяется с определенным шагом (например, из-за вращения вала или ножа).</li>
+                </ul>
+            </div>
+            Минимизация когнитивной нагрузки: информация подается сжато (иконка + цвет + текстура), позволяя охватить сотни метров рулона.<br><br>
+            Кликните по <b>2 любым биркам</b> на карте.<br>Осталось кликнуть: <span class="action-badge">${2 - window.tutLabelClicks}</span>`,
             validate: (e) => {
                 if (e.target.closest('.defect-lbl')) {
                     window.tutLabelClicks++;
@@ -222,7 +241,17 @@
             targetSelector: '.workspace',
             eventType: 'click',
             placement: 'bottom-right',
-            text: () => `Режим <span class="action-badge">Реальный</span> активирован!<br><br><div class="purpose-text">Обратите внимание: дефекты больше не сгруппированы. Теперь они отображаются в своих <b>физических пропорциях</b>: длинные царапины стали цветными блоками, а мелкие точки — небольшими крестиками.</div><br>Кликните левой кнопкой мыши по <b>2 любым блокам или крестикам</b> прямо на полосе.<br><br>Осталось кликнуть: <span class="action-badge">${2 - window.tutRealClicks}</span>`,
+            text: () => `Режим <span class="action-badge">Реальный</span> активирован! Теперь масштаб отображения соответствует фактическому размеру дефекта на поверхности.<br>
+            <div class="purpose-text">
+                <b>Главная цель:</b> Понимание физического воздействия дефекта на конечный продукт и планирование вырезки.<br>
+                <ul class="tutorial-list">
+                    <li><b>Визуализация "Вредности":</b> Вы видите реальную площадь поражения. Легко оценить, перекрывает ли дефект кромку, центральную ось или всю ширину.</li>
+                    <li><b>Точное позиционирование (Крест):</b> Мелкий/точечный дефект не "раздувается" до ярлыка и не заслоняет объекты, а отображается в виде креста (сохраняя геометрическую точность).</li>
+                    <li><b>Оценка плотности:</b> Помогает визуально отличить случайную пыль от масштабного брака, требующего вырезки большого метража.</li>
+                </ul>
+            </div>
+            Этот режим дает понятную картину для технологов: так бы выглядели дефекты, если бы вы развернули рулон прямо на столе.<br><br>
+            Кликните по <b>2 любым блокам или крестикам</b> на полосе.<br>Осталось кликнуть: <span class="action-badge">${2 - window.tutRealClicks}</span>`,
             validate: (e) => {
                 if (e.target.closest('.defect-real-block') || e.target.closest('.defect-real-cross')) {
                     window.tutRealClicks++;
@@ -239,7 +268,7 @@
             targetSelector: '#tut-btn-table',
             eventType: 'click',
             placement: 'top',
-            text: 'Прекрасно! А что делать, если графический вид не нужен и требуется просто информационная сводка?<br><br>Нажмите кнопку <span class="action-badge">Таблица</span>.',
+            text: 'Прекрасно! А что делать, если графический вид не нужен и требуется детальная сводка?<br><br>Нажмите кнопку <span class="action-badge">Таблица</span>.',
             validate: (e) => {
                 if (e.target.closest('#tut-btn-table')) {
                     e.preventDefault();
@@ -260,7 +289,17 @@
             targetSelector: '#table-view-panel',
             eventType: 'click',
             placement: 'bottom-right',
-            text: () => `Режим <span class="action-badge">Таблица</span> активирован!<br><br><div class="purpose-text">Графическая карта теперь полностью скрыта. Вы просматриваете списочный реестр дефектов. При изменении фильтров справа, этот список будет автоматически уменьшаться.</div><br>Кликните левой кнопкой мыши по <b>2 любым строкам</b> внутри таблицы.<br><br>Осталось кликнуть: <span class="action-badge">${2 - window.tutTableClicks}</span>`,
+            text: () => `Режим <span class="action-badge">Таблица</span> активирован! Дефекты представлены списком с возможностью сортировки (по клику на название столбца).<br>
+            <div class="purpose-text">
+                <b>Главная цель:</b> Детальный статистический анализ, поиск аномалий и подготовка отчетности.<br>
+                <ul class="tutorial-list">
+                    <li><b>Глубокая фильтрация:</b> Незаменима для поиска конкретных закономерностей (например, показ только царапин на левой кромке за последний час).</li>
+                    <li><b>Сортировка (Макс/Мин):</b> Кликом по столбцу можно мгновенно вывести самые критические случаи в начало списка, игнорируя мелочи.</li>
+                    <li><b>Параллельный анализ:</b> Вы можете сортировать по одному параметру и одновременно фильтровать по другому, строя сложные аналитические выборки.</li>
+                </ul>
+            </div>
+            Кликните левой кнопкой мыши по <b>2 любым строкам</b> внутри таблицы.<br><br>
+            Осталось кликнуть: <span class="action-badge">${2 - window.tutTableClicks}</span>`,
             validate: (e) => {
                 if (e.target.closest('#defects-tbody tr')) {
                     window.tutTableClicks++;
@@ -371,7 +410,7 @@
 
         const body = document.createElement('div');
         body.style.cssText = 'padding: 20px 25px; font-size: 13px; color: black; font-family: Tahoma, sans-serif; text-align: center; line-height: 1.5;';
-        body.innerHTML = '<b>Сценарий #4 успешно завершен!</b><br><br>Теперь вы умеете переключаться между общим обзором (Ярлык), детальным позиционированием дефектов (Реальный) и табличными данными (Таблица).';
+        body.innerHTML = '<b>Сценарий #7 успешно завершен!</b><br><br>Теперь вы умеете переключаться между мгновенной осведомленностью (Ярлык), планированием вырезок по физическим габаритам (Реальный) и аналитическими данными (Таблица).';
 
         const footer = document.createElement('div');
         footer.style.cssText = 'display: flex; justify-content: center; padding-bottom: 20px;';
