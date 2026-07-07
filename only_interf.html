@@ -3800,6 +3800,7 @@ function getDefectImagePath(defect, isROI) {
     resetSubclassStates(currentSystem);
 
     // --- 2. РЕНДЕР ПАНЕЛИ ФИЛЬТРОВ И ОБРАБОТКА КЛИКОВ ---
+    // --- 2. РЕНДЕР ПАНЕЛИ ФИЛЬТРОВ И ОБРАБОТКА КЛИКОВ ---
     function renderFilterBlocks() {
         const classContainer = document.getElementById('classes-grid-container');
         classContainer.innerHTML = '';
@@ -3833,25 +3834,30 @@ function getDefectImagePath(defect, isROI) {
             `;
         }
 
-        // Рендер камер (оставляем твою старую логику)
+        // Рендер камер
         const camContainer = document.getElementById('content-cameras');
-        camContainer.innerHTML = '';
-        CAMERA_STRUCTURE.forEach(row => {
-            let html = `<div class="camera-row">`;
-            html += `<div class="camera-row-left">`;
-            row.cams.forEach(cam => {
-                html += `<div class="filter-block active cam-block" data-type="camera" data-value="${cam}" onclick="toggleBlock(this)">
-                            <span class="fb-name">${cam}</span>
+
+        // ИСПРАВЛЕНИЕ: Отрисовываем камеры только 1 раз.
+        // Если внутри контейнера уже есть камеры, пропускаем этот шаг,
+        // чтобы сохранить состояния включено/выключено, заданные пользователем.
+        if (camContainer.children.length === 0) {
+            CAMERA_STRUCTURE.forEach(row => {
+                let html = `<div class="camera-row">`;
+                html += `<div class="camera-row-left">`;
+                row.cams.forEach(cam => {
+                    html += `<div class="filter-block active cam-block" data-type="camera" data-value="${cam}" onclick="toggleBlock(this)">
+                                <span class="fb-name">${cam}</span>
+                             </div>`;
+                });
+                html += `</div>`;
+                html += `<div class="camera-row-right">`;
+                html += `<div class="filter-block active cam-block" onclick="toggleCameraGroup(this, '${row.group}')">
+                            <span class="fb-name">${row.group}</span>
                          </div>`;
+                html += `</div></div>`;
+                camContainer.innerHTML += html;
             });
-            html += `</div>`;
-            html += `<div class="camera-row-right">`;
-            html += `<div class="filter-block active cam-block" onclick="toggleCameraGroup(this, '${row.group}')">
-                        <span class="fb-name">${row.group}</span>
-                     </div>`;
-            html += `</div></div>`;
-            camContainer.innerHTML += html;
-        });
+        }
     }
 
     // Левый клик - вкл/выкл всей группы
