@@ -4414,7 +4414,7 @@ function markDefectAsViewed(defectId) {
     function setupTableSelection(tbodyId, isDefectsTable) {
         const tbody = document.getElementById(tbodyId);
         if(!tbody) return;
-        tbody.addEventListener('click', (e) => {
+        tbody.addEventListener('dblclick', (e) => {
             const row = e.target.closest('tr');
             if (!row) return;
 
@@ -4811,7 +4811,7 @@ function showRealModePopup(e, defect) {
         }
 
         if (foundRow) {
-            foundRow.click();
+            foundRow.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
             foundRow.scrollIntoView({ block: 'center', behavior: 'smooth' });
             closeRollModal();
         } else {
