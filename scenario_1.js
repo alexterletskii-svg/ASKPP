@@ -24,7 +24,7 @@
             width: max-content;
             max-width: 350px;
             pointer-events: none;
-            transition: opacity 0.3s; /* Убрал transition для top/left, чтобы при ресайзе не "плавало" с задержкой */
+            transition: opacity 0.3s;
             line-height: 1.5;
         }
         #tutorial-tooltip::after {
@@ -41,11 +41,11 @@
             line-height: 1.3;
         }
         /* Класс для яркого выделения того, ЧТО нужно сделать */
-     .action-badge {
-    font-weight: bold;
-    font-size: 15px;
-    color: #ffffff; /* или можешь поставить #ffd700, если хочешь сделать текст желтым */
-}
+        .action-badge {
+            font-weight: bold;
+            font-size: 15px;
+            color: #ffffff;
+        }
     `;
     document.head.appendChild(style);
 
@@ -101,7 +101,6 @@
 
     window.addEventListener('resize', updateTooltipPosition);
     // ==========================================
-
 
     // ФУНКЦИЯ: Отрисовка кастомного системного алерта
     function showCustomAlert(message, onOk) {
@@ -194,7 +193,7 @@
             targetSelector: '#initial-screen button',
             eventType: 'click',
             placement: 'right',
-            text: 'Все данные введены верно.<br><br>Нажмите кнопку <span class="action-badge">Ok</span>, чтобы загрузить выбранную базу данных и войти в систему.',
+            text: 'Все данные введены верно.<br><br>Нажмите кнопку <span class="action-badge">Ok</span> (или клавишу Enter), чтобы загрузить выбранную базу данных и войти в систему.',
             validate: () => true
         }
     ];
@@ -222,7 +221,7 @@
         // Вставляем текст
         tooltip.innerHTML = step.text;
         tooltip.style.display = 'block';
-        tooltip.className = 'arrow-left'; // Здесь можно прописать динамику, если появятся другие направления
+        tooltip.className = 'arrow-left';
 
         // Позиционируем
         updateTooltipPosition();
@@ -235,10 +234,11 @@
             targetEl.value = '';
         }
 
-        // Слушаем действие пользователя
+        // Слушаем действие пользователя (мышь)
         activeListener = function(e) {
             if (step.validate(e)) {
                 targetEl.removeEventListener(step.eventType, activeListener);
+                document.removeEventListener('keydown', enterKeyHandler); // Обязательно удаляем и слушатель клавиатуры
                 targetEl.classList.remove('tutorial-target');
                 currentStep++;
                 renderStep();
@@ -246,6 +246,27 @@
         };
 
         targetEl.addEventListener(step.eventType, activeListener);
+
+        // ==============================================================
+        // ФИКС: дублируем отслеживание для клавиши Enter
+        // ==============================================================
+        const enterKeyHandler = function(e) {
+            if (e.key === 'Enter') {
+                // Разрешаем засчитать шаг с кнопкой (последний) по нажатию Enter
+                if (step.targetSelector.includes('button') || step.eventType === 'click') {
+                    if (step.validate(e)) {
+                        targetEl.removeEventListener(step.eventType, activeListener);
+                        document.removeEventListener('keydown', enterKeyHandler);
+                        targetEl.classList.remove('tutorial-target');
+                        currentStep++;
+                        renderStep();
+                    }
+                }
+            }
+        };
+        // Подключаем слушатель клавиши
+        document.addEventListener('keydown', enterKeyHandler);
+        // ==============================================================
     }
 
     function finishScenario() {

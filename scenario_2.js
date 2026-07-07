@@ -177,7 +177,7 @@
         },
         {
             targetSelector: '#initial-screen button', eventType: 'click', placement: 'right',
-            text: 'Загрузите данные базы:<br><span class="action-badge">Ok</span>',
+            text: 'Загрузите данные базы:<br><span class="action-badge">Ok</span> (или клавишу Enter)',
             validate: () => true
         },
         {
@@ -247,7 +247,7 @@
             onEnter: () => { window.tutDefectClicks = 0; },
             targetSelector: '.workspace',
             eventType: 'click',
-            placement: 'bottom-right', // <--- Теперь выводится тут!
+            placement: 'bottom-right',
             text: () => `Отличная работа! Рулон <span style="color:#ffda44">${window.targetCoilNum}</span> загружен.<br><br>Теперь кликните по <b>2 любым дефектам</b> на карте или в таблице, чтобы посмотреть их свойства.<br><br>Осталось кликнуть: <span class="action-badge">${2 - window.tutDefectClicks}</span>`,
             validate: (e) => {
                 if (e.target.closest('#defects-tbody tr') || e.target.closest('.defect-lbl') || e.target.closest('.defect-real-block') || e.target.closest('.defect-real-cross')) {
@@ -312,9 +312,33 @@
 
         const eventsToListen = Array.isArray(step.eventType) ? step.eventType : [step.eventType];
 
+        let stepCompleted = false; // Предохранитель от двойного срабатывания
+
+        // --- ГЛОБАЛЬНЫЙ ПЕРЕХВАТЧИК КЛАВИШИ ENTER ---
+        const enterKeyHandler = function(e) {
+            if (stepCompleted) return;
+            if (e.key === 'Enter') {
+                // Разрешаем засчитать шаг с кнопкой через Enter
+                if (step.targetSelector.includes('button') || eventsToListen.includes('click')) {
+                    if (step.validate(e)) {
+                        stepCompleted = true;
+                        eventsToListen.forEach(evt => targetEl.removeEventListener(evt, activeListener, true));
+                        document.removeEventListener('keydown', enterKeyHandler, true);
+                        targetEl.classList.remove('tutorial-target');
+                        currentStep++;
+                        renderStep();
+                    }
+                }
+            }
+        };
+
+        // --- СТАНДАРТНЫЙ ПЕРЕХВАТЧИК (Мышь + остальные события) ---
         activeListener = function(e) {
+            if (stepCompleted) return;
             if (step.validate(e)) {
+                stepCompleted = true;
                 eventsToListen.forEach(evt => targetEl.removeEventListener(evt, activeListener, true));
+                document.removeEventListener('keydown', enterKeyHandler, true); // Чистим слушатель Enter
                 targetEl.classList.remove('tutorial-target');
                 currentStep++;
                 renderStep();
@@ -322,6 +346,7 @@
         };
 
         eventsToListen.forEach(evt => targetEl.addEventListener(evt, activeListener, true));
+        document.addEventListener('keydown', enterKeyHandler, true); // Добавляем слушатель Enter
     }
 
     function finishScenario() {

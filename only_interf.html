@@ -5328,6 +5328,33 @@ function currentImageAction() {
 
 // Обработчик горячих клавиш
 document.addEventListener('keydown', function(e) {
+    // === НОВОЕ: Обработка клавиши Enter для окон входа ===
+    if (e.key === 'Enter') {
+        const initScreen = document.getElementById('initial-screen');
+        const sysModal = document.getElementById('system-select-modal');
+        const loginModal = document.getElementById('login-modal');
+
+        // 1. Если открыт самый первый стартовый экран
+        if (initScreen && !initScreen.classList.contains('hidden')) {
+            e.preventDefault();
+            submitInitialSelection();
+            return;
+        }
+        // 2. Если открыто окно "Выбор системы" (через Файл)
+        if (sysModal && sysModal.style.display === 'flex') {
+            e.preventDefault();
+            submitSystemSelect();
+            return;
+        }
+        // 3. Если открыто окно "Новый пользователь"
+        if (loginModal && loginModal.style.display === 'flex') {
+            e.preventDefault();
+            submitLogin();
+            return;
+        }
+    }
+    // ====================================================
+
     if (e.key === 'F7') {
         e.preventDefault();
         toggleMode('offline');
