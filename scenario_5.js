@@ -20,7 +20,7 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             z-index: 100002;
             width: max-content;
-            max-width: 350px;
+            max-width: 380px;
             pointer-events: none;
             line-height: 1.5;
         }
@@ -205,7 +205,7 @@
                 document.querySelectorAll('.sb-panel').forEach(b => {
                     const txt = b.innerText.trim();
                     if (txt === 'Большой') b.id = 'tut-btn-big';
-                    if (txt === 'Rol') b.id = 'tut-btn-rol';
+                    if (txt === 'Rol' || txt === 'Roi') b.id = 'tut-btn-rol'; // На случай если название кнопки 'Roi'
                 });
             },
             targetSelector: '#tut-btn-big',
@@ -266,7 +266,7 @@
             targetSelector: '.workspace',
             eventType: 'keydown',
             placement: 'bottom-right',
-            text: 'Теперь изучим инструмент машинного зрения <b>ROI (Region of Interest)</b>.<br><br>Для начала нажмите <span class="action-badge">ВНИЗ (↓)</span>, чтобы перейти на новый чистый дефект.',
+            text: 'Теперь изучим полезный инструмент машинного зрения при работе с изображением:<br><b>ROI (Region of Interest / Зона интереса)</b>.<br><br>Для начала нажмите <span class="action-badge">ВНИЗ (↓)</span>, чтобы перейти на новый чистый дефект.',
             validate: (e) => (e.key === 'ArrowDown' || e.key === 'ArrowUp')
         },
 
@@ -276,7 +276,7 @@
             targetSelector: '#tut-btn-rol',
             eventType: 'click',
             placement: 'top',
-            text: 'По умолчанию дефект обведен красным контуром.<br><br>Нажмите на кнопку <span class="action-badge">Rol</span> в статус-баре, чтобы <b>ОТКЛЮЧИТЬ</b> обводку.',
+            text: 'По умолчанию найденные дефекты выделяются красным прямоугольником, для подсветки позиции дефекта. Но бывают случаи, когда данное выделение мешает обзору и его нужно убрать.<br><br>Нажмите на кнопку <span class="action-badge">ROI</span> в статус-баре, чтобы рамка пропала.',
             validate: (e) => e.target.closest('#tut-btn-rol') !== null
         },
 
@@ -286,7 +286,7 @@
             targetSelector: '#tut-btn-rol',
             eventType: 'click',
             placement: 'top',
-            text: 'Оцените, как выглядит металл. Некоторые царапины почти невидимы.<br><br>Нажмите кнопку <span class="action-badge">Rol</span> снова, чтобы <b>ВКЛЮЧИТЬ</b> обводку.',
+            text: 'Оцените, как выглядит металл. Некоторые царапины почти невидимы.<br><br>Нажмите кнопку <span class="action-badge">ROI</span> снова, чтобы <b>ВКЛЮЧИТЬ</b> обводку.',
             validate: (e) => e.target.closest('#tut-btn-rol') !== null
         },
 
@@ -296,28 +296,28 @@
             targetSelector: '.workspace',
             eventType: 'keydown',
             placement: 'bottom-right',
-            text: 'Повторим это еще раз для закрепления!<br><br>Нажмите <span class="action-badge">ВНИЗ (↓)</span> для перехода к следующему дефекту.',
+            text: 'Давайте перейдем к следующему дефекту, чтобы опробовать другой способ.<br><br>Нажмите <span class="action-badge">ВНИЗ (↓)</span> для перехода к следующему кадру.',
             validate: (e) => (e.key === 'ArrowDown' || e.key === 'ArrowUp')
         },
 
-        // --- 9. ЗАКРЕПЛЕНИЕ ROI: ОТКЛЮЧИТЬ ---
+        // --- 9. ЗАКРЕПЛЕНИЕ ROI: ОТКЛЮЧИТЬ ЧЕРЕЗ SHIFT ---
         {
             delay: 50,
-            targetSelector: '#tut-btn-rol',
-            eventType: 'click',
-            placement: 'top',
-            text: 'Снова нажмите кнопку <span class="action-badge">Rol</span>, чтобы <b>ОТКЛЮЧИТЬ</b> её.',
-            validate: (e) => e.target.closest('#tut-btn-rol') !== null
+            targetSelector: '.workspace',
+            eventType: 'keydown',
+            placement: 'bottom-right',
+            text: 'Вместо клика по кнопке, РОИ можно быстро скрывать и показывать с помощью клавиатуры.<br><br>Зажмите клавишу <span class="action-badge">Shift</span>, чтобы <b>СКРЫТЬ</b> красную рамку.',
+            validate: (e) => e.key === 'Shift'
         },
 
         // --- 10. ЗАКРЕПЛЕНИЕ ROI: ВКЛЮЧИТЬ И ЗАВЕРШИТЬ ---
         {
             delay: 50,
-            targetSelector: '#tut-btn-rol',
-            eventType: 'click',
-            placement: 'top',
-            text: 'И последний раз кликните <span class="action-badge">Rol</span>, чтобы <b>ВКЛЮЧИТЬ</b> её обратно.',
-            validate: (e) => e.target.closest('#tut-btn-rol') !== null
+            targetSelector: '.workspace',
+            eventType: 'keydown',
+            placement: 'bottom-right',
+            text: 'Таким образом можно менять видимость дефекта при помощи клавиши<span class="action-badge">Shift</span>.',
+            validate: (e) => e.key === 'Shift'
         }
     ];
 
@@ -383,7 +383,7 @@
     function finishScenario() {
         tooltip.style.display = 'none';
         activeTarget = null;
-        showCustomAlert('<b>Сценарий #6 успешно завершен!</b><br><br>Вы научились переключаться в режим детального просмотра дефекта, изменять масштаб картинки, а также использовать быструю навигацию клавиатурой и управлять фильтром <b>ROI</b>.');
+        showCustomAlert('<b>Сценарий успешно завершен!</b><br><br>Вы научились переключаться в режим детального просмотра дефекта, изменять масштаб картинки, использовать быструю навигацию клавиатурой, а также управлять фильтром <b>ROI</b> (как мышкой, так и горячей клавишей <b>Shift</b>).');
     }
 
     setTimeout(renderStep, 500);
