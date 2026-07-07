@@ -5667,12 +5667,24 @@ rulerText.style.fontWeight = 'bold';
         window.toggleMap(isMapOpen);
     }
 
-    window.globalToggleLargeImage = function() {
+     window.globalToggleLargeImage = function() {
         setMode(!isLargeMode);
     };
 
-    if (btnBig) btnBig.addEventListener('click', () => setMode(true));
-    if (btnSmall) btnSmall.addEventListener('click', () => setMode(false));
+    // Одно нажатие на «Большой» увеличивает, повторное возвращает начальный вид (тоггл)
+    if (btnBig) {
+        btnBig.addEventListener('click', () => {
+            setMode(!isLargeMode);
+        });
+    }
+
+    // Кнопка «Маленький» всегда возвращает исходный (маленький) вид
+    // При этом функция setMode() сама навешивает/снимает класс .active-tab для подсветки нужной кнопки
+    if (btnSmall) {
+        btnSmall.addEventListener('click', () => {
+            setMode(false);
+        });
+    }
 
     window.toggleMap = function(show) {
         isMapOpen = show;
