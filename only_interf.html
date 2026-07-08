@@ -1476,33 +1476,39 @@
         </div>
     </div>
 
-    <!-- Модальное окно выбора класса дефектов -->
+  <!-- Окно "Выбрать класс дефектов" (Оригинальный классический вид) -->
     <div id="class-filter-modal" class="modal-overlay">
-        <div class="modal-window" style="width: 480px;">
-            <div class="modal-header">
-                <span>Выбрать класс дефектов</span>
-                <button class="modal-close" onclick="closeClassModal()">×</button>
+        <div style="background-color: #f0f0f0; border: 1px solid #a0a0a0; border-radius: 6px; width: 420px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column;">
+
+            <!-- Шапка окна -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 12px 5px 12px;">
+                <span style="color: #000; font-size: 11px;">Выбрать класс дефектов</span>
+                <button onclick="closeClassModal()" style="background: transparent; border: none; font-size: 16px; color: #555; cursor: pointer; padding: 0; line-height: 10px;" onmouseover="this.style.color='#000'" onmouseout="this.style.color='#555'">×</button>
             </div>
-            <div class="modal-body class-filter-layout">
-                <!-- Контейнер со списком чекбоксов -->
-                <div class="class-list-box">
-                    <div class="class-list-scroll" id="modal-class-list">
-                        <!-- Строки генерируются через JS -->
-                    </div>
+
+            <!-- Тело окна -->
+            <div style="padding: 10px 15px 15px 15px; display: flex; gap: 15px; height: 350px;">
+
+                <!-- Список классов -->
+                <div style="flex: 1; background: #fff; border-top: 2px solid #808080; border-left: 2px solid #808080; border-bottom: 2px solid #fff; border-right: 2px solid #fff; overflow-y: scroll; padding: 4px;" id="modal-class-list">
+                    <!-- Заполняется динамически скриптом -->
                 </div>
-                <!-- Правая колонка с кнопками -->
-                <div class="class-btn-column">
-                    <button onclick="modalSetAllClasses(true)">Все</button>
-                    <button onclick="modalSetAllClasses(false)">Нет</button>
-                    <div class="btn-spacer"></div>
-                    <button onclick="modalSetStandard()">Стандарт</button>
-                    <button onclick="modalApplyClasses()">Ok</button>
-                    <button onclick="closeClassModal()">Выход</button>
+
+                <!-- Кнопки управления справа -->
+                <div style="width: 85px; display: flex; flex-direction: column; gap: 6px;">
+                    <button class="cam-modal-btn" onclick="modalSetAllClasses(true)"><u>B</u>ce</button>
+                    <button class="cam-modal-btn" onclick="modalSetAllClasses(false)"><u>H</u>ет</button>
+
+                    <div style="flex: 1;"></div> <!-- Пустое пространство -->
+
+                    <button class="cam-modal-btn" onclick="modalSetStandard()">Стандарт</button>
+                    <button class="cam-modal-btn focus-dotted" onclick="modalApplyClasses()">Ok</button>
+                    <button class="cam-modal-btn" onclick="closeClassModal()">Выход</button>
                 </div>
+
             </div>
         </div>
     </div>
-
 
 
 
@@ -5898,43 +5904,62 @@ function openClassModal() {
     const modal = document.getElementById('class-filter-modal');
     const listContainer = document.getElementById('modal-class-list');
 
-    // 1. Считаем фактическое количество дефектов каждого класса на текущем рулоне
+    // 1. Считаем фактическое количество дефектов каждого подкласса на текущем рулоне
     const defectCounts = {};
-    ALL_CLASSES.forEach(cls => defectCounts[cls] = 0);
-
     if (currentActiveCoilData && currentActiveCoilData.defects) {
         currentActiveCoilData.defects.forEach(d => {
-            if (defectCounts[d.classCode] !== undefined) {
-                defectCounts[d.classCode]++;
+            // d.label хранит имя в формате "047(a)" или имя класса
+            if (!defectCounts[d.label]) defectCounts[d.label] = 0;
+            defectCounts[d.label]++;
+        });
+    }
+
+    listContainer.innerHTML = '';
+    const classes = SYSTEM_CLASSES_MAP[currentSystem];
+
+    // 2. Собираем все подклассы в плоский список
+    let allSubclasses = [];
+    for (let mainCls in classes) {
+        classes[mainCls].forEach(subStr => {
+            // subStr имеет вид "Класс : 047(a) (ID=46)"
+            let match = subStr.match(/Класс\s*:\s*(.*?)\s*\(ID=(\d+)\)/);
+            if (match) {
+                let name = match[1];
+                let id = match[2];
+                // Имя ярлыка которое фактически записывается в дефект
+                let cleanName = name === "-" ? mainCls : name;
+
+                // Проверяем, стоит ли галочка на этом подклассе в правой панели
+                let isChecked = activeSubclassesState[mainCls] && activeSubclassesState[mainCls].has(subStr);
+
+                allSubclasses.push({
+                    fullStr: subStr,
+                    mainCls: mainCls,
+                    name: name,
+                    id: id,
+                    count: defectCounts[cleanName] || 0,
+                    isChecked: isChecked
+                });
             }
         });
     }
 
-    // 2. Генерация списка (смотрим статус активен/не активен у блоков на правой панели)
-    listContainer.innerHTML = '';
-    ALL_CLASSES.forEach((cls, index) => {
-        // Ищем оригинальный блок в правой панели, чтобы узнать, включен ли он сейчас
-        const rightPanelBlock = document.querySelector(`#content-classes .filter-block[data-value="${cls}"]`);
-        const isChecked = rightPanelBlock && !rightPanelBlock.classList.contains('inactive');
+    // Сортируем подклассы строго по их ID (как на скриншоте)
+    allSubclasses.sort((a, b) => parseInt(a.id) - parseInt(b.id));
 
-        const row = document.createElement('div');
-        row.className = 'class-row';
-
-        // Клик по всей строке переключает чекбокс
-        row.onclick = function(e) {
-            if(e.target.tagName !== 'INPUT') {
-                const cb = this.querySelector('input');
-                cb.checked = !cb.checked;
-            }
-        };
-
-        row.innerHTML = `
-            <input type="checkbox" id="cb-modal-${index}" value="${cls}" ${isChecked ? 'checked' : ''}>
-            <label for="cb-modal-${index}">Класс : ${cls.substring(0,10)}</label>
-            <div>(ID: ${index})</div>
-            <div>${defectCounts[cls]}</div>
+    // 3. Рисуем строки списка
+    allSubclasses.forEach((sub, index) => {
+        const label = document.createElement('label');
+        label.className = 'cam-cb-row'; // Используем классы из окна выбора камер для классического вида
+        label.style.display = 'flex';
+        label.innerHTML = `
+            <input type="checkbox" value="${sub.fullStr}" data-maincls="${sub.mainCls}" ${sub.isChecked ? 'checked' : ''}>
+            <span class="classic-cb" style="margin-right: 6px;"></span>
+            <span style="display:inline-block; width: 130px;">Класс : ${sub.name}</span>
+            <span style="display:inline-block; width: 60px;">(ID: ${sub.id})</span>
+            <span style="display:inline-block; width: 50px; text-align:left;">${sub.count}</span>
         `;
-        listContainer.appendChild(row);
+        listContainer.appendChild(label);
     });
 
     modal.style.display = 'flex';
@@ -5944,37 +5969,38 @@ function closeClassModal() {
     document.getElementById('class-filter-modal').style.display = 'none';
 }
 
+// Установить галочки на всех/ни на одной
 function modalSetAllClasses(state) {
-    // Включить Все / Выключить Всё
     document.querySelectorAll('#modal-class-list input[type="checkbox"]').forEach(cb => cb.checked = state);
 }
 
+// Стандарт (только ТОП 5)
 window.modalSetStandard = function() {
-        // Галочка ставится только если класс входит в Топ-5 текущей системы
-        document.querySelectorAll('#modal-class-list input[type="checkbox"]').forEach(cb => {
-            cb.checked = window.TOP_5_CLASSES.includes(cb.value);
-        });
-    };
+    document.querySelectorAll('#modal-class-list input[type="checkbox"]').forEach(cb => {
+        let mainCls = cb.dataset.maincls;
+        cb.checked = window.TOP_5_CLASSES.includes(mainCls);
+    });
+};
 
+// Применение фильтров и закрытие окна
 function modalApplyClasses() {
     const checkboxes = document.querySelectorAll('#modal-class-list input[type="checkbox"]');
 
+    // 1. Очищаем все выбранные подклассы
+    for (let mainCls in activeSubclassesState) {
+        activeSubclassesState[mainCls].clear();
+    }
+
+    // 2. Раскладываем выбранные галочки обратно по основным классам
     checkboxes.forEach(cb => {
-        const cls = cb.value;
-        const block = document.querySelector(`#content-classes .filter-block[data-value="${cls}"]`);
-
-        if (block) {
-            block.classList.remove('active', 'inactive', 'yellow');
-
-            if (cb.checked) {
-                if (cls === "Электроизол") block.classList.add('yellow');
-                else block.classList.add('active');
-            } else {
-                block.classList.add('inactive');
-            }
+        if (cb.checked) {
+            let mainCls = cb.dataset.maincls;
+            activeSubclassesState[mainCls].add(cb.value);
         }
     });
 
+    // 3. Вызываем рендер боковых кнопок и перерисовку дефектов
+    renderFilterBlocks();
     applyFilters();
     closeClassModal();
 }
@@ -6392,6 +6418,12 @@ document.addEventListener('keyup', function(e) {
         applyDefectViewSettings(); // Перерисовываем картинку (ROI вернется)
     }
 });
+
+
+
+    window.openClassSelectModal = function() {
+    openClassModal();
+};
 </script>
 
 
@@ -6442,6 +6474,7 @@ document.addEventListener('keyup', function(e) {
             }
         });
     </script>
+
 
 
 </body>
