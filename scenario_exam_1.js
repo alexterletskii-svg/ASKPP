@@ -12,191 +12,155 @@
     let targetClasses = [];
     let currentStep = 0;
 
-    // Множество для сохранения ID дефектов, которые уже были измерены
     const measuredDefects = new Set();
-    const NEEDED_MEASUREMENTS = 2; // Сколько разных дефектов надо измерить
+    const NEEDED_MEASUREMENTS = 2;
 
     // ==========================================
     // 🌐 ИНТЕГРАЦИЯ С WEBSOFT (WEBTUTOR / SCORM)
     // ==========================================
-    function getScormAPI(win) {
-        let attempts = 0;
-        while ((win.API == null && win.API_1484_11 == null) && win.parent != null && win.parent != win) {
-            attempts++;
-            if (attempts > 10) break;
-            win = win.parent;
-        }
-        if (win.API) return win.API; // SCORM 1.2
-        if (win.API_1484_11) return win.API_1484_11; // SCORM 2004
-        return null;
-    }
-
-//function sendCourseCompletedToWebSoft() {
-//    var scorm = null;
-//    try {
-//        if (window.parent && window.parent.pipwerks) {
-//            scorm = window.parent.pipwerks.SCORM;
-//        } else if (window.top && window.top.pipwerks) {
-//            scorm = window.top.pipwerks.SCORM;
-//        }
-//    } catch (e) {
-//        console.error("Не удалось получить доступ к pipwerks из родителя:", e);
-//    }
-//
-//    if (!scorm) {
-//        console.warn("⚠️ pipwerks не найден в родителе. Запуск вне плеера?");
-//        return;
-//    }
-//
-//    try {
-//        // Сессия уже открыта в index.html — НЕ инициализируем заново!
-//        if (scorm.version === "2004") {
-//            scorm.set("cmi.score.raw", "100");
-//            scorm.set("cmi.completion_status", "completed");
-//            scorm.set("cmi.success_status", "passed");
-//        } else {
-//            // SCORM 1.2
-//            scorm.set("cmi.core.score.raw", "100");
-//            scorm.set("cmi.core.lesson_status", "passed");
-//        }
-//        scorm.save();  // принудительный commit
-//        console.log("✅ Данные об успешном прохождении отправлены в WebSoft!");
-//    } catch (e) {
-//        console.error("❌ Ошибка при отправке данных в LMS:", e);
-//    }
-//}
-//
-
-function sendCourseCompletedToWebSoft() {
-    var scorm = null;
-    try {
-        // Пытаемся получить pipwerks из родителя
-        if (window.parent && window.parent.pipwerks) {
-            scorm = window.parent.pipwerks.SCORM;
-        } else if (window.top && window.top.pipwerks) {
-            scorm = window.top.pipwerks.SCORM;
-        }
-    } catch (e) {
-        console.error("Доступ к родительскому окну запрещён:", e);
-        return;
-    }
-
-    if (!scorm) {
-        console.warn("⚠️ pipwerks не найден. Возможно, курс запущен вне LMS.");
-        return;
-    }
-
-    try {
-        // Устанавливаем статус и оценку
-        if (scorm.version === "2004") {
-            scorm.set("cmi.completion_status", "completed");
-            scorm.set("cmi.success_status", "passed");
-            scorm.set("cmi.score.raw", "100");
-        } else {
-            // SCORM 1.2
-            scorm.set("cmi.core.lesson_status", "passed");
-            scorm.set("cmi.core.score.raw", "100");
+    function sendCourseCompletedToWebSoft() {
+        var scorm = null;
+        try {
+            if (window.parent && window.parent.pipwerks) {
+                scorm = window.parent.pipwerks.SCORM;
+            } else if (window.top && window.top.pipwerks) {
+                scorm = window.top.pipwerks.SCORM;
+            }
+        } catch (e) {
+            console.error("Доступ к родительскому окну запрещён:", e);
+            return;
         }
 
-        // Принудительно отправляем данные
-        scorm.commit();   // или scorm.save()
-        scorm.quit();     // завершаем сессию сразу
+        if (!scorm) {
+            console.warn("⚠️ pipwerks не найден. Возможно, курс запущен вне LMS.");
+            return;
+        }
 
-        console.log("✅ Данные отправлены в LMS, сессия завершена.");
-        // Устанавливаем флаг, чтобы onunload не пытался повторно завершить
-        window._courseCompleted = true;
-    } catch (e) {
-        console.error("❌ Ошибка при отправке данных в LMS:", e);
+        try {
+            if (scorm.version === "2004") {
+                scorm.set("cmi.completion_status", "completed");
+                scorm.set("cmi.success_status", "passed");
+                scorm.set("cmi.score.raw", "100");
+            } else {
+                scorm.set("cmi.core.lesson_status", "passed");
+                scorm.set("cmi.core.score.raw", "100");
+            }
+            scorm.commit();
+            scorm.quit();
+            console.log("✅ Данные отправлены в LMS, сессия завершена.");
+            window._courseCompleted = true;
+        } catch (e) {
+            console.error("❌ Ошибка при отправке данных в LMS:", e);
+        }
     }
-}
 
+    // ==========================================
+    // 🛑 КАСТОМНЫЕ УВЕДОМЛЕНИЯ И ПЕРЕХВАТ ВХОДА
+    // ==========================================
 
+    function showCustomAlert(message) {
+        const existing = document.getElementById('custom-exam-alert');
+        if (existing) existing.remove();
 
+        const overlay = document.createElement('div');
+        overlay.id = 'custom-exam-alert';
+        overlay.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.6); z-index: 100000;
+            display: flex; align-items: center; justify-content: center;
+        `;
 
+        const box = document.createElement('div');
+        box.style.cssText = `
+            background: #f0f0f0; padding: 20px 25px; border-radius: 6px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); text-align: center;
+            font-family: 'Tahoma', sans-serif; min-width: 280px;
+            border: 1px solid #a0a0a0; border-top: 4px solid #3d6a9d;
+        `;
 
+        box.innerHTML = `
+            <div style="margin-bottom: 20px; font-size: 12px; color: #000; line-height: 1.5;">${message}</div>
+            <button id="custom-alert-ok" style="width: 75px; height: 24px; cursor: pointer; color: black; background: #f0f0f0; border-top: 1px solid white; border-left: 1px solid white; border-bottom: 2px solid #808080; border-right: 2px solid #808080; font-size: 12px;">ОК</button>
+        `;
+
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+
+        const btn = document.getElementById('custom-alert-ok');
+        btn.onclick = () => overlay.remove();
+        btn.onmousedown = () => { btn.style.borderTop='2px solid #808080'; btn.style.borderLeft='2px solid #808080'; btn.style.borderBottom='1px solid white'; btn.style.borderRight='1px solid white'; };
+        btn.onmouseup = () => { btn.style.borderTop='1px solid white'; btn.style.borderLeft='1px solid white'; btn.style.borderBottom='2px solid #808080'; btn.style.borderRight='2px solid #808080'; };
+    }
+
+    // Переопределяем оригинальную функцию входа из вашего HTML
+    function setupLoginInterceptor() {
+        // Сохраняем оригинальную функцию, чтобы вызвать её, если всё верно
+        const originalSubmit = window.submitInitialSelection;
+
+        if (typeof originalSubmit !== 'function') {
+            setTimeout(setupLoginInterceptor, 200);
+            return;
+        }
+
+        window.submitInitialSelection = function() {
+            const user = document.getElementById('init-username').value.trim();
+            const pass = document.getElementById('init-password').value.trim();
+            const sys = document.getElementById('init-select').value;
+
+            // 1. Проверка агрегата
+            if (sys !== targetSystem) {
+                showCustomAlert(`<b>Ошибка выбора агрегата!</b><br><br>Вы выбрали неверную систему.<br>По заданию вам нужен: <b style="color:#d9534f;">${targetSystem}</b>`);
+                return; // Блокируем вход
+            }
+
+            // 2. Проверка логина/пароля
+            if (user !== 'Admin' || pass !== 'Admin') {
+                showCustomAlert(`<b>Ошибка авторизации!</b><br><br>Неверный логин или пароль.<br>Используйте учетную запись: <b>Admin / Admin</b>`);
+
+                // Очищаем пароль для удобства
+                const passInput = document.getElementById('init-password');
+                passInput.value = '';
+                passInput.focus();
+                return; // Блокируем вход
+            }
+
+            // Если всё верно — запускаем оригинальную логику загрузки
+            originalSubmit();
+        };
+    }
 
     // --- 1. СОЗДАНИЕ ИНТЕРФЕЙСА ЗАДАНИЙ (ПАНЕЛЬ ЭКЗАМЕНА) ---
     function initExamUI() {
         const style = document.createElement('style');
         style.innerHTML = `
             #exam-panel {
-                position: fixed;
-                bottom: 30px;
-                right: 30px;
-                width: 330px;
-                background-color: #f0f4f9;
-                border-top: 1px solid #ffffff;
-                border-left: 1px solid #ffffff;
-                border-bottom: 2px solid #808080;
-                border-right: 2px solid #808080;
-                box-shadow: 2px 2px 10px rgba(0,0,0,0.5);
-                z-index: 10000; /* Поверх всего */
-                font-family: 'Tahoma', sans-serif;
-                font-size: 11px;
-                color: #000;
-                display: flex;
-                flex-direction: column;
+                position: fixed; bottom: 30px; right: 30px; width: 330px;
+                background-color: #f0f4f9; border-top: 1px solid #ffffff; border-left: 1px solid #ffffff;
+                border-bottom: 2px solid #808080; border-right: 2px solid #808080;
+                box-shadow: 2px 2px 10px rgba(0,0,0,0.5); z-index: 10000;
+                font-family: 'Tahoma', sans-serif; font-size: 11px; color: #000;
+                display: flex; flex-direction: column;
             }
             #exam-header {
-                background-color: #3d6a9d;
-                color: white;
-                font-weight: bold;
-                padding: 4px 8px;
-                display: flex;
-                justify-content: space-between;
-                cursor: default;
+                background-color: #3d6a9d; color: white; font-weight: bold;
+                padding: 4px 8px; display: flex; justify-content: space-between; cursor: default;
             }
-            #exam-body {
-                padding: 10px;
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-            }
-            .exam-task {
-                display: flex;
-                align-items: flex-start;
-                gap: 6px;
-            }
+            #exam-body { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+            .exam-task { display: flex; align-items: flex-start; gap: 6px; }
             .exam-task-checkbox {
-                width: 14px;
-                height: 14px;
-                border-top: 1px solid #808080;
-                border-left: 1px solid #808080;
-                border-bottom: 1px solid #ffffff;
-                border-right: 1px solid #ffffff;
-                background: white;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: bold;
-                color: green;
-                flex-shrink: 0;
+                width: 14px; height: 14px; background: white;
+                border-top: 1px solid #808080; border-left: 1px solid #808080;
+                border-bottom: 1px solid #ffffff; border-right: 1px solid #ffffff;
+                display: flex; align-items: center; justify-content: center;
+                font-weight: bold; color: green; flex-shrink: 0;
             }
-            .exam-task.done .exam-task-checkbox::after {
-                content: '✔';
-                font-size: 10px;
-            }
-            .exam-task.done .exam-task-text {
-                color: #555;
-                text-decoration: line-through;
-            }
-            .exam-task-text {
-                line-height: 1.3;
-            }
-            .highlight {
-                background-color: #ffffcc;
-                padding: 0 3px;
-                border: 1px dotted #cccc00;
-            }
+            .exam-task.done .exam-task-checkbox::after { content: '✔'; font-size: 10px; }
+            .exam-task.done .exam-task-text { color: #555; text-decoration: line-through; }
+            .exam-task-text { line-height: 1.3; }
+            .highlight { background-color: #ffffcc; padding: 0 3px; border: 1px dotted #cccc00; }
             #exam-congratulations {
-                display: none;
-                margin-top: 10px;
-                padding: 5px;
-                background-color: #d4f0d4;
-                border: 1px solid #5cb85c;
-                text-align: center;
-                font-weight: bold;
-                color: #006600;
+                display: none; margin-top: 10px; padding: 5px; background-color: #d4f0d4;
+                border: 1px solid #5cb85c; text-align: center; font-weight: bold; color: #006600;
             }
         `;
         document.head.appendChild(style);
@@ -204,9 +168,7 @@ function sendCourseCompletedToWebSoft() {
         const examPanel = document.createElement('div');
         examPanel.id = 'exam-panel';
         examPanel.innerHTML = `
-            <div id="exam-header">
-                Режим тестирования: Билет №1
-            </div>
+            <div id="exam-header">Режим тестирования: Билет №1</div>
             <div id="exam-body">
                 <div class="exam-task" id="task-0">
                     <div class="exam-task-checkbox"></div>
@@ -226,29 +188,28 @@ function sendCourseCompletedToWebSoft() {
                 </div>
                 <div class="exam-task" id="task-4" style="display: none;">
                     <div class="exam-task-checkbox"></div>
-                    <div class="exam-task-text" id="task-4-text"><b>Шаг 5:</b> Зажмите <b>Ctrl</b> и измерьте линейкой <b>${NEEDED_MEASUREMENTS} разных дефекта</b>. (Переключайтесь между дефектами на карте/в таблице или стрелками).<br>Измерено: <b>0/${NEEDED_MEASUREMENTS}</b></div>
+                    <div class="exam-task-text" id="task-4-text"><b>Шаг 5:</b> Зажмите <b>Ctrl</b> и измерьте линейкой <b>${NEEDED_MEASUREMENTS} разных дефекта</b>.<br>Измерено: <b>0/${NEEDED_MEASUREMENTS}</b></div>
                 </div>
-
-                <div id="exam-congratulations">
-                    Проверка завершена успешно!<br>Все навыки подтверждены.
-                </div>
+                <div id="exam-congratulations">Проверка завершена успешно!<br>Все навыки подтверждены.</div>
             </div>
         `;
         document.body.appendChild(examPanel);
+
+        // Принудительно показываем стартовый экран (запуск сначала)
+        const initScreen = document.getElementById('initial-screen');
+        if(initScreen) initScreen.classList.remove('hidden');
     }
 
     // --- 2. ЛОГИКА ПРОВЕРКИ ---
     function checkProgress() {
         switch (currentStep) {
             case 0:
-                // Шаг 1: Ожидание авторизации в нужной системе
                 const headerDiv = document.querySelector('.os-header div:nth-child(2)');
                 const initScreen = document.getElementById('initial-screen');
 
                 if (headerDiv && headerDiv.innerText.includes(targetSystem) && initScreen && initScreen.classList.contains('hidden')) {
                     const rows = document.querySelectorAll('#coil-tbody tr');
                     if (rows.length > 0) {
-                        // Выбираем случайный рулон
                         const randomRow = rows[Math.floor(Math.random() * rows.length)];
                         targetCoil = randomRow.cells[1].innerText;
 
@@ -261,13 +222,9 @@ function sendCourseCompletedToWebSoft() {
                 break;
 
             case 1:
-                // Шаг 2: Ожидание выбора назначенного рулона
                 const selectedRow = document.querySelector('#coil-tbody tr.selected');
                 if (selectedRow && selectedRow.cells[1].innerText === targetCoil) {
-
-                    // Ждем 500мс для рендера фильтров
                     setTimeout(() => {
-                        // Собираем классы, у которых есть дефекты (Счетчик вида 0/ 5)
                         const filterBlocks = Array.from(document.querySelectorAll('#content-classes .filter-block'));
                         const availableBlocks = filterBlocks.filter(block => {
                             const countText = block.querySelector('.fb-count').innerText;
@@ -275,9 +232,8 @@ function sendCourseCompletedToWebSoft() {
                             return total > 0;
                         });
 
-                        // Перемешиваем массив и берем 2 или 3 класса
                         availableBlocks.sort(() => 0.5 - Math.random());
-                        const classesToSelect = Math.min(availableBlocks.length, Math.floor(Math.random() * 2) + 2); // 2 или 3
+                        const classesToSelect = Math.min(availableBlocks.length, Math.floor(Math.random() * 2) + 2);
 
                         targetClasses = availableBlocks.slice(0, classesToSelect).map(b => b.dataset.value);
                         const classesStr = targetClasses.join("</b><br>• <b>");
@@ -293,7 +249,6 @@ function sendCourseCompletedToWebSoft() {
                 break;
 
             case 2:
-                // Шаг 3: Ожидание правильной комбинации фильтров классов
                 const allBlocks = document.querySelectorAll('#content-classes .filter-block');
                 if(allBlocks.length > 0) {
                     let isCorrect = true;
@@ -303,18 +258,11 @@ function sendCourseCompletedToWebSoft() {
                         const isActive = block.classList.contains('active') || block.classList.contains('yellow');
                         const isTarget = targetClasses.includes(block.dataset.value);
 
-                        if (isTarget && isActive) {
-                            targetFoundCount++;
-                        } else if (!isTarget && isActive) {
-                            // Включен "лишний" класс
-                            isCorrect = false;
-                        } else if (isTarget && !isActive) {
-                            // Нужный класс еще не включен
-                            isCorrect = false;
-                        }
+                        if (isTarget && isActive) targetFoundCount++;
+                        else if (!isTarget && isActive) isCorrect = false;
+                        else if (isTarget && !isActive) isCorrect = false;
                     });
 
-                    // Все нужные найдены, чужих и отключенных нет
                     if (isCorrect && targetFoundCount === targetClasses.length) {
                         document.getElementById('task-2').classList.add('done');
                         document.getElementById('task-3').style.display = 'flex';
@@ -324,7 +272,6 @@ function sendCourseCompletedToWebSoft() {
                 break;
 
             case 3:
-                // Шаг 4: Переход в большой режим (Нижняя панель -> Большой)
                 const imgBox = document.getElementById('defect-image-box');
                 if (imgBox && imgBox.classList.contains('large-mode')) {
                     document.getElementById('task-3').classList.add('done');
@@ -334,42 +281,33 @@ function sendCourseCompletedToWebSoft() {
                 break;
 
             case 4:
-                // Шаг 5: Использование линейки на НЕСКОЛЬКИХ разных дефектах
                 const ruler = document.querySelector('.img-ruler-line');
 
-                // Если линейка растянута пользователем хотя бы на 5 пикселей
                 if (ruler && parseFloat(ruler.style.width) > 5) {
-
-                    // Узнаем, какой дефект сейчас открыт
                     const activeDefectRow = document.querySelector('#defects-tbody tr.selected');
                     if (activeDefectRow) {
                         const defectId = activeDefectRow.dataset.defectId;
 
-                        // Если этот дефект мы еще не измеряли
                         if (!measuredDefects.has(defectId)) {
                             measuredDefects.add(defectId);
-
-                            // Обновляем текст прогресса
-                            document.getElementById('task-4-text').innerHTML = `<b>Шаг 5:</b> Зажмите <b>Ctrl</b> и измерьте линейкой <b>${NEEDED_MEASUREMENTS} разных дефекта</b>. (Переключайтесь между дефектами на карте/в таблице или стрелками).<br>Измерено: <b>${measuredDefects.size}/${NEEDED_MEASUREMENTS}</b>`;
+                            document.getElementById('task-4-text').innerHTML = `<b>Шаг 5:</b> Зажмите <b>Ctrl</b> и измерьте линейкой <b>${NEEDED_MEASUREMENTS} разных дефекта</b>.<br>Измерено: <b>${measuredDefects.size}/${NEEDED_MEASUREMENTS}</b>`;
                         }
                     }
                 }
 
-                // Завершение задачи, если измерено нужное количество
                 if (measuredDefects.size >= NEEDED_MEASUREMENTS) {
                     document.getElementById('task-4').classList.add('done');
                     document.getElementById('exam-congratulations').style.display = 'block';
                     currentStep = 5;
-
-                    // Отправляем данные в WebTutor
                     sendCourseCompletedToWebSoft();
                 }
                 break;
         }
     }
 
-    // Запускаем инициализацию и цикл проверки
+    // Запускаем инициализацию
     initExamUI();
+    setupLoginInterceptor();
     setInterval(checkProgress, 500);
 
 })();
