@@ -4058,59 +4058,73 @@ function getDefectImagePath(defect, isROI) {
         const classCounts = {};
         ALL_CLASSES.forEach(c => classCounts[c] = { visible: 0, total: 0 });
 
+        const visibleDefectIds = new Set();
+
+        // Основной этап: вычисляем, какие дефекты включены по всем правилам (класс + камера + подкласс)
+        if (currentActiveCoilData && currentActiveCoilData.defects) {
+            currentActiveCoilData.defects.forEach(defect => {
+                const cls = defect.classCode;
+                const cam = defect.camera;
+
+                if (classCounts[cls]) classCounts[cls].total++;
+
+                if (activeClasses.includes(cls) && activeCameras.includes(cam)) {
+                    // Проверяем подклассы
+                    const activeSubs = activeSubclassesState[cls];
+                    let isSubclassActive = false;
+
+                    if (activeSubs) {
+                        for (let subStr of activeSubs) {
+                            let match = subStr.match(/Класс\s*:\s*(.*?)\s*\(ID=(\d+)\)/);
+                            if (match) {
+                                let name = match[1] === "-" ? cls : match[1];
+                                if (name === defect.label) {
+                                    isSubclassActive = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (isSubclassActive) {
+                        visibleDefectIds.add(defect.id);
+                        currentVisibleDefects++;
+                        if (classCounts[cls]) classCounts[cls].visible++;
+                    }
+                }
+            });
+        }
+
         // 1. Фильтрация таблицы
         document.querySelectorAll('#defects-tbody tr').forEach(tr => {
-            const cls = tr.cells[3].innerText.trim();
-            const cam = tr.cells[13].innerText.trim();
-
-            if(classCounts[cls]) classCounts[cls].total++;
-
-            if (activeClasses.includes(cls) && activeCameras.includes(cam)) {
+            const defectId = Number(tr.dataset.defectId);
+            if (visibleDefectIds.has(defectId)) {
                 tr.style.display = '';
-                currentVisibleDefects++;
-                if(classCounts[cls]) classCounts[cls].visible++;
             } else {
                 tr.style.display = 'none';
+                tr.classList.remove('selected'); // Снимаем выделение если скрыли
             }
         });
 
-        // 2. Точки на мини-карте (видны всегда)
+        // 2. Точки на мини-карте
         document.querySelectorAll('.minimap-dot').forEach(el => {
-            const defectClass = el.dataset.classCode;
-            const defectCamera = el.dataset.camera;
-
-            if (activeClasses.includes(defectClass) && activeCameras.includes(defectCamera)) {
-                el.style.display = 'block';
-            } else {
-                el.style.display = 'none';
-            }
+            const defectId = Number(el.dataset.defectId);
+            el.style.display = visibleDefectIds.has(defectId) ? 'block' : 'none';
         });
 
-        // 3. Обычные ярлыки (фильтруются только по классам и камерам, без ограничения по зоне)
-        // В режиме ярлыка показываем ВСЕ ярлыки, соответствующие фильтрам
+        // 3. Обычные ярлыки на карте
         document.querySelectorAll('.defect-lbl').forEach(el => {
-            const defectClass = el.dataset.classCode;
-            const defectCamera = el.dataset.camera;
-
-            if (activeClasses.includes(defectClass) && activeCameras.includes(defectCamera)) {
-                el.style.display = 'block';
-            } else {
-                el.style.display = 'none';
-            }
+            const defectId = Number(el.dataset.defectId);
+            el.style.display = visibleDefectIds.has(defectId) ? 'block' : 'none';
         });
 
-        // 4. Крестики и блоки реального режима видны ВЕЗДЕ (без привязки к зоне)
+        // 4. Крестики и блоки реального режима
         document.querySelectorAll('.defect-real-block, .defect-real-cross').forEach(el => {
-            const defectClass = el.dataset.classCode;
-            const defectCamera = el.dataset.camera;
-
-            if (activeClasses.includes(defectClass) && activeCameras.includes(defectCamera)) {
-                el.style.display = 'block';
-            } else {
-                el.style.display = 'none';
-            }
+            const defectId = Number(el.dataset.defectId);
+            el.style.display = visibleDefectIds.has(defectId) ? 'block' : 'none';
         });
 
+        // 5. Обновляем счетчики в зеленых блоках классов
         ALL_CLASSES.forEach(cls => {
             const countSpan = document.getElementById(`count-${cls.replace(/\s+/g, '')}`);
             if(countSpan) countSpan.innerText = `${classCounts[cls].visible}/ ${classCounts[cls].total}`;
@@ -4395,7 +4409,7 @@ function markDefectAsViewed(defectId) {
                 <td></td>
                 <td>${defect.productSide}</td>
                 <td>${defect.classCode}</td>
-                <td>${defect.classCode}</td>
+                <td>${defect.label}</td>
                 <td>${defect.confirmClass}</td>
                 <td>${defect.conf}</td>
                 <td>${defect.distFromStart}</td>
