@@ -5,7 +5,7 @@
 
 (function () {
     // Возможные системы для случайного выбора
-    const SYSTEMS = ['DQS_CAL2', 'DQS_CAL4', 'DQS_CAL6', 'ANO7'];
+    const SYSTEMS = ['DQS_CAL2', 'DQS_CAL4', 'DQS_CAL6'];
     const targetSystem = SYSTEMS[Math.floor(Math.random() * SYSTEMS.length)];
 
     let targetCoil = null;
@@ -40,10 +40,10 @@
             if (scorm.version === "2004") {
                 scorm.set("cmi.completion_status", "completed");
                 scorm.set("cmi.success_status", "passed");
-                scorm.set("cmi.score.raw", "20");
+                scorm.set("cmi.score.raw", "100");
             } else {
                 scorm.set("cmi.core.lesson_status", "passed");
-                scorm.set("cmi.core.score.raw", "20");
+                scorm.set("cmi.core.score.raw", "100");
             }
             scorm.commit();
             scorm.quit();

@@ -1,14 +1,17 @@
 /**
- * Сценарий проверки: Экзамен 2 (Камеры и Режимы отображения)
- * Файл: scenario_exam_2.js
+ * Сценарий проверки: Экзамен 5 (Глобальный фильтр подклассов и меню)
+ * Файл: scenario_exam_5.js
  */
 (function () {
     const SYSTEMS = ['DQS_CAL2', 'DQS_CAL4', 'DQS_CAL6'];
     const targetSystem = SYSTEMS[Math.floor(Math.random() * SYSTEMS.length)];
 
     let targetCoil = null;
-    let targetCameras = [];
     let currentStep = 0;
+
+    // Переменные для отслеживания действий
+    let yellowBlockId = null;
+    let menuClicked = false;
 
     // ==========================================
     // 🌐 ИНТЕГРАЦИЯ С WEBSOFT (WEBTUTOR / SCORM)
@@ -70,7 +73,7 @@
     function initExamUI() {
         const style = document.createElement('style');
         style.innerHTML = `
-            #exam-panel { position: fixed; bottom: 30px; right: 30px; width: 330px; background-color: #f0f4f9; border: 2px solid #808080; border-top-color: #fff; border-left-color: #fff; box-shadow: 2px 2px 10px rgba(0,0,0,0.5); z-index: 10000; font-family: Tahoma, sans-serif; font-size: 11px; color: #000; }
+            #exam-panel { position: fixed; bottom: 30px; right: 30px; width: 340px; background-color: #f0f4f9; border: 2px solid #808080; border-top-color: #fff; border-left-color: #fff; box-shadow: 2px 2px 10px rgba(0,0,0,0.5); z-index: 10000; font-family: Tahoma, sans-serif; font-size: 11px; color: #000; }
             #exam-header { background-color: #3d6a9d; color: white; font-weight: bold; padding: 4px 8px; }
             #exam-body { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
             .exam-task { display: flex; align-items: flex-start; gap: 6px; }
@@ -85,13 +88,13 @@
         const examPanel = document.createElement('div');
         examPanel.id = 'exam-panel';
         examPanel.innerHTML = `
-            <div id="exam-header">Режим тестирования: Билет №2</div>
+            <div id="exam-header">Режим тестирования: Билет №5</div>
             <div id="exam-body">
-                <div class="exam-task" id="task-0"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 1:</b> Войдите в <b>${targetSystem}</b> (Admin / Admin)</div></div>
+                <div class="exam-task" id="task-0"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 1:</b> Войдите в <b>${targetSystem}</b></div></div>
                 <div class="exam-task" id="task-1" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text" id="task-1-text"><b>Шаг 2:</b> Загрузите рулон <b>...</b></div></div>
-                <div class="exam-task" id="task-2" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text" id="task-2-text"><b>Шаг 3:</b> Оставьте включенными только камеры...</div></div>
-                <div class="exam-task" id="task-3" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 4:</b> Переключитесь в режим отображения <b>"Реальный"</b></div></div>
-                <div class="exam-task" id="task-4" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 5:</b> Переключитесь в режим <b>"Таблица"</b></div></div>
+                <div class="exam-task" id="task-2" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 3:</b> Через глобальный фильтр отключите часть подклассов, чтобы любой блок стал <span style="color:#b8860b; font-weight:bold;">желтым</span>.</div></div>
+                <div class="exam-task" id="task-3" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 4:</b> Сбросьте этот желтый блок до исходного состояния (кликайте по нему на панели).</div></div>
+                <div class="exam-task" id="task-4" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 5:</b> Откройте окно фильтра альтернативным путем: через меню <b>"Карта рулона"</b>.</div></div>
                 <div id="exam-congratulations">Проверка завершена успешно!</div>
             </div>
         `;
@@ -99,6 +102,17 @@
 
         const initScreen = document.getElementById('initial-screen');
         if(initScreen) initScreen.classList.remove('hidden');
+
+        // ИСПРАВЛЕНИЕ: Добавлен флаг `true` (capture phase) и гибкий селектор `*=`
+        document.addEventListener('click', (e) => {
+            if (currentStep === 4) {
+                // Ищем элемент с классом dropdown-item, у которого в onclick ЕСТЬ текст openClassSelectModal
+                const menuItem = e.target.closest('.dropdown-item[onclick*="openClassSelectModal"]');
+                if (menuItem) {
+                    menuClicked = true;
+                }
+            }
+        }, true); // <-- Перехватываем клик ДО того, как приложение его заблокирует
     }
 
     function checkProgress() {
@@ -119,53 +133,33 @@
             case 1:
                 const selectedRow = document.querySelector('#coil-tbody tr.selected');
                 if (selectedRow && selectedRow.cells[1].innerText === targetCoil) {
-                    setTimeout(() => {
-                        const camBlocks = Array.from(document.querySelectorAll('#content-cameras .filter-block'));
-                        if (camBlocks.length > 0) {
-                            camBlocks.sort(() => 0.5 - Math.random());
-                            targetCameras = camBlocks.slice(0, 2).map(b => b.innerText.trim());
-                            document.getElementById('task-2-text').innerHTML = `<b>Шаг 3:</b> Выключите все камеры и оставьте <u>только</u>:<br>• <b>${targetCameras.join("</b><br>• <b>")}</b>`;
-                            document.getElementById('task-1').classList.add('done');
-                            document.getElementById('task-2').style.display = 'flex';
-                            currentStep = 2;
-                        }
-                    }, 500);
+                    document.getElementById('task-1').classList.add('done');
+                    document.getElementById('task-2').style.display = 'flex';
+                    currentStep = 2;
                 }
                 break;
             case 2:
-                const allCams = document.querySelectorAll('#content-cameras .filter-block');
-                if(allCams.length > 0) {
-                    let isCorrect = true;
-                    let foundCount = 0;
-                    allCams.forEach(block => {
-                        const isActive = block.classList.contains('active');
-                        const isTarget = targetCameras.includes(block.innerText.trim());
-                        if (isTarget && isActive) foundCount++;
-                        else if (!isTarget && isActive) isCorrect = false;
-                        else if (isTarget && !isActive) isCorrect = false;
-                    });
-                    if (isCorrect && foundCount === targetCameras.length) {
-                        document.getElementById('task-2').classList.add('done');
-                        document.getElementById('task-3').style.display = 'flex';
-                        currentStep = 3;
-                    }
+                const yellowBlock = document.querySelector('#content-classes .filter-block.yellow');
+                if (yellowBlock) {
+                    yellowBlockId = yellowBlock.dataset.value;
+                    document.getElementById('task-2').classList.add('done');
+                    document.getElementById('task-3').style.display = 'flex';
+                    currentStep = 3;
                 }
                 break;
             case 3:
-                // Проверяем, есть ли на карте блоки реального размера или активна ли кнопка
-                const hasRealBlocks = document.querySelector('.defect-real-block') || document.querySelector('.defect-real-cross');
-                // Альтернативная проверка: ищем кнопку "реальный" и проверяем её состояние (зависит от вашей верстки)
-                const isRealMode = hasRealBlocks || (document.getElementById('btn-view-real') && document.getElementById('btn-view-real').classList.contains('active'));
-
-                if (isRealMode) {
-                    document.getElementById('task-3').classList.add('done');
-                    document.getElementById('task-4').style.display = 'flex';
-                    currentStep = 4;
+                if (yellowBlockId) {
+                    const block = document.querySelector(`#content-classes .filter-block[data-value="${yellowBlockId}"]`);
+                    if (block && !block.classList.contains('yellow') && !block.classList.contains('inactive') && block.classList.contains('active')) {
+                        document.getElementById('task-3').classList.add('done');
+                        document.getElementById('task-4').style.display = 'flex';
+                        currentStep = 4;
+                    }
                 }
                 break;
             case 4:
-                const tablePanel = document.getElementById('table-view-panel');
-                if (tablePanel && tablePanel.style.display !== 'none' && tablePanel.offsetWidth > 0) {
+                // Ждем клика по меню (обрабатывается в глобальном слушателе)
+                if (menuClicked) {
                     document.getElementById('task-4').classList.add('done');
                     document.getElementById('exam-congratulations').style.display = 'block';
                     currentStep = 5;
@@ -175,6 +169,7 @@
         }
     }
 
+    // Запуск
     initExamUI();
     setupLoginInterceptor();
     setInterval(checkProgress, 500);
