@@ -40,10 +40,10 @@
             if (scorm.version === "2004") {
                 scorm.set("cmi.completion_status", "completed");
                 scorm.set("cmi.success_status", "passed");
-                scorm.set("cmi.score.raw", "100");
+                scorm.set("cmi.score.raw", "20");
             } else {
                 scorm.set("cmi.core.lesson_status", "passed");
-                scorm.set("cmi.core.score.raw", "100");
+                scorm.set("cmi.core.score.raw", "20");
             }
             scorm.commit();
             scorm.quit();
