@@ -194,183 +194,169 @@
     let activeListener = null;
 
     const steps = [
-        // --- 1. ВЫБОР РУЛОНА ---
-        {
-            delay: 500,
-            targetSelector: '.panel-left .box.h-35',
-            eventType: 'click',
-            placement: 'right',
-            text: 'Добро пожаловать в обучение!<br><br>В этом сценарии мы изучим скрытие дефектов через глобальное меню <b>подклассов</b>.<br><br>Чтобы начать — кликните по <span class="action-badge">ЛЮБОМУ</span> рулону в левой таблице.',
-            validate: (e) => !!e.target.closest('#coil-tbody tr')
+    // --- 1. ВЫБОР РУЛОНА ---
+    {
+        delay: 500,
+        targetSelector: '.panel-left .box.h-35',
+        eventType: 'click',
+        placement: 'right',
+        text: 'Добро пожаловать в обучение!<br><br>В этом сценарии мы изучим скрытие дефектов через глобальное меню <b>подклассов</b>.<br><br>Чтобы начать — кликните по <span class="action-badge">ЛЮБОМУ</span> рулону в левой таблице.',
+        validate: (e) => !!e.target.closest('#coil-tbody tr')
+    },
+
+    // --- 2. НАЖАТИЕ НА КНОПКУ ТУЛБАРА (ПЕРВЫЙ СПОСОБ – ГРУППЫ) ---
+    {
+        delay: 1000,
+        onEnter: () => {
+            const targetBtn = document.querySelector('.tb-btn[title="Выбрать класс дефекта"]');
+            if (targetBtn) targetBtn.id = 'tut-btn-class-filter';
         },
+        targetSelector: '#tut-btn-class-filter',
+        eventType: 'click',
+        placement: 'bottom',
+        text: `В интерфейсе предусмотрено <b>два способа</b> фильтрации классов дефектов:<br><br>
+        <b>1.</b> Область над картой рулона (справа) — все классы объединены в группы по специфике. Удобно включать / отключать целую группу одним кликом, что ускоряет обработку информации. При этом внутри группы можно точечно отключить конкретный класс (это как раз приводит к появлению жёлтого цвета).<br><br>
+        <b>2.</b> Кнопка <span class="action-badge">«Выбрать класс дефекта»</span> на тулбаре (или аналогичный пункт в меню) — открывает диалоговое окно со всеми классами списком.<br><br>
+        Сейчас мы воспользуемся <b>вторым способом</b> — кликните по кнопке <img src="picture/ico/ico_10.png" style="vertical-align: middle; margin: 0 4px; background: #c0c0c0; border: 1px solid #808080; padding: 2px;"> на верхней панели.`,
+        validate: (e) => !!e.target.closest('#tut-btn-class-filter')
+    },
 
-        // --- 2. НАЖАТИЕ НА КНОПКУ ТУЛБАРА ---
-        {
-            delay: 1000,
-            onEnter: () => {
-                const targetBtn = document.querySelector('.tb-btn[title="Выбрать класс дефекта"]');
-                if (targetBtn) targetBtn.id = 'tut-btn-class-filter';
-            },
-            targetSelector: '#tut-btn-class-filter',
-            eventType: 'click',
-            placement: 'bottom',
-            text: `На панели справа расположены группы дефектов. При клике они включаются и отключаются целиком.<br>
-            <div class="purpose-text">
-                Для более тонкой настройки — чтобы отключить <i>лишь специфический тип дефекта</i> внутри группы — воспользуемся глобальным фильтром.
-            </div>
-            Кликните на кнопку <br><b>"Выбрать класс дефекта"</b> <img src="picture/ico/ico_10.png" style="vertical-align: middle; margin: 0 4px; background: #c0c0c0; border: 1px solid #808080; padding: 2px;"> на верхней панели инструментов.`,
-            validate: (e) => !!e.target.closest('#tut-btn-class-filter')
-        },
+    // --- 3. ИСПОЛЬЗОВАНИЕ ОКНА (ВТОРОЙ СПОСОБ – СПИСОК С СУММАМИ) ---
+    {
+        delay: 600,
+        targetSelector: '#class-filter-modal > div',
+        eventType: 'click',
+        placement: 'left',
+        text: `Это окно — реализация <b>второго способа</b> фильтрации.<br><br>
+        Здесь все классы дефектов выведены в виде списка, и рядом с каждым указано <b>суммарное количество инцидентов</b> на текущем рулоне. Такой формат особенно удобен, когда нужно быстро оставить на карте только нужные классы из разных групп — вы видите числовые приоритеты и можете принимать решение на основе статистики.<br><br>
+        <b>1.</b> Снимите галочки с одного или нескольких пунктов внутри любой группы (но не гасите группу полностью).<br>
+        <b>2.</b> Нажмите <span class="action-badge">Ok</span> для применения.`,
+        validate: (e) => {
+            const btn = e.target.closest('button');
+            return btn && btn.innerText.trim() === 'Ok';
+        }
+    },
 
-        // --- 3. ИСПОЛЬЗОВАНИЕ ОКНА ---
-        {
-            delay: 600,
-            targetSelector: '#class-filter-modal > div',
-            eventType: 'click',
-            placement: 'left', // Влево от окна, чтобы не закрывать текст
-            text: `Это окно детального управления подклассами.<br>Здесь в виде списка выведены абсолютно все дефекты, которые фиксирует система.<br><br>
-            <b>1.</b> Снимите галочки с одного или нескольких пунктов внутри любой группы (но не гасите группу полностью).<br>
-            <b>2.</b> Нажмите <span class="action-badge">Ok</span> для применения.`,
-            validate: (e) => {
-                // Проходим дальше только по клику на кнопку Ok
-                const btn = e.target.closest('button');
-                return btn && btn.innerText.trim() === 'Ok';
-            }
-        },
-
-        // --- 4. РАБОТА С ЖЕЛТЫМ БЛОКОМ ---
-        {
-            delay: 800,
-            onEnter: () => {
-                // Находим измененный блок на панели (желтый или в крайнем случае красный)
-                let targetBlock = document.querySelector('#content-classes .filter-block.yellow') ||
-                                  document.querySelector('#content-classes .filter-block.inactive');
-
-                // Предохранитель (если юзер ничего не выключил)
-                if (!targetBlock) {
-                    const firstBlock = document.querySelector('#content-classes .filter-block');
-                    if (firstBlock) {
-                        firstBlock.classList.remove('active');
-                        firstBlock.classList.add('yellow');
-                        targetBlock = firstBlock;
-                    }
-                }
-                if (targetBlock) {
-                    window.tutModifiedClass = targetBlock.dataset.value;
-                }
-            },
-            targetSelector: () => `.filter-block[data-value="${window.tutModifiedClass}"]`,
-            eventType: 'click',
-            placement: 'bottom',
-            text: () => {
-                const el = document.querySelector(`.filter-block[data-value="${window.tutModifiedClass}"]`);
-                if (el && el.classList.contains('yellow')) {
-                    return `Отлично! Вы выключили некоторые подклассы, поэтому блок окрасился в <span style="color: #ffdc00; text-shadow: 0 0 2px black;">ЖЕЛТЫЙ ЦВЕТ</span>, а перед названием появилась звездочка (*).<br>
-                    <div class="purpose-text">
-                        <b>Желтый цвет</b> всегда информирует: <i>Внимание, в этом классе часть дефектов скрыта вручную!</i> Скрытые типы вычтены из итоговой статистики.
-                    </div>
-                    Сделайте <span class="action-badge">ЛЕВЫЙ КЛИК</span> по этому желтому блоку, чтобы моментально вырубить всю группу целиком.`;
-                } else {
-                    return `Вы отключили вообще все галочки в этом классе, поэтому блок стал <b>красным</b>. Если бы вы оставили часть, он бы сигнализировал желтым.<br><br>
-                    Сделайте <span class="action-badge">ЛЕВЫЙ КЛИК</span> по этому блоку.`;
-                }
-            },
-            validate: (e) => {
-                const el = e.target.closest('.filter-block');
-                return el && el.dataset.value === window.tutModifiedClass;
-            }
-        },
-
-        // --- 5. ВЫКЛЮЧЕНО / ВОССТАНОВЛЕНИЕ ---
-        {
-            delay: 500,
-            targetSelector: () => `.filter-block[data-value="${window.tutModifiedClass}"]`,
-            eventType: 'click',
-            placement: 'top',
-            text: () => {
-                const el = document.querySelector(`.filter-block[data-value="${window.tutModifiedClass}"]`);
-                if (el && el.classList.contains('inactive')) {
-                    return `Теперь блок стал привычно <b>красным</b> (все подклассы выключены).<br><br>
-                    Сделайте <span class="action-badge">последний клик</span> по этому блоку: это сбросит все предыдущие "желтые" параметры и одним махом включит группу на 100%.`;
-                } else {
-                    return `Группа успешно активирована.<br><br>Кликните по ней еще раз для завершения обучения.`;
-                }
-            },
-            validate: (e) => {
-                const el = e.target.closest('.filter-block');
-                return el && el.dataset.value === window.tutModifiedClass;
-            }
-        },
-
-        // --- 6. АЛЬТЕРНАТИВНЫЙ ПУТЬ, ЧАСТЬ 1: ПОДСВЕЧИВАЕМ "КАРТА РУЛОНА" ---
-        {
-            delay: 800,
-            onEnter: () => {
-                // ФИКС ПЕРЕКРЫТИЯ: подменю "Карта рулона" в реальной верстке
-                // раскрывается через CSS :hover. Если мышь пользователя уйдет
-                // в сторону (например, к тултипу), меню закроется, а его
-                // getBoundingClientRect() на момент расчета позиции тултипа
-                // может вернуть нулевые координаты — тултип улетит в угол
-                // экрана и перекроет интерфейс. Поэтому раскрываем меню
-                // программно и держим его открытым весь шаг 6 и 7,
-                // независимо от положения курсора.
-                const menu = document.getElementById('coil-map-menu');
-                if (menu) {
-                    menu.style.setProperty('display', 'block', 'important');
-                    menu.style.setProperty('visibility', 'visible', 'important');
-                    menu.style.setProperty('opacity', '1', 'important');
-                }
-            },
-            targetSelector: '.menu-item[data-menu="coil-map"]',
-            eventType: ['mouseenter', 'click'],
-            placement: 'corner', // угол экрана — гарантированно не пересечется с раскрытым списком
-            text: `Отлично! Мы разобрались с фильтром через панель инструментов.<br><br>
-            <div class="purpose-text">
-                На деле в ODIS почти к любому инструменту можно прийти <i>двумя путями</i> — быстрым (тулбар) и через главное меню. Давайте откроем то же самое окно вторым способом.
-            </div>
-            Пункт меню <span class="action-badge">"Карта рулона"</span> подсвечен и его список уже раскрыт. Переместите курсор на подсвеченный пункт, чтобы перейти дальше.`,
-            validate: (e) => !!e.target.closest('.menu-item[data-menu="coil-map"]')
-        },
-
-        // --- 7. АЛЬТЕРНАТИВНЫЙ ПУТЬ, ЧАСТЬ 2: КЛИК ПО КОНКРЕТНОМУ ПУНКТУ ---
-        {
-            delay: 300,
-            targetSelector: '.dropdown-item[onclick="openClassSelectModal()"]',
-            eventType: 'click',
-            placement: 'right', // тултип уходит правее строки, не перекрывая остальной список
-            text: `Меню открыто.<br><br>Теперь кликните на пункт <b>"Выбрать класс дефектов..."</b> — он ведёт в то же самое окно, что мы уже видели.`,
-            validate: (e) => !!e.target.closest('.dropdown-item[onclick="openClassSelectModal()"]'),
-            onExit: () => {
-                // Возвращаем меню в исходное состояние (управление через :hover),
-                // чтобы оно не оставалось принудительно раскрытым навечно.
-                const menu = document.getElementById('coil-map-menu');
-                if (menu) {
-                    menu.style.removeProperty('display');
-                    menu.style.removeProperty('visibility');
-                    menu.style.removeProperty('opacity');
+    // --- 4. РАБОТА С ЖЕЛТЫМ БЛОКОМ ---
+    {
+        delay: 800,
+        onEnter: () => {
+            let targetBlock = document.querySelector('#content-classes .filter-block.yellow') ||
+                              document.querySelector('#content-classes .filter-block.inactive');
+            if (!targetBlock) {
+                const firstBlock = document.querySelector('#content-classes .filter-block');
+                if (firstBlock) {
+                    firstBlock.classList.remove('active');
+                    firstBlock.classList.add('yellow');
+                    targetBlock = firstBlock;
                 }
             }
+            if (targetBlock) {
+                window.tutModifiedClass = targetBlock.dataset.value;
+            }
         },
+        targetSelector: () => `.filter-block[data-value="${window.tutModifiedClass}"]`,
+        eventType: 'click',
+        placement: 'bottom',
+        text: () => {
+            const el = document.querySelector(`.filter-block[data-value="${window.tutModifiedClass}"]`);
+            if (el && el.classList.contains('yellow')) {
+                return `Отлично! Вы выключили некоторые подклассы, поэтому блок окрасился в <span style="color: #ffdc00; text-shadow: 0 0 2px black;">ЖЕЛТЫЙ ЦВЕТ</span>, а перед названием появилась звездочка (*).<br>
+                <div class="purpose-text">
+                    <b>Желтый цвет</b> всегда информирует: <i>Внимание, в этом классе часть дефектов скрыта вручную!</i> Скрытые типы вычтены из итоговой статистики.
+                </div>
+                Сделайте <span class="action-badge">ЛЕВЫЙ КЛИК</span> по этому желтому блоку, чтобы моментально вырубить всю группу целиком.`;
+            } else {
+                return `Вы отключили вообще все галочки в этом классе, поэтому блок стал <b>красным</b>. Если бы вы оставили часть, он бы сигнализировал желтым.<br><br>
+                Сделайте <span class="action-badge">ЛЕВЫЙ КЛИК</span> по этому блоку.`;
+            }
+        },
+        validate: (e) => {
+            const el = e.target.closest('.filter-block');
+            return el && el.dataset.value === window.tutModifiedClass;
+        }
+    },
 
-        // --- 8. ПОДТВЕРЖДЕНИЕ, ЧТО ОКНО ТО ЖЕ САМОЕ ---
-        {
-            delay: 500,
-            targetSelector: '#class-filter-modal > div',
-            eventType: 'click',
-            placement: 'left',
-            text: `Вот мы снова здесь!<br><br>
-            <div class="purpose-text">
-                Это то же самое окно управления подклассами — оно единое для всей системы, и не важно, откуда вы его открыли: с тулбара или из меню <b>"Карта рулона"</b>.
-            </div>
-            Нажмите любую кнопку — <span class="action-badge">Ok</span> или <span class="action-badge">Отмена</span> — чтобы закрыть окно и завершить обучение.`,
-            validate: (e) => {
-                const btn = e.target.closest('button');
-                if (!btn) return false;
-                const t = btn.innerText.trim();
-                return t === 'Ok' || t === 'Отмена' || t === 'Cancel';
+    // --- 5. ВЫКЛЮЧЕНО / ВОССТАНОВЛЕНИЕ ---
+    {
+        delay: 500,
+        targetSelector: () => `.filter-block[data-value="${window.tutModifiedClass}"]`,
+        eventType: 'click',
+        placement: 'top',
+        text: () => {
+            const el = document.querySelector(`.filter-block[data-value="${window.tutModifiedClass}"]`);
+            if (el && el.classList.contains('inactive')) {
+                return `Теперь блок стал привычно <b>красным</b> (все подклассы выключены).<br><br>
+                Сделайте <span class="action-badge">последний клик</span> по этому блоку: это сбросит все предыдущие "желтые" параметры и одним махом включит группу на 100%.`;
+            } else {
+                return `Группа успешно активирована.<br><br>Кликните по ней еще раз для завершения обучения.`;
+            }
+        },
+        validate: (e) => {
+            const el = e.target.closest('.filter-block');
+            return el && el.dataset.value === window.tutModifiedClass;
+        }
+    },
+
+    // --- 6. АЛЬТЕРНАТИВНЫЙ ПУТЬ, ЧАСТЬ 1: ПОДСВЕЧИВАЕМ "КАРТА РУЛОНА" ---
+    {
+        delay: 800,
+        onEnter: () => {
+            const menu = document.getElementById('coil-map-menu');
+            if (menu) {
+                menu.style.setProperty('display', 'block', 'important');
+                menu.style.setProperty('visibility', 'visible', 'important');
+                menu.style.setProperty('opacity', '1', 'important');
+            }
+        },
+        targetSelector: '.menu-item[data-menu="coil-map"]',
+        eventType: ['mouseenter', 'click'],
+        placement: 'corner',
+        text: `Отлично! Мы разобрались с фильтром через панель инструментов.<br><br>
+        <div class="purpose-text">
+            На деле в ODIS почти к любому инструменту можно прийти <i>двумя путями</i> — быстрым (тулбар) и через главное меню. Давайте откроем то же самое окно вторым способом.
+        </div>
+        Пункт меню <span class="action-badge">"Карта рулона"</span> подсвечен и его список уже раскрыт. Переместите курсор на подсвеченный пункт, чтобы перейти дальше.`,
+        validate: (e) => !!e.target.closest('.menu-item[data-menu="coil-map"]')
+    },
+
+    // --- 7. АЛЬТЕРНАТИВНЫЙ ПУТЬ, ЧАСТЬ 2: КЛИК ПО ПУНКТУ "ВЫБРАТЬ КЛАСС ДЕФЕКТОВ..." ---
+    {
+        delay: 300,
+        targetSelector: '.dropdown-item[onclick="openClassSelectModal()"]',
+        eventType: 'click',
+        placement: 'right',
+        text: `Меню открыто.<br><br>Теперь кликните на пункт <b>"Выбрать класс дефектов..."</b> — он ведёт в то же самое диалоговое окно, что мы уже видели (второй способ фильтрации).`,
+        validate: (e) => !!e.target.closest('.dropdown-item[onclick="openClassSelectModal()"]'),
+        onExit: () => {
+            const menu = document.getElementById('coil-map-menu');
+            if (menu) {
+                menu.style.removeProperty('display');
+                menu.style.removeProperty('visibility');
+                menu.style.removeProperty('opacity');
             }
         }
-    ];
+    },
+
+    // --- 8. ПОДТВЕРЖДЕНИЕ, ЧТО ОКНО ТО ЖЕ САМОЕ ---
+    {
+        delay: 500,
+        targetSelector: '#class-filter-modal > div',
+        eventType: 'click',
+        placement: 'left',
+        text: `Вот мы снова здесь!<br><br>
+        <div class="purpose-text">
+            Это то же самое окно управления подклассами — оно единое для всей системы, и не важно, откуда вы его открыли: с тулбара или из меню <b>"Карта рулона"</b>.
+        </div>
+        Нажмите любую кнопку — <span class="action-badge">Ok</span> или <span class="action-badge">Отмена</span> — чтобы закрыть окно и завершить обучение.`,
+        validate: (e) => {
+            const btn = e.target.closest('button');
+            if (!btn) return false;
+            const t = btn.innerText.trim();
+            return t === 'Ok' || t === 'Отмена' || t === 'Cancel';
+        }
+    }
+];
 
     // ==========================================
     // ДВИЖОК
@@ -385,7 +371,7 @@
                 activeTarget.classList.remove('tutorial-target');
                 activeTarget = null;
             }
-            const randomDelay = 1000 + Math.random() * 2000; // 3-5 секунд
+            const randomDelay = 1000 + Math.random() * 1000;
             setTimeout(finishScenario, randomDelay);
             return;
         }
