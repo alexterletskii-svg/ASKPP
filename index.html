@@ -347,28 +347,33 @@
             try {
                 var isConnected = pipwerks.SCORM.init();
                 if (isConnected) {
-                    var currentStatus = pipwerks.SCORM.get("cmi.core.lesson_status");
+                    var version = pipwerks.SCORM.version;
+                    var statusParam = (version === "2004") ? "cmi.completion_status" : "cmi.core.lesson_status";
+
+                    var currentStatus = pipwerks.SCORM.get(statusParam);
 
                     if (currentStatus === "not attempted" || currentStatus === "unknown" || currentStatus === "") {
-                        pipwerks.SCORM.set("cmi.core.lesson_status", "incomplete");
+                        pipwerks.SCORM.set(statusParam, "incomplete");
                         pipwerks.SCORM.save();
                         console.log("Тренажер запущен впервые. Статус изменен на incomplete.");
                     } else {
                         console.log("Текущий статус: " + currentStatus + ". Изменения не требуются.");
                     }
+                } else {
+                    console.log("Оффлайн режим. СДО/LMS не найдена.");
+                }
+            } catch(e) {
+                console.error("Ошибка инициализации SCORM:", e);
+            }
+        };
+
+        window.onunload = function() {
+            try {
+                if (pipwerks && pipwerks.SCORM && pipwerks.SCORM.connection.isActive) {
+                    pipwerks.SCORM.quit();
                 }
             } catch(e) {}
         };
-
-<!--        window.onunload = function() {-->
-<!--            try { pipwerks.SCORM.quit(); } catch(e) {}-->
-<!--        };-->
-
-        window.onunload = function() {
-    if (!window._courseCompleted) {
-        try { pipwerks.SCORM.quit(); } catch(e) {}
-    }
-};
     </script>
 
 </body>
