@@ -197,7 +197,8 @@
             targetSelector: '.panel-left .box.h-35',
             eventType: 'click',
             placement: 'right',
-            text: () => `Добро пожаловать в обучение!<br><br>Сначала давайте выберем рулон для инспекции.<br>Найдите в таблице рулон <span class="action-badge">№ ${window.tutTargetCoil}</span> и кликните по нему левой кнопкой мыши.`,
+            text: () => `Добро пожаловать в обучение!<br><br>Сначала давайте выберем рулон для инспекции.<br>Найдите в таблице рулон <span class="action-badge">
+            № ${window.tutTargetCoil}</span> и кликните по нему левой кнопкой мыши 2 раза.`,
             validate: (e) => {
                 const tr = e.target.closest('#coil-tbody tr');
                 if (tr) {

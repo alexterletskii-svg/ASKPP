@@ -181,7 +181,7 @@
             targetSelector: '.panel-left .box.h-35',
             eventType: 'click',
             placement: 'right',
-            text: 'Добро пожаловать в обучение!<br><br>В этом сценарии мы детально изучим 3 формата визуализации.<br><br>Чтобы начать — кликните по <span class="action-badge">ЛЮБОМУ</span> рулону в левой таблице.',
+            text: 'Добро пожаловать в обучение!<br><br>В этом сценарии мы детально изучим 3 формата визуализации.<br><br>Чтобы начать — кликните по <span class="action-badge">ЛЮБОМУ</span> рулону в левой таблице 2 раза.',
             validate: (e) => !!e.target.closest('#coil-tbody tr')
         },
 

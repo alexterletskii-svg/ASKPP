@@ -204,7 +204,8 @@
             targetSelector: '#roll-search-modal .modal-window',
             eventType: ['click', 'keyup'],
             placement: 'bottom',
-            text: () => `Открыто меню выбора.<br><br>Найдите и выберите рулон <span class="action-badge">${window.targetCoilNum}</span>.<br><br><span class="tooltip-note">Кликните по нему в списке <b>ИЛИ</b> введите номер вручную.<br>В конце обязательно нажмите кнопку <b>ОК</b> (или <b>Enter</b>).</span>`,
+            text: () => `Открыто меню выбора.<br><br>Найдите и выберите рулон <span class="action-badge">${window.targetCoilNum}</span>.<br><br><span class="tooltip-note">
+            Кликните по нему в списке 2 раза левой кнопкой мыши <b>ИЛИ</b> введите номер вручную.<br>В конце обязательно нажмите кнопку <b>ОК</b> (или <b>Enter</b>).</span>`,
             validate: (e) => {
                 const val = document.getElementById('roll-search-input').value.trim();
                 const isMatch = (val === window.targetCoilNum || val === window.targetCoilId);

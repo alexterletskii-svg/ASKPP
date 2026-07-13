@@ -210,7 +210,7 @@
             targetSelector: '.panel-left .box.h-35',
             eventType: 'click',
             placement: 'right',
-            text: 'Добро пожаловать в обучение!<br><br>Сначала давайте загрузим данные. Кликните по <span class="action-badge">ЛЮБОМУ</span> рулону в таблице слева.',
+            text: 'Добро пожаловать в обучение!<br><br>Сначала давайте загрузим данные. Кликните по <span class="action-badge">ЛЮБОМУ</span> рулону в таблице слева 2 раза.',
             purpose: 'Выбор рулона подгрузит его карту дефектов, чтобы мы могли анализировать данные и фильтровать информацию с разных камер.',
             validate: (e) => {
                 const tr = e.target.closest('#coil-tbody tr');
