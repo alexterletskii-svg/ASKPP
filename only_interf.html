@@ -4050,19 +4050,28 @@ function getDefectImagePath(defect, isROI) {
         applyFilters();
     }
 
-    function applyFilters() {
+      function applyFilters() {
         const activeClasses = Array.from(document.querySelectorAll('#content-classes .filter-block:not(.inactive)')).map(b => b.dataset.value);
         const activeCameras = Array.from(document.querySelectorAll('#content-cameras .filter-block[data-type="camera"]:not(.inactive)')).map(b => b.dataset.value);
 
         currentVisibleDefects = 0;
+        currentTotalDefects = 0; // Пересчитываем total, так как база зависит от кнопки Ч.дефекты
+
         const classCounts = {};
         ALL_CLASSES.forEach(c => classCounts[c] = { visible: 0, total: 0 });
 
         const visibleDefectIds = new Set();
 
-        // Основной этап: вычисляем, какие дефекты включены по всем правилам (класс + камера + подкласс)
         if (currentActiveCoilData && currentActiveCoilData.defects) {
             currentActiveCoilData.defects.forEach(defect => {
+
+                // ПРОПУСК ДОПОЛНИТЕЛЬНЫХ ДЕФЕКТОВ, ЕСЛИ КНОПКА ОТКЛЮЧЕНА (Меняет общее число в знаменателе)
+                if (!window.isShowPartialDefectsActive && defect.isExtra) {
+                    return;
+                }
+
+                currentTotalDefects++; // Считаем только те дефекты, которые допущены кнопкой Ч.дефекты
+
                 const cls = defect.classCode;
                 const cam = defect.camera;
 
@@ -4168,8 +4177,8 @@ function getDefectImagePath(defect, isROI) {
 
         const zonePool = ['left-edge', 'left-mid', 'center', 'right-mid', 'right-edge'];
 
-        // Генерируем случайное количество дефектов в заданном диапазоне
-        const defectsCount = DEFECT_MIN + Math.floor(rand() * (DEFECT_MAX - DEFECT_MIN));
+        // Генерируем случайное количество дефектов (увеличим максимум, чтобы разница от кнопки была заметнее)
+        const defectsCount = DEFECT_MIN + Math.floor(rand() * ((DEFECT_MAX + 300) - DEFECT_MIN));
 
         const defects = [];
         let defectIdCounter = 40000;
@@ -4189,23 +4198,19 @@ function getDefectImagePath(defect, isROI) {
                 let camera = ALL_CAMERAS[Math.floor(rand() * ALL_CAMERAS.length)];
                 let top = Math.max(0.5, Math.min(99.5, clusterTop + (rand() - 0.5) * 2));
 
-                // --- НОВАЯ ЛОГИКА ГЕНЕРАЦИИ ЯРЛЫКА (БЕРЕМ РЕАЛЬНЫЕ ПОДКЛАССЫ) ---
                 let validSubclassesArr = SYSTEM_CLASSES_MAP[currentSystem][classCode] || ["Класс : 000 (ID=0)"];
 
-                // Функция вытаскивает "019(a)" из строки "Класс : 019(a) (ID=15)"
                 const generateRealLabel = () => {
                     let randomSubStr = validSubclassesArr[Math.floor(rand() * validSubclassesArr.length)];
                     let extracted = randomSubStr.replace("Класс : ", "").split(" (ID=")[0].trim();
-                    return extracted === "-" ? classCode : extracted; // Если там просто "-", берем имя класса
+                    return extracted === "-" ? classCode : extracted;
                 };
 
                 const shortCode = generateRealLabel();
-                // ---------------------------------------------------------------
 
                 let realLengthMeters = (5 + Math.floor(rand() * 20)) / 1000;
                 let isHuge = false;
 
-                // Длинные полосы для реального режима
                 if (rand() < 0.3) {
                     realLengthMeters = (50 + Math.floor(rand() * 300));
                     isHuge = true;
@@ -4260,6 +4265,9 @@ function getDefectImagePath(defect, isROI) {
                     });
                 }
 
+                // ВЫДАЕМ ФЛАГ: Если случайное число > 0.45, дефект становится ДОПОЛНИТЕЛЬНЫМ (будет скрыт, когда кнопка выключена)
+                const isExtraDefect = rand() > 0.45;
+
                 defects.push({
                     id: defectIdCounter++,
                     productSide: camera.includes('Верх') ? 'Лицевая ст...' : 'Обратная ст...',
@@ -4285,6 +4293,7 @@ function getDefectImagePath(defect, isROI) {
                     top: top,
                     baseLeft: baseLeft,
                     minimapLines: minimapLines,
+                    isExtra: isExtraDefect, // НОВОЕ СВОЙСТВО
                     imgBgGradient: rand() > 0.5 ? 'linear-gradient(to right, #4a4a4a, #888888, #555555)' : 'linear-gradient(135deg, #333, #777, #444)',
                     imgSpotWidth: 20 + Math.floor(rand() * 80),
                     imgSpotHeight: 15 + Math.floor(rand() * 60),
@@ -4294,9 +4303,9 @@ function getDefectImagePath(defect, isROI) {
             }
         }
 
-        // ====== ГЕНЕРАЦИЯ ЭКСТРА ДЛИННЫХ ДЕФЕКТОВ ДЛЯ НАЛОЖЕНИЯ ======
-        const extraDefects = Math.min(10, DEFECT_MAX - defects.length);
-        for (let i = 0; i < extraDefects; i++) {
+        // Экстра дефекты
+        const extraDefectsCount = Math.min(10, (DEFECT_MAX + 300) - defects.length);
+        for (let i = 0; i < extraDefectsCount; i++) {
             let classCode = ALL_CLASSES[Math.floor(rand() * ALL_CLASSES.length)];
             let camera = ALL_CAMERAS[Math.floor(rand() * ALL_CAMERAS.length)];
             let mapZone = zonePool[Math.floor(rand() * 2) === 0 ? 0 : 4];
@@ -4326,6 +4335,7 @@ function getDefectImagePath(defect, isROI) {
                 pos1: `0 mm`, pos2: `0 mm`, len: `${Math.floor(realLengthMeters * 1000)} mm`, realLength: realLengthMeters,
                 isHuge: isHuge, pos3: `0 mm`, width: `100 mm`, camera: camera, score: `5000`, label: shortCode, mapZone,
                 mapStyle: 'md-red', isGroup: true, isHatched, groupItems, top, baseLeft: 10, minimapLines: [],
+                isExtra: rand() > 0.45, // НОВОЕ СВОЙСТВО
                 imgBgGradient: 'linear-gradient(to right, #4a4a4a, #888888, #555555)', imgSpotWidth: 50, imgSpotHeight: 50, imgSpotTop: 25, imgSpotLeft: 25
             });
         }
@@ -4844,6 +4854,9 @@ function showRealModePopup(e, defect) {
         }
     }
 
+       // --- ГЛОБАЛЬНАЯ ПЕРЕМЕННАЯ ДЛЯ ЧАСТИЧНЫХ ДЕФЕКТОВ ---
+    window.isShowPartialDefectsActive = false;
+
     document.querySelectorAll('.sb-panel').forEach(btn => {
         const btnText = btn.innerText.trim();
 
@@ -4865,7 +4878,6 @@ function showRealModePopup(e, defect) {
                 }
             });
         } else if (btn.classList.contains('toggle-btn')) {
-            // ... (тут твой старый код для toggle-btn, не меняй его) ...
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active-tab'));
                 this.classList.add('active-tab');
@@ -4882,14 +4894,25 @@ function showRealModePopup(e, defect) {
                 }
             });
 
-        // --- ДОБАВЛЯЕМ ОБРАБОТКУ КНОПКИ Rol ---
+        // --- НОВАЯ КНОПКА ЧАСТИЧНЫХ ДЕФЕКТОВ ---
+        } else if (btnText === 'Ч.дефекты') {
+            btn.addEventListener('click', function() {
+                window.isShowPartialDefectsActive = !window.isShowPartialDefectsActive;
+                if (window.isShowPartialDefectsActive) {
+                    this.classList.add('active-tab');
+                } else {
+                    this.classList.remove('active-tab');
+                }
+                // Пересчитываем и перерисовываем
+                if (currentActiveCoilData) {
+                    applyFilters();
+                }
+            });
+
         } else if (btnText === 'Rol') {
             btn.addEventListener('click', function() {
-                // При клике по кнопке просто вызываем ту же самую функцию, что и в меню!
                 toggleDefectView('roi');
             });
-        // ----------------------------------------
-
         } else if (!btn.classList.contains('sb-spacer') && !btn.classList.contains('disabled')) {
             btn.addEventListener('click', function() {
                 console.log('Нажата кнопка:', btnText);
