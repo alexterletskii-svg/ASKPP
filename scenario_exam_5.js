@@ -1,5 +1,5 @@
 /**
- * Сценарий проверки: Экзамен 5 (Глобальный фильтр подклассов и меню)
+ * Сценарий проверки: Экзамен 5 (Глобальный фильтр подклассов, меню и ч.дефекты)
  * Файл: scenario_exam_5.js
  */
 (function () {
@@ -95,6 +95,7 @@
                 <div class="exam-task" id="task-2" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 3:</b> Через глобальный фильтр отключите часть подклассов, чтобы любой блок стал <span style="color:#b8860b; font-weight:bold;">желтым</span>.</div></div>
                 <div class="exam-task" id="task-3" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 4:</b> Сбросьте этот желтый блок до исходного состояния (кликайте по нему на панели).</div></div>
                 <div class="exam-task" id="task-4" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 5:</b> Откройте окно фильтра альтернативным путем: через меню <b>"Карта рулона"</b>.</div></div>
+                <div class="exam-task" id="task-5" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 6:</b> Включите отображение разделенных дефектов (кнопка <b>Ч.дефекты</b>).</div></div>
                 <div id="exam-congratulations">Проверка завершена успешно!</div>
             </div>
         `;
@@ -103,7 +104,6 @@
         const initScreen = document.getElementById('initial-screen');
         if(initScreen) initScreen.classList.remove('hidden');
 
-        // ИСПРАВЛЕНИЕ: Добавлен флаг `true` (capture phase) и гибкий селектор `*=`
         document.addEventListener('click', (e) => {
             if (currentStep === 4) {
                 // Ищем элемент с классом dropdown-item, у которого в onclick ЕСТЬ текст openClassSelectModal
@@ -112,7 +112,7 @@
                     menuClicked = true;
                 }
             }
-        }, true); // <-- Перехватываем клик ДО того, как приложение его заблокирует
+        }, true);
     }
 
     function checkProgress() {
@@ -161,8 +161,17 @@
                 // Ждем клика по меню (обрабатывается в глобальном слушателе)
                 if (menuClicked) {
                     document.getElementById('task-4').classList.add('done');
-                    document.getElementById('exam-congratulations').style.display = 'block';
+                    // Добавлен переход к шагу 5
+                    document.getElementById('task-5').style.display = 'flex';
                     currentStep = 5;
+                }
+                break;
+            case 5:
+                // Сверяемся с глобальным флагом, который мы добавили в основной код (isShowPartialDefectsActive)
+                if (window.isShowPartialDefectsActive === true) {
+                    document.getElementById('task-5').classList.add('done');
+                    document.getElementById('exam-congratulations').style.display = 'block';
+                    currentStep = 6;
                     sendCourseCompletedToWebSoft();
                 }
                 break;

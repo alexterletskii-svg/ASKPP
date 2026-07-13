@@ -28,7 +28,15 @@
       <file href="scenario_4.js" />
       <file href="scenario_5.js" />
       <file href="scenario_6.js" />
+      <file href="scenario_7.js" />
+      <file href="scenario_8.js" />
+      <file href="scenario_9.js" />
       <file href="scenario_exam_1.js" />
+      <file href="scenario_exam_2.js" />
+      <file href="scenario_exam_3.js" />
+      <file href="scenario_exam_4.js" />
+      <file href="scenario_exam_5.js" />
+      <file href="scenario_exam_test.js" />
       <file href="SCORM_API_wrapper.js" />
       <file href="select_simulation.html" />
       <file href="video.html" />
@@ -1953,6 +1961,7 @@
       <file href="video/1_Знакомство_с_интерфейсом.mp4" />
       <file href="video/2_Список_обработанных_рулонов.mp4" />
       <file href="video/3_Карта рулона_1.mp4" />
+      <file href="video/3_Карта_рулона_1.mp4" />
       <file href="video/3_Карта_рулона_2.mp4" />
       <file href="video/4_Фильтры.mp4" />
     </resource>
