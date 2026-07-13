@@ -4861,23 +4861,51 @@ function showRealModePopup(e, defect) {
         const btnText = btn.innerText.trim();
 
         if (btnText === 'реальный') {
-            btn.addEventListener('click', function() {
-                isRealMode = !isRealMode;
+    btn.addEventListener('click', function() {
 
-                if (isRealMode) {
-                    this.classList.add('active-tab');
-                    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active-tab'));
-                } else {
-                    this.classList.remove('active-tab');
-                    document.querySelector('.toggle-btn').classList.add('active-tab');
-                }
+        // Если мы переходим из режима Таблицы (где карта скрыта),
+        // принудительно включаем реальный режим, а не переключаем (toggle) его
+        if (!isMapOpen) {
+            isRealMode = true;
+        } else {
+            isRealMode = !isRealMode;
+        }
 
-                if (currentActiveCoilData) {
-                    generateMapData(currentActiveCoilData);
-                    applyFilters();
-                }
-            });
-        } else if (btn.classList.contains('toggle-btn')) {
+        // ОБЯЗАТЕЛЬНО: принудительно показываем панель карты
+        window.toggleMap(true);
+
+        if (isRealMode) {
+            this.classList.add('active-tab');
+            document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active-tab'));
+
+            // Синхронизация подсветки инструмента в верхней панели
+            const btnRealTop = document.getElementById('btn-view-real');
+            if (btnRealTop) {
+                document.querySelectorAll('.toolbar .tb-btn').forEach(btn => btn.classList.remove('active-tool'));
+                btnRealTop.classList.add('active-tool');
+            }
+        } else {
+            this.classList.remove('active-tab');
+            // Если выключили реальный режим, возвращаемся в режим ярлыков
+            const labelBtn = Array.from(document.querySelectorAll('.toggle-btn')).find(b => b.innerText === 'Ярлык');
+            if (labelBtn) labelBtn.classList.add('active-tab');
+
+            // Синхронизация подсветки в верхней панели
+            const btnLabelTop = document.getElementById('btn-view-label');
+            if (btnLabelTop) {
+                document.querySelectorAll('.toolbar .tb-btn').forEach(btn => btn.classList.remove('active-tool'));
+                btnLabelTop.classList.add('active-tool');
+            }
+        }
+
+        if (currentActiveCoilData) {
+            generateMapData(currentActiveCoilData);
+            applyFilters();
+        }
+    });
+}
+
+        else if (btn.classList.contains('toggle-btn')) {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active-tab'));
                 this.classList.add('active-tab');
