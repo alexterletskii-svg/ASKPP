@@ -382,9 +382,27 @@
         .track-border-l { left: 0; }
         .track-border-r { right: 0; }
 
-        .minimap-dot { position: absolute; height: 2px; z-index: 5; pointer-events: none; }
-        .minimap-dot.face { background-color: #ffff00; }
-        .minimap-dot.back { background-color: #00ff00; }
+        /* Отметки дефектов на мини-карте */
+.minimap-dot {
+    position: absolute;
+    height: 2px;
+    min-width: 2px;
+    z-index: 20;
+    pointer-events: none;
+    opacity: 1;
+}
+
+/* Верхняя/лицевая сторона — жёлтая */
+.minimap-dot.face {
+    background-color: #ffff00;
+    box-shadow: 0 0 1px #ffff00;
+}
+
+/* Нижняя/обратная сторона — зелёная */
+.minimap-dot.back {
+    background-color: #00ff00;
+    box-shadow: 0 0 1px #00ff00;
+}
 
         .g-line-green { position: absolute; left: 1px; right: 1px; height: 1px; background-color: #00ff00; z-index: 10; pointer-events: none; }
 
@@ -4115,11 +4133,13 @@ function getDefectImagePath(defect, isROI) {
             }
         });
 
-        // 2. Точки на мини-карте
-        document.querySelectorAll('.minimap-dot').forEach(el => {
-            const defectId = Number(el.dataset.defectId);
-            el.style.display = visibleDefectIds.has(defectId) ? 'block' : 'none';
-        });
+        // 2. Жёлтые и зелёные отметки на мини-карте
+document.querySelectorAll('.minimap-dot').forEach(marker => {
+    const defectId = Number(marker.dataset.defectId);
+    const isVisible = visibleDefectIds.has(defectId);
+
+    marker.style.display = isVisible ? 'block' : 'none';
+});
 
         // 3. Обычные ярлыки на карте
         document.querySelectorAll('.defect-lbl').forEach(el => {
@@ -4616,19 +4636,63 @@ function showRealModePopup(e, defect) {
         }
         // -------------------------------------------------------------------------
 
-        // Точки дефектов для мини-карты
-        coilData.defects.forEach(defect => {
-            const isFace = defect.camera.includes('Верх');
-            const dotClass = isFace ? 'face' : 'back';
+        // Отметки дефектов для мини-карты:
+// верхняя/лицевая сторона — жёлтая,
+// нижняя/обратная сторона — зелёная.
+coilData.defects.forEach(defect => {
+    const isTopSide =
+        defect.camera.includes('Верх') ||
+        defect.productSide.includes('Лицевая');
 
-            defect.minimapLines.forEach(line => {
-                const lineTop = defect.top + line.topOffset;
-                const lineLeft = defect.baseLeft + line.leftOffset;
-                if(lineTop >= 0 && lineTop <= 100 && lineLeft >= 0 && (lineLeft + line.width) <= 100) {
-                    html4_inner += `<div class="minimap-dot ${dotClass}" style="top:${lineTop}%; left:${lineLeft}%; width:${line.width}%;" data-class-code="${defect.classCode}" data-camera="${defect.camera}"></div>`;
-                }
-            });
-        });
+    const dotClass = isTopSide ? 'face' : 'back';
+
+    // Гарантируем, что у каждого дефекта будет хотя бы одна отметка.
+    const minimapLines =
+        Array.isArray(defect.minimapLines) &&
+        defect.minimapLines.length > 0
+            ? defect.minimapLines
+            : [{
+                topOffset: 0,
+                leftOffset: 0,
+                width: 4
+            }];
+
+    minimapLines.forEach(line => {
+        const lineTop = Math.max(
+            0,
+            Math.min(100, defect.top + Number(line.topOffset || 0))
+        );
+
+        const lineWidth = Math.max(
+            1,
+            Math.min(35, Number(line.width || 4))
+        );
+
+        const lineLeft = Math.max(
+            0,
+            Math.min(
+                100 - lineWidth,
+                Number(defect.baseLeft || 50) +
+                Number(line.leftOffset || 0)
+            )
+        );
+
+        html4_inner += `
+            <div
+                class="minimap-dot ${dotClass}"
+                data-defect-id="${defect.id}"
+                data-class-code="${defect.classCode}"
+                data-camera="${defect.camera}"
+                data-side="${isTopSide ? 'top' : 'bottom'}"
+                style="
+                    top: ${lineTop}%;
+                    left: ${lineLeft}%;
+                    width: ${lineWidth}%;
+                "
+            ></div>
+        `;
+    });
+});
 
         // Создаем статичную обертку для колонки мини-карты
         let html4 = `
