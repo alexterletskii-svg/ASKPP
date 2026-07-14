@@ -120,14 +120,29 @@
                 const selectedRow = document.querySelector('#coil-tbody tr.selected');
                 if (selectedRow && selectedRow.cells[1].innerText === targetCoil) {
                     setTimeout(() => {
-                        const camBlocks = Array.from(document.querySelectorAll('#content-cameras .filter-block'));
+                        let camBlocks = Array.from(document.querySelectorAll('#content-cameras .filter-block'));
+
                         if (camBlocks.length > 0) {
-                            camBlocks.sort(() => 0.5 - Math.random());
-                            targetCameras = camBlocks.slice(0, 2).map(b => b.innerText.trim());
-                            document.getElementById('task-2-text').innerHTML = `<b>Шаг 3:</b> Выключите все камеры и оставьте <u>только</u>:<br>• <b>${targetCameras.join("</b><br>• <b>")}</b>`;
-                            document.getElementById('task-1').classList.add('done');
-                            document.getElementById('task-2').style.display = 'flex';
-                            currentStep = 2;
+                            // 1. Создаем список камер, которые нужно ИСКЛЮЧИТЬ из задания
+                            const excludedCameras = ['Верх BF', 'Верх LF', 'Низ LF', 'Верх RF', 'Низ RF'];
+
+                            // 2. Оставляем только те камеры, которых НЕТ в списке исключений
+                            camBlocks = camBlocks.filter(b => !excludedCameras.includes(b.innerText.trim()));
+
+                            // 3. Если после фильтрации камер осталось достаточно, выбираем 2 случайные
+                            if (camBlocks.length > 0) {
+                                camBlocks.sort(() => 0.5 - Math.random());
+                                // Если после фильтрации осталась только 1 камера, берем её, иначе берем 2
+                                const numCamerasToSelect = Math.min(2, camBlocks.length);
+                                targetCameras = camBlocks.slice(0, numCamerasToSelect).map(b => b.innerText.trim());
+
+                                document.getElementById('task-2-text').innerHTML = `<b>Шаг 3:</b> Выключите все камеры и оставьте <u>только</u>:<br>• <b>${targetCameras.join("</b><br>• <b>")}</b>`;
+                                document.getElementById('task-1').classList.add('done');
+                                document.getElementById('task-2').style.display = 'flex';
+                                currentStep = 2;
+                            } else {
+                                console.warn("После фильтрации не осталось доступных камер для задания!");
+                            }
                         }
                     }, 500);
                 }
