@@ -4715,11 +4715,40 @@ coilData.defects.forEach(defect => {
         setTimeout(() => { if(typeof updateMapZoom === 'function') updateMapZoom(); }, 50);
 
         const mkDefect = (parent, defect) => {
-            const d = document.createElement('div');
+            let elements = []; // Собираем элементы в массив, так как их может быть несколько
 
             if (isRealMode) {
                 // РЕАЛЬНЫЙ РЕЖИМ
-                if (defect.isHuge || defect.realLength > 10) {
+                const isLargeDefect = defect.isHuge || defect.realLength > 10;
+
+                if (isLargeDefect && window.isShowPartialDefectsActive) {
+                    // ЕСЛИ КНОПКА НАЖАТА: Большая полоса распадается на крестики
+                    let heightPct = (defect.realLength / coilData.length) * 100;
+                    if (defect.top + heightPct > 100) heightPct = 100 - defect.top;
+
+                    // Вычисляем количество плюсиков в зависимости от высоты (чтобы они не слипались)
+                    const numCrosses = Math.max(3, Math.floor(heightPct * 2));
+                    const step = heightPct / numCrosses;
+
+                    for (let i = 0; i < numCrosses; i++) {
+                        const d = document.createElement('div');
+                        d.className = 'defect-real-cross class-filter-target';
+                        d.style.zIndex = '15';
+                        d.style.top = (defect.top + i * step) + '%';
+                        d.innerText = '+';
+
+                        switch (defect.mapZone) {
+                            case 'left-edge': d.style.left = '5%'; break;
+                            case 'left-mid': d.style.left = '25%'; break;
+                            case 'center': d.style.left = '50%'; break;
+                            case 'right-mid': d.style.left = '75%'; break;
+                            case 'right-edge': d.style.left = '95%'; break;
+                        }
+                        elements.push(d);
+                    }
+                } else if (isLargeDefect) {
+                    // Стандартный блок огромного дефекта
+                    const d = document.createElement('div');
                     d.className = 'defect-real-block class-filter-target';
 
                     if (defect.isHatched) {
@@ -4742,23 +4771,28 @@ coilData.defects.forEach(defect => {
                     else if (defect.mapZone.includes('right')) d.style.left = '93%';
                     else d.style.left = '46.5%';
 
+                    elements.push(d);
                 } else {
-                    // Точечные дефекты
+                    // Мелкие точечные дефекты (1 крестик)
+                    const d = document.createElement('div');
                     d.className = 'defect-real-cross class-filter-target';
                     d.style.zIndex = '15';
                     d.style.top = defect.top + '%';
                     d.innerText = '+';
 
-                    switch(defect.mapZone) {
+                    switch (defect.mapZone) {
                         case 'left-edge': d.style.left = '5%'; break;
                         case 'left-mid': d.style.left = '25%'; break;
                         case 'center': d.style.left = '50%'; break;
                         case 'right-mid': d.style.left = '75%'; break;
                         case 'right-edge': d.style.left = '95%'; break;
                     }
+
+                    elements.push(d);
                 }
-             } else {
+            } else {
                 // РЕЖИМ ЯРЛЫКОВ
+                const d = document.createElement('div');
                 d.className = `defect-lbl class-filter-target ${defect.mapStyle}`;
                 let labelText = defect.label;
                 if (defect.mapStyle === 'md-hatched') {
@@ -4772,66 +4806,75 @@ coilData.defects.forEach(defect => {
                 d.innerText = labelText;
                 d.style.top = defect.top + '%';
 
-                switch(defect.mapZone) {
+                switch (defect.mapZone) {
                     case 'left-edge': d.style.left = '15%'; break;
                     case 'left-mid': d.style.left = '35%'; break;
                     case 'center': d.style.left = '50%'; break;
                     case 'right-mid': d.style.left = '65%'; break;
                     case 'right-edge': d.style.left = '85%'; break;
                 }
+
+                elements.push(d);
             }
 
-            d.dataset.top = defect.top;
-            d.dataset.classCode = defect.classCode;
-            d.dataset.camera = defect.camera;
-            d.dataset.defectId = defect.id;
-            d.title = `* ${defect.id} - ${defect.classCode}`;
+            // Назначаем атрибуты и события клика всем созданным кускам данного дефекта
+            elements.forEach(d => {
+                d.dataset.top = defect.top;
+                d.dataset.classCode = defect.classCode;
+                d.dataset.camera = defect.camera;
+                d.dataset.defectId = defect.id;
+                d.title = `* ${defect.id} - ${defect.classCode}`;
 
-            d.addEventListener('click', function(e) {
-                e.stopPropagation();
+                d.addEventListener('click', function(e) {
+                    e.stopPropagation();
 
-                markDefectAsViewed(defect.id);
+                    markDefectAsViewed(defect.id);
 
-                if (isRealMode) {
-                    if (defect.isHuge || defect.realLength > 10) {
-                        if (defect.groupItems && defect.groupItems.length > 0) {
-                            showRealModePopup(e, defect);
+                    if (isRealMode) {
+                        if (defect.isHuge || defect.realLength > 10) {
+                            if (defect.groupItems && defect.groupItems.length > 0) {
+                                showRealModePopup(e, defect);
+                            } else {
+                                fillDefectProps(defect);
+                                document.getElementById('defect-popup').style.display = 'none';
+                            }
                         } else {
                             fillDefectProps(defect);
                             document.getElementById('defect-popup').style.display = 'none';
                         }
                     } else {
+                        if (defect.mapStyle === 'md-white-group' || defect.mapStyle === 'md-hatched') {
+                            showDefectPopup(e, defect);
+                        } else {
+                            document.getElementById('defect-popup').style.display = 'none';
+                        }
                         fillDefectProps(defect);
-                        document.getElementById('defect-popup').style.display = 'none';
                     }
-                } else {
-                    if (defect.mapStyle === 'md-white-group' || defect.mapStyle === 'md-hatched') {
-                        showDefectPopup(e, defect);
-                    } else {
-                        document.getElementById('defect-popup').style.display = 'none';
-                    }
-                    fillDefectProps(defect);
-                }
 
-                document.querySelectorAll('.class-filter-target').forEach(el => {
-                    el.classList.remove('active-defect-label', 'active-defect-real');
+                    // Снимаем выделение со всех
+                    document.querySelectorAll('.class-filter-target').forEach(el => {
+                        el.classList.remove('active-defect-label', 'active-defect-real');
+                    });
+
+                    if (!isRealMode) {
+                        this.classList.add('active-defect-label');
+                    } else {
+                        // Важно: если дефект разбит на части (много крестиков), подсвечиваем их все разом!
+                        document.querySelectorAll(`.class-filter-target[data-defect-id="${defect.id}"]`).forEach(el => {
+                            el.classList.add('active-defect-real');
+                        });
+                    }
+
+                    const tr = document.querySelector(`#defects-tbody tr[data-defect-id="${defect.id}"]`);
+                    if(tr) {
+                        document.querySelectorAll('#defects-tbody tr').forEach(r => r.classList.remove('selected'));
+                        tr.classList.add('selected');
+                        tr.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                    }
                 });
 
-                if (!isRealMode) {
-                    this.classList.add('active-defect-label');
-                } else {
-                    this.classList.add('active-defect-real');
-                }
-
-                const tr = document.querySelector(`#defects-tbody tr[data-defect-id="${defect.id}"]`);
-                if(tr) {
-                    document.querySelectorAll('#defects-tbody tr').forEach(r => r.classList.remove('selected'));
-                    tr.classList.add('selected');
-                    tr.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                }
+                parent.appendChild(d);
             });
-
-            parent.appendChild(d);
         };
 
         coilData.defects.forEach(defect => {
@@ -4997,6 +5040,7 @@ coilData.defects.forEach(defect => {
                 }
                 // Пересчитываем и перерисовываем
                 if (currentActiveCoilData) {
+                    generateMapData(currentActiveCoilData); // <--- ДОБАВИТЬ ЭТУ СТРОКУ
                     applyFilters();
                 }
             });
