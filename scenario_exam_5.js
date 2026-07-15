@@ -1,5 +1,5 @@
 /**
- * Сценарий проверки: Экзамен 5 (Глобальный фильтр подклассов, меню и ч.дефекты)
+ * Сценарий проверки: Экзамен 5 (Глобальный фильтр подклассов, меню, реальный режим и ч.дефекты)
  * Файл: scenario_exam_5.js
  */
 (function () {
@@ -12,6 +12,7 @@
     // Переменные для отслеживания действий
     let yellowBlockId = null;
     let menuClicked = false;
+    let realModeActivated = false; // Флаг для нового шага
 
     // ==========================================
     // 🌐 ИНТЕГРАЦИЯ С WEBSOFT (WEBTUTOR / SCORM)
@@ -73,7 +74,7 @@
     function initExamUI() {
         const style = document.createElement('style');
         style.innerHTML = `
-            #exam-panel { position: fixed; bottom: 30px; right: 30px; width: 340px; background-color: #f0f4f9; border: 2px solid #808080; border-top-color: #fff; border-left-color: #fff; box-shadow: 2px 2px 10px rgba(0,0,0,0.5); z-index: 10000; font-family: Tahoma, sans-serif; font-size: 11px; color: #000; }
+            #exam-panel { position: fixed; bottom: 30px; right: 30px; width: 360px; background-color: #f0f4f9; border: 2px solid #808080; border-top-color: #fff; border-left-color: #fff; box-shadow: 2px 2px 10px rgba(0,0,0,0.5); z-index: 10000; font-family: Tahoma, sans-serif; font-size: 11px; color: #000; }
             #exam-header { background-color: #3d6a9d; color: white; font-weight: bold; padding: 4px 8px; }
             #exam-body { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
             .exam-task { display: flex; align-items: flex-start; gap: 6px; }
@@ -93,9 +94,10 @@
                 <div class="exam-task" id="task-0"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 1:</b> Войдите в <b>${targetSystem}</b></div></div>
                 <div class="exam-task" id="task-1" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text" id="task-1-text"><b>Шаг 2:</b> Загрузите рулон <b>...</b></div></div>
                 <div class="exam-task" id="task-2" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 3:</b> Через глобальный фильтр отключите часть подклассов, чтобы любой блок стал <span style="color:#b8860b; font-weight:bold;">желтым</span>.</div></div>
-                <div class="exam-task" id="task-3" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 4:</b> Сбросьте этот желтый блок до исходного состояния (кликайте по нему на панели).</div></div>
+                <div class="exam-task" id="task-3" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 4:</b> Сбросьте этот желтый блок (кликните по нему).</div></div>
                 <div class="exam-task" id="task-4" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 5:</b> Откройте окно фильтра альтернативным путем: через меню <b>"Карта рулона"</b>.</div></div>
-                <div class="exam-task" id="task-5" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 6:</b> Включите отображение разделенных дефектов (кнопка <b>Ч.дефекты</b>).</div></div>
+                <div class="exam-task" id="task-5" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 6:</b> Перейдите в режим отображения <span class="highlight"><b>реальный</b></span> (кнопка внизу).</div></div>
+                <div class="exam-task" id="task-6" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 7:</b> Включите разделенные дефекты (кнопка <b>Ч.дефекты</b>).</div></div>
                 <div id="exam-congratulations">Проверка завершена успешно!</div>
             </div>
         `;
@@ -104,12 +106,21 @@
         const initScreen = document.getElementById('initial-screen');
         if(initScreen) initScreen.classList.remove('hidden');
 
+        // Обработка кликов для шагов 5 и 6
         document.addEventListener('click', (e) => {
+            // Отслеживание клика по меню (Шаг 5)
             if (currentStep === 4) {
-                // Ищем элемент с классом dropdown-item, у которого в onclick ЕСТЬ текст openClassSelectModal
                 const menuItem = e.target.closest('.dropdown-item[onclick*="openClassSelectModal"]');
                 if (menuItem) {
                     menuClicked = true;
+                }
+            }
+
+            // Отслеживание клика по кнопке "реальный" (Шаг 6)
+            if (currentStep === 5) {
+                const btn = e.target.closest('.sb-panel');
+                if (btn && btn.innerText.toLowerCase().includes('реальный')) {
+                    realModeActivated = true;
                 }
             }
         }, true);
@@ -158,20 +169,27 @@
                 }
                 break;
             case 4:
-                // Ждем клика по меню (обрабатывается в глобальном слушателе)
+                // Ждем клика по меню
                 if (menuClicked) {
                     document.getElementById('task-4').classList.add('done');
-                    // Добавлен переход к шагу 5
-                    document.getElementById('task-5').style.display = 'flex';
+                    document.getElementById('task-5').style.display = 'flex'; // Отображаем шаг Режима "Реальный"
                     currentStep = 5;
                 }
                 break;
             case 5:
-                // Сверяемся с глобальным флагом, который мы добавили в основной код (isShowPartialDefectsActive)
-                if (window.isShowPartialDefectsActive === true) {
+                // Ждем нажатия на кнопку меню "Реальный"
+                if (realModeActivated) {
                     document.getElementById('task-5').classList.add('done');
-                    document.getElementById('exam-congratulations').style.display = 'block';
+                    document.getElementById('task-6').style.display = 'flex'; // Отображаем финальный шаг
                     currentStep = 6;
+                }
+                break;
+            case 6:
+                // Включение "Ч.Дефекты" (читаем из системного флага)
+                if (window.isShowPartialDefectsActive === true) {
+                    document.getElementById('task-6').classList.add('done');
+                    document.getElementById('exam-congratulations').style.display = 'block';
+                    currentStep = 7;
                     sendCourseCompletedToWebSoft();
                 }
                 break;

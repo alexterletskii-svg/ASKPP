@@ -1,5 +1,5 @@
 /**
- * Сценарий проверки: Экзамен 3 (Подклассы и ROI)
+ * Сценарий проверки: Экзамен 3 (Режим "Большой", пролистывание и ROI)
  * Файл: scenario_exam_3.js
  */
 (function () {
@@ -8,6 +8,9 @@
 
     let targetCoil = null;
     let currentStep = 0;
+
+    // Переменные для новых шагов
+    let defectsNavigated = 0;
     let roiToggled = false;
 
     // ==========================================
@@ -79,6 +82,14 @@
             .exam-task.done .exam-task-text { color: #555; text-decoration: line-through; }
             .highlight { background-color: #ffffcc; padding: 0 3px; border: 1px dotted #cccc00; }
             #exam-congratulations { display: none; margin-top: 10px; padding: 5px; background-color: #d4f0d4; border: 1px solid #5cb85c; text-align: center; font-weight: bold; color: #006600; }
+
+            /* Принудительное скрытие рамки ROI для экзамена, если кнопка не сработала */
+            body.exam-hide-roi #defect-image-box div[style*="border"],
+            body.exam-hide-roi #defect-image-box .defect-roi,
+            body.exam-hide-roi #defect-image-box .roi-box {
+                display: none !important;
+                opacity: 0 !important;
+            }
         `;
         document.head.appendChild(style);
 
@@ -89,9 +100,9 @@
             <div id="exam-body">
                 <div class="exam-task" id="task-0"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 1:</b> Войдите в <b>${targetSystem}</b></div></div>
                 <div class="exam-task" id="task-1" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text" id="task-1-text"><b>Шаг 2:</b> Загрузите рулон <b>...</b></div></div>
-                <div class="exam-task" id="task-2" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 3:</b> Откройте окно "Выбрать класс дефекта" и отключите <b>любой подкласс</b>, чтобы группа стала <span style="color:#b8860b; font-weight:bold;">желтой</span>.</div></div>
-                <div class="exam-task" id="task-3" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 4:</b> Перейдите в режим "Изображение дефекта: Большой"</div></div>
-                <div class="exam-task" id="task-4" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 5:</b> Скройте рамку <b>ROI</b> (через кнопку или клавишу Shift)</div></div>
+                <div class="exam-task" id="task-2" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 3:</b> Перейдите в режим "Большой" (кнопка внизу)</div></div>
+                <div class="exam-task" id="task-3" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text" id="task-3-text"><b>Шаг 4:</b> Пролистайте дефекты (стрелки ВВЕРХ/ВНИЗ): <b>0/3</b></div></div>
+                <div class="exam-task" id="task-4" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 5:</b> Переключите видимость ROI (кнопка внизу или Shift)</div></div>
                 <div id="exam-congratulations">Проверка завершена успешно!</div>
             </div>
         `;
@@ -100,21 +111,43 @@
         const initScreen = document.getElementById('initial-screen');
         if(initScreen) initScreen.classList.remove('hidden');
 
-        // Глобальный слушатель для ROI (Шаг 5)
+        // ==========================================
+        // СЛУШАТЕЛИ ДЛЯ ШАГА 3 (ПРОЛИСТЫВАНИЕ) И 4 (ROI)
+        // ==========================================
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Shift' && currentStep === 4) roiToggled = true;
+            // Шаг 3: Листание
+            if (currentStep === 3 && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+                defectsNavigated++;
+                document.getElementById('task-3-text').innerHTML = `<b>Шаг 4:</b> Пролистайте дефекты (стрелки ВВЕРХ/ВНИЗ): <b>${defectsNavigated}/3</b>`;
+
+                if (defectsNavigated >= 3) {
+                    document.getElementById('task-3').classList.add('done');
+                    document.getElementById('task-4').style.display = 'flex';
+                    currentStep = 4;
+                }
+            }
+
+            // Шаг 4: Нажатие Shift для ROI
+            if (e.key === 'Shift') {
+                if (currentStep === 4) roiToggled = true;
+                // Принудительно гасим рамку для наглядности
+                document.body.classList.toggle('exam-hide-roi');
+            }
         });
+
+        // Нажатие мышкой по кнопке ROI
         document.addEventListener('click', (e) => {
             const btn = e.target.closest('.sb-panel');
-            if (btn && (btn.innerText.includes('Rol') || btn.innerText.includes('Roi')) && currentStep === 4) {
-                roiToggled = true;
+            if (btn && (btn.innerText.includes('Rol') || btn.innerText.includes('Roi') || btn.id === 'tut-btn-rol')) {
+                if (currentStep === 4) roiToggled = true;
+                document.body.classList.toggle('exam-hide-roi');
             }
         });
     }
 
     function checkProgress() {
         switch (currentStep) {
-            case 0:
+            case 0: // Шаг 0: Авторизация
                 const headerDiv = document.querySelector('.os-header div:nth-child(2)');
                 if (headerDiv && headerDiv.innerText.includes(targetSystem) && document.getElementById('initial-screen').classList.contains('hidden')) {
                     const rows = document.querySelectorAll('#coil-tbody tr');
@@ -127,7 +160,7 @@
                     }
                 }
                 break;
-            case 1:
+            case 1: // Шаг 1: Загрузка рулона
                 const selectedRow = document.querySelector('#coil-tbody tr.selected');
                 if (selectedRow && selectedRow.cells[1].innerText === targetCoil) {
                     document.getElementById('task-1').classList.add('done');
@@ -135,25 +168,18 @@
                     currentStep = 2;
                 }
                 break;
-            case 2:
-                // Ищем блок, который стал желтым (означает, что часть подклассов скрыта)
-                const yellowBlock = document.querySelector('#content-classes .filter-block.yellow');
-                if (yellowBlock) {
+            case 2: // Шаг 2: Режим БОЛЬШОЙ
+                const imgBox = document.getElementById('defect-image-box');
+                if (imgBox && imgBox.classList.contains('large-mode')) {
                     document.getElementById('task-2').classList.add('done');
                     document.getElementById('task-3').style.display = 'flex';
                     currentStep = 3;
                 }
                 break;
             case 3:
-                const imgBox = document.getElementById('defect-image-box');
-                if (imgBox && imgBox.classList.contains('large-mode')) {
-                    document.getElementById('task-3').classList.add('done');
-                    document.getElementById('task-4').style.display = 'flex';
-                    currentStep = 4;
-                }
+                // Шаг 3 (Листание) обрабатывается EventListener'ом выше, функция просто ждет перехода
                 break;
-            case 4:
-                // Проверяем, нажал ли юзер Shift или кликнул ли по кнопке ROI
+            case 4: // Шаг 4: Переключение ROI
                 if (roiToggled) {
                     document.getElementById('task-4').classList.add('done');
                     document.getElementById('exam-congratulations').style.display = 'block';
