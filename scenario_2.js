@@ -211,8 +211,8 @@
                 const isMatch = (val === window.targetCoilNum || val === window.targetCoilId);
 
                 const btnText = e.target.innerText ? e.target.innerText.trim().toLowerCase() : '';
-                const isOkClick = e.type === 'click' && e.target.tagName === 'BUTTON' && (btnText === 'ок' || btnText === 'ok');
-                const isEnter = e.type === 'keyup' && e.key === 'Enter';
+const isOkClick = e.type === 'click' && e.target.tagName === 'BUTTON' && (btnText === 'ок' || btnText === 'ok');
+const isEnter = (e.type === 'keyup' || e.type === 'keydown') && e.key === 'Enter';
 
                 if (isOkClick || isEnter) {
                     if (isMatch) return true;

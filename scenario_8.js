@@ -198,7 +198,7 @@
     {
         delay: 500,
         targetSelector: '.panel-left .box.h-35',
-        eventType: 'click',
+        eventType: 'dblclick',
         placement: 'right',
         text: 'Добро пожаловать в обучение!<br><br>В этом сценарии мы изучим скрытие дефектов через глобальное меню <b>подклассов</b>.<br><br>Чтобы начать — кликните по <span class="action-badge">ЛЮБОМУ</span> рулону в левой таблице 2 раза.',
         validate: (e) => !!e.target.closest('#coil-tbody tr')

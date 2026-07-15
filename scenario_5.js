@@ -186,7 +186,7 @@
         {
             delay: 500,
             targetSelector: '.panel-left .box.h-35',
-            eventType: 'click',
+            eventType: 'dblclick',
             placement: 'right',
             text: 'Добро пожаловать в обучение по детальному осмотру!<br><br>Сперва необходимо загрузить данные рулона в рабочую область.<br>Кликните по <span class="action-badge">ЛЮБОМУ</span> рулону в таблице слева 2 раза.',
             validate: (e) => {

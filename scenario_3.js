@@ -195,7 +195,8 @@
                 }
             },
             targetSelector: '.panel-left .box.h-35',
-            eventType: 'click',
+            // ИСПРАВЛЕНИЕ: Теперь сценарий ждет именно двойной клик, чтобы пойти дальше
+            eventType: 'dblclick',
             placement: 'right',
             text: () => `Добро пожаловать в обучение!<br><br>Сначала давайте выберем рулон для инспекции.<br>Найдите в таблице рулон <span class="action-badge">
             № ${window.tutTargetCoil}</span> и кликните по нему левой кнопкой мыши 2 раза.`,
@@ -209,7 +210,8 @@
                         if (!window.alertShown) {
                             window.alertShown = true;
                             e.preventDefault(); e.stopPropagation();
-                            showCustomAlert(`Вам нужен рулон <b>${window.tutTargetCoil}</b>! Вы кликнули на ${clickedCoil}.`, () => {
+                            // Текст ошибки тоже адаптирован под двойной клик
+                            showCustomAlert(`Вам нужен рулон <b>${window.tutTargetCoil}</b>! Вы сделали двойной клик на ${clickedCoil}.`, () => {
                                 window.alertShown = false;
                             });
                         }
@@ -239,22 +241,27 @@
             validate: () => true
         },
 
-        // --- 4. РАБОТА С ГАЛОЧКАМИ В МОДАЛЬНОМ ОКНЕ ---
+       // --- 4. РАБОТА С ГАЛОЧКАМИ В МОДАЛЬНОМ ОКНЕ ---
         {
             delay: 300,
             targetSelector: '#subclass-modal > div',
-            eventType: 'click',
+            // ИСПРАВЛЕНИЕ 1: Добавляем прослушивание нажатия клавиш 'keydown'
+            eventType: ['click', 'keydown'],
             placement: 'bottom',
-            text: 'В этом меню находятся отдельные подклассы кромочного дефекта.<br><br>Отметьте галочками только <span class="action-badge">Класс: 054</span> и <span class="action-badge">Класс: 030</span>, а затем нажмите <b>Ok</b>.',
+            text: 'В этом меню находятся отдельные подклассы кромочного дефекта.<br><br>Отметьте галочками только <span class="action-badge">Класс: 054</span> и <span class="action-badge">Класс: 030</span>, а затем нажмите <b>Ok</b> или <b>Enter</b>.',
             validate: (e) => {
-                if (e.target.closest('#subclass-list-container') || e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL') {
+                // ИСПРАВЛЕНИЕ 3: Игнорируем списки и инпуты ТОЛЬКО для кликов мышкой.
+                // Если это нажатие клавиши (Enter) внутри списка, мы его пропускаем дальше.
+                if (e.type === 'click' && (e.target.closest('#subclass-list-container') || e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL')) {
                     return false;
                 }
 
                 const btnText = e.target.innerText ? e.target.innerText.trim().toLowerCase() : '';
                 const isOkClick = e.type === 'click' && e.target.tagName === 'BUTTON' && (btnText === 'ок' || btnText === 'ok');
+                const isEnter = e.type === 'keydown' && e.key === 'Enter';
 
-                if (isOkClick) {
+                // ИСПРАВЛЕНИЕ 2: Теперь условие срабатывает и для клика по ОК, и для Enter
+                if (isOkClick || isEnter) {
                     const cbs = document.querySelectorAll('#subclass-list-container input[type="checkbox"]');
                     let has054 = false, has030 = false, other = false;
 
@@ -280,7 +287,7 @@
                     }
                 }
 
-                if (e.target.tagName === 'BUTTON') {
+                if (e.type === 'click' && e.target.tagName === 'BUTTON') {
                     if (!window.alertShown) {
                         window.alertShown = true;
                         e.preventDefault(); e.stopPropagation();
@@ -294,16 +301,49 @@
             }
         },
 
-        // --- 5. ФИНАЛЬНАЯ ПРОВЕРКА (КЛИКИ) ---
+       // --- 5. ФИНАЛЬНАЯ ПРОВЕРКА (КЛИКИ) ---
         {
             delay: 1000,
-            onEnter: () => { window.tutDefectClicks = 0; },
+            onEnter: () => {
+                window.tutDefectClicks = 0;
+
+                // Считаем, сколько дефектов реально осталось в живых (видимых в таблице)
+                const rows = document.querySelectorAll('#defects-tbody tr');
+                let count = 0;
+                rows.forEach(r => {
+                    // Игнорируем скрытые строки (на случай если система просто скрывает их стилями)
+                    const style = window.getComputedStyle(r);
+                    if (style.display !== 'none' && !r.classList.contains('hidden')) {
+                        count++;
+                    }
+                });
+
+                // Если дефектов больше 2, просим кликнуть по 2. Иначе — столько, сколько есть.
+                window.tutTargetClicks = count > 2 ? 2 : count;
+            },
             targetSelector: '.workspace',
-            eventType: 'click',
+            // Добавили слушатель клавиатуры, чтобы позволить пропуск через Enter, если дефектов = 0
+            eventType: ['click', 'keydown'],
             placement: 'bottom-right',
-            text: () => `На карте остались ТОЛЬКО дефекты классов 054 и 030!<br><br>Кликните по <b>2 любым дефектам</b> на карте, чтобы изучить их параметры.<br><br>Осталось кликнуть: <span class="action-badge">${2 - window.tutDefectClicks}</span>`,
+            text: () => {
+                if (window.tutTargetClicks === 0) {
+                    return `На карте не осталось дефектов 054 и 030!<br><br>Кликать больше некуда. Просто нажмите <b>Enter</b> или кликните в любом месте области, чтобы завершить обучение.`;
+                }
+
+                const word = window.tutTargetClicks === 2 ? '<b>2 любым дефектам</b>' : '<b>1 оставшемуся дефекту</b>';
+                return `На карте остались ТОЛЬКО дефекты классов 054 и 030!<br><br>Кликните по ${word} на карте, чтобы изучить его параметры.<br><br>Осталось кликнуть: <span class="action-badge">${window.tutTargetClicks - window.tutDefectClicks}</span>`;
+            },
             validate: (e) => {
-                if (e.target.closest('#defects-tbody tr') || e.target.closest('.defect-lbl') || e.target.closest('.defect-real-block') || e.target.closest('.defect-real-cross')) {
+                // СПЕЦИАЛЬНЫЙ СЛУЧАЙ: Если дефектов 0, пропускаем по любому клику или Enter
+                if (window.tutTargetClicks === 0) {
+                    if (e.type === 'click' || (e.type === 'keydown' && e.key === 'Enter')) {
+                        return true;
+                    }
+                    return false;
+                }
+
+                // СТАНДАРТНЫЙ СЛУЧАЙ: Считаем клики по дефектам
+                if (e.type === 'click' && (e.target.closest('#defects-tbody tr') || e.target.closest('.defect-lbl') || e.target.closest('.defect-real-block') || e.target.closest('.defect-real-cross'))) {
                     window.tutDefectClicks++;
 
                     setTimeout(() => {
@@ -313,7 +353,8 @@
                         }
                     }, 10);
 
-                    if (window.tutDefectClicks >= 2) return true;
+                    // Сравниваем с нашей вычисленной целью
+                    if (window.tutDefectClicks >= window.tutTargetClicks) return true;
                 }
                 return false;
             }
