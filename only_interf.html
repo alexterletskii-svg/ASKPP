@@ -4892,46 +4892,45 @@ coilData.defects.forEach(defect => {
 
 
     function openRollModal() {
-        const modal = document.getElementById('roll-search-modal');
-        modal.style.display = 'flex';
+    const modal = document.getElementById('roll-search-modal');
+    modal.style.display = 'flex';
 
-        const mainTableBody = document.querySelector('.panel-left .table-rolls tbody');
-        const modalTableBody = document.getElementById('modal-roll-table-body');
+    const mainTableBody = document.querySelector('.panel-left .table-rolls tbody');
+    const modalTableBody = document.getElementById('modal-roll-table-body');
 
-        modalTableBody.innerHTML = mainTableBody.innerHTML;
+    modalTableBody.innerHTML = mainTableBody.innerHTML;
 
-        const rows = modalTableBody.querySelectorAll('tr');
-        rows.forEach(row => {
-            row.classList.remove('selected');
-            row.addEventListener('click', function() {
-                rows.forEach(r => r.classList.remove('selected'));
-                this.classList.add('selected');
+    const rows = modalTableBody.querySelectorAll('tr');
+    rows.forEach(row => {
+        row.classList.remove('selected');
+        row.addEventListener('click', function() {
+            rows.forEach(r => r.classList.remove('selected'));
+            this.classList.add('selected');
 
-                const rollId = this.cells[0].innerText;
-                document.getElementById('roll-search-input').value = rollId;
-            });
+            const rollId = this.cells[0].innerText;
+            document.getElementById('roll-search-input').value = rollId;
         });
+    });
 
-        const searchInput = document.getElementById('roll-search-input');
-        searchInput.value = '';
-        searchInput.focus();
+    const searchInput = document.getElementById('roll-search-input');
+    searchInput.value = '';
+    searchInput.focus();
 
-        searchInput.onkeyup = function(e) {
-            if (e.key === 'Enter') {
-                confirmRollSelection();
-            } else {
-                const val = this.value.trim().toLowerCase();
-                rows.forEach(row => {
-                    if (row.cells[0].innerText.toLowerCase().includes(val) ||
-                        row.cells[1].innerText.toLowerCase().includes(val)) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-            }
-        };
-    }
+    searchInput.onkeyup = function(e) {
+        // Мы игнорируем Enter здесь, так как он теперь обрабатывается глобально в keydown
+        if (e.key !== 'Enter') {
+            const val = this.value.trim().toLowerCase();
+            rows.forEach(row => {
+                if (row.cells[0].innerText.toLowerCase().includes(val) ||
+                    row.cells[1].innerText.toLowerCase().includes(val)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+    };
+}
 
     function closeRollModal() {
         document.getElementById('roll-search-modal').style.display = 'none';
@@ -5511,12 +5510,17 @@ function currentImageAction() {
 }
 
 // Обработчик горячих клавиш
+// Обработчик горячих клавиш
 document.addEventListener('keydown', function(e) {
-    // === НОВОЕ: Обработка клавиши Enter для окон входа ===
+    // === Данный блок обрабатывает нажатие Enter для ВСЕХ окон ===
     if (e.key === 'Enter') {
         const initScreen = document.getElementById('initial-screen');
         const sysModal = document.getElementById('system-select-modal');
         const loginModal = document.getElementById('login-modal');
+        const rollSearchModal = document.getElementById('roll-search-modal');
+        const classFilterModal = document.getElementById('class-filter-modal');
+        const cameraModal = document.getElementById('camera-modal');
+        const subclassModal = document.getElementById('subclass-modal');
 
         // 1. Если открыт самый первый стартовый экран
         if (initScreen && !initScreen.classList.contains('hidden')) {
@@ -5524,16 +5528,40 @@ document.addEventListener('keydown', function(e) {
             submitInitialSelection();
             return;
         }
-        // 2. Если открыто окно "Выбор системы" (через Файл)
+        // 2. Если открыто окно "Выбор системы"
         if (sysModal && sysModal.style.display === 'flex') {
             e.preventDefault();
             submitSystemSelect();
             return;
         }
-        // 3. Если открыто окно "Новый пользователь"
+        // 3. Если открыто окно "Новый пользователь" (Вход)
         if (loginModal && loginModal.style.display === 'flex') {
             e.preventDefault();
             submitLogin();
+            return;
+        }
+        // 4. Если открыто окно поиска рулона
+        if (rollSearchModal && rollSearchModal.style.display === 'flex') {
+            e.preventDefault();
+            confirmRollSelection();
+            return;
+        }
+        // 5. Если открыто модальное окно выбора главных классов
+        if (classFilterModal && classFilterModal.style.display === 'flex') {
+            e.preventDefault();
+            modalApplyClasses();
+            return;
+        }
+        // 6. Если открыто модальное окно выбора камер
+        if (cameraModal && cameraModal.style.display === 'flex') {
+            e.preventDefault();
+            submitCameraModal();
+            return;
+        }
+        // 7. Если открыто модальное окно выбора подклассов
+        if (subclassModal && subclassModal.style.display === 'flex') {
+            e.preventDefault();
+            submitSubclassModal();
             return;
         }
     }
