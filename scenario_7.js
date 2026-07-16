@@ -20,7 +20,7 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             z-index: 100002;
             width: max-content;
-            max-width: 520px; /* Увеличено для вмещения расширенного текста */
+            max-width: 520px;
             pointer-events: none;
             line-height: 1.5;
             border: 1px solid #4a90d9;
@@ -80,32 +80,85 @@
     }
 
     // ==========================================
-    // БЛОКИРОВЩИК КЛИКОВ
+    // БЛОКИРОВЩИК КЛИКОВ (СТАНДАРТИЗИРОВАННЫЙ)
     // ==========================================
     let activeTarget = null;
     let currentPlacement = 'right';
     let isTransitioning = false;
 
-    function isClickAllowed(e) {
-        if (!e.isTrusted) return true;
-        if (isTransitioning) return false;
-        if (activeTarget && !activeTarget.contains(e.target)) return false;
-        return true;
+    function isInsideAlert(el) {
+        return el && el.closest && el.closest('#tut-alert-overlay');
     }
 
     document.addEventListener('mousedown', function(e) {
-        if (!isClickAllowed(e)) { e.preventDefault(); e.stopPropagation(); }
+        if (!e.isTrusted) return;
+        if (isInsideAlert(e.target)) return;
+        if (isTransitioning) { e.preventDefault(); e.stopPropagation(); return; }
+
+        if (activeTarget) {
+            if (!activeTarget.contains(e.target)) {
+                e.preventDefault(); e.stopPropagation();
+            } else {
+                const step = steps[currentStep];
+                if (step) {
+                    const evtTypes = Array.isArray(step.eventType) ? step.eventType : [step.eventType];
+                    const isGenericMouse = evtTypes.includes('mousedown') || evtTypes.includes('mouseup') || evtTypes.includes('wheel');
+                    const wantsLeft = evtTypes.includes('click') || evtTypes.includes('dblclick');
+                    const wantsRight = evtTypes.includes('contextmenu');
+
+                    if (!isGenericMouse) {
+                        if (wantsLeft && !wantsRight && e.button !== 0) {
+                            if (!window.alertShown) {
+                                window.alertShown = true;
+                                e.preventDefault(); e.stopPropagation();
+                                showCustomAlert('Для данного действия используйте <b>левую</b> кнопку мыши!', () => { window.alertShown = false; });
+                            }
+                        }
+                        else if (wantsRight && !wantsLeft && e.button !== 2) {
+                            if (!window.alertShown) {
+                                window.alertShown = true;
+                                e.preventDefault(); e.stopPropagation();
+                                showCustomAlert('Для данного действия используйте <b>правую</b> кнопку мыши!', () => { window.alertShown = false; });
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }, true);
 
     document.addEventListener('click', function(e) {
-        if (!isClickAllowed(e)) { e.preventDefault(); e.stopPropagation(); }
+        if (!e.isTrusted) return;
+        if (isInsideAlert(e.target)) return;
+
+        if (isTransitioning) { e.preventDefault(); e.stopPropagation(); return; }
+        if (activeTarget && !activeTarget.contains(e.target)) {
+            e.preventDefault(); e.stopPropagation();
+        }
     }, true);
 
     document.addEventListener('contextmenu', function(e) {
-        if (!isClickAllowed(e)) { e.preventDefault(); e.stopPropagation(); }
+        if (!e.isTrusted) return;
+        if (isInsideAlert(e.target)) return;
+
+        if (isTransitioning) { e.preventDefault(); e.stopPropagation(); return; }
+        if (activeTarget) {
+            if (!activeTarget.contains(e.target)) {
+                e.preventDefault(); e.stopPropagation();
+            } else {
+                const step = steps[currentStep];
+                if (step) {
+                    const evtTypes = Array.isArray(step.eventType) ? step.eventType : [step.eventType];
+                    if (!evtTypes.includes('contextmenu')) {
+                        e.preventDefault();
+                    }
+                }
+            }
+        }
     }, true);
 
     document.addEventListener('keydown', function(e) {
+        if (isInsideAlert(e.target)) return;
         if (activeTarget && e.key === 'Tab') {
             e.preventDefault(); e.stopPropagation();
             const input = activeTarget.querySelector('input');
@@ -113,6 +166,39 @@
             else if(typeof activeTarget.focus === 'function') activeTarget.focus();
         }
     }, true);
+
+    // ==========================================
+    // УНИВЕРСАЛЬНАЯ ФУНКЦИЯ УВЕДОМЛЕНИЙ
+    // ==========================================
+    function showCustomAlert(message, onOk) {
+        const overlay = document.createElement('div');
+        overlay.id = 'tut-alert-overlay';
+        overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 200000; display: flex; justify-content: center; align-items: center;';
+        const win = document.createElement('div');
+        win.style.cssText = 'background-color: #f0f0f0; border: 1px solid #a0a0a0; border-radius: 6px; width: 450px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column;';
+        const header = document.createElement('div');
+        header.style.cssText = 'display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 12px 5px 12px;';
+        header.innerHTML = `<span style="color: #000; font-size: 12px; font-family: Tahoma, sans-serif; font-weight: bold;">Уведомление системы</span><button id="tut-alert-close" style="background: transparent; border: none; font-size: 18px; color: #555; cursor: pointer; padding: 0; line-height: 10px;">×</button>`;
+        const body = document.createElement('div');
+        body.style.cssText = 'padding: 20px 25px; font-size: 13px; color: black; font-family: Tahoma, sans-serif; text-align: center; line-height: 1.5;';
+        body.innerHTML = message;
+        const footer = document.createElement('div');
+        footer.style.cssText = 'display: flex; justify-content: center; padding-bottom: 20px;';
+        const btn = document.createElement('button');
+        btn.innerText = 'Ok';
+        btn.style.cssText = 'width: 75px; height: 24px; cursor: pointer; color: black; background: #f0f0f0; border-top: 1px solid white; border-left: 1px solid white; border-bottom: 2px solid #808080; border-right: 2px solid #808080; font-size: 12px; font-family: Tahoma, sans-serif; outline: none;';
+
+        btn.onmousedown = () => { btn.style.borderTop = '2px solid #808080'; btn.style.borderLeft = '2px solid #808080'; btn.style.borderBottom = '1px solid white'; btn.style.borderRight = '1px solid white'; btn.style.paddingTop = '1px'; btn.style.paddingLeft = '1px'; };
+        btn.onmouseup = () => { btn.style.borderTop = '1px solid white'; btn.style.borderLeft = '1px solid white'; btn.style.borderBottom = '2px solid #808080'; btn.style.borderRight = '2px solid #808080'; btn.style.paddingTop = '0'; btn.style.paddingLeft = '0'; };
+
+        const closeAlert = () => { overlay.remove(); if (onOk) onOk(); };
+        btn.onclick = closeAlert;
+
+        footer.appendChild(btn); win.appendChild(header); win.appendChild(body); win.appendChild(footer); overlay.appendChild(win); document.body.appendChild(overlay);
+        document.getElementById('tut-alert-close').onclick = closeAlert;
+
+        setTimeout(() => btn.focus(), 10);
+    }
 
     function updateTooltipPosition() {
         if (!activeTarget || tooltip.style.display === 'none') return;
@@ -170,7 +256,6 @@
         {
             delay: 500,
             onEnter: () => {
-                // Привязываем уникальные ID для кнопок нижней панели
                 document.querySelectorAll('.sb-panel').forEach(b => {
                     const txt = b.innerText.trim();
                     if (txt === 'реальный') b.id = 'tut-btn-real';
@@ -235,7 +320,6 @@
             text: 'Здорово! Теперь давайте перейдем к точным габаритам.<br><br>Нажмите кнопку <span class="action-badge">реальный</span> в статус-баре внизу.',
             validate: (e) => {
                 if (e.target.closest('#tut-btn-real')) {
-                    // Важно: останавливаем конфликт логики нижней кнопки
                     e.preventDefault();
                     e.stopPropagation();
 
@@ -411,40 +495,7 @@
     function finishScenario() {
         tooltip.style.display = 'none';
         activeTarget = null;
-
-        const overlay = document.createElement('div');
-        overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 200000; display: flex; justify-content: center; align-items: center;';
-
-        const win = document.createElement('div');
-        win.style.cssText = 'background-color: #f0f0f0; border: 1px solid #a0a0a0; border-radius: 6px; width: 450px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column;';
-
-        const header = document.createElement('div');
-        header.style.cssText = 'display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 12px 5px 12px;';
-        header.innerHTML = `<span style="color: #000; font-size: 12px; font-family: Tahoma, sans-serif; font-weight: bold;">Уведомление системы</span><button style="background: transparent; border: none; font-size: 18px; color: #555; cursor: pointer; padding: 0; line-height: 10px;">×</button>`;
-
-        const body = document.createElement('div');
-        body.style.cssText = 'padding: 20px 25px; font-size: 13px; color: black; font-family: Tahoma, sans-serif; text-align: center; line-height: 1.5;';
-        body.innerHTML = '<b>Сценарий #7 успешно завершен!</b><br><br>Теперь вы умеете переключаться между мгновенной осведомленностью (Ярлык), планированием вырезок по физическим габаритам (Реальный) и аналитическими данными (Таблица).';
-
-        const footer = document.createElement('div');
-        footer.style.cssText = 'display: flex; justify-content: center; padding-bottom: 20px;';
-        const btn = document.createElement('button');
-        btn.innerText = 'Ok';
-        btn.style.cssText = 'width: 75px; height: 24px; cursor: pointer; color: black; background: #f0f0f0; border-top: 1px solid white; border-left: 1px solid white; border-bottom: 2px solid #808080; border-right: 2px solid #808080; font-size: 12px; font-family: Tahoma, sans-serif; outline: none;';
-
-        btn.onmousedown = () => { btn.style.borderTop = '2px solid #808080'; btn.style.borderLeft = '2px solid #808080'; btn.style.borderBottom = '1px solid white'; btn.style.borderRight = '1px solid white'; btn.style.paddingTop = '1px'; btn.style.paddingLeft = '1px'; };
-        btn.onmouseup = () => { btn.style.borderTop = '1px solid white'; btn.style.borderLeft = '1px solid white'; btn.style.borderBottom = '2px solid #808080'; btn.style.borderRight = '2px solid #808080'; btn.style.paddingTop = '0'; btn.style.paddingLeft = '0'; };
-
-        const closeAlert = () => { overlay.remove(); };
-        btn.onclick = closeAlert;
-        header.querySelector('button').onclick = closeAlert;
-
-        footer.appendChild(btn);
-        win.appendChild(header);
-        win.appendChild(body);
-        win.appendChild(footer);
-        overlay.appendChild(win);
-        document.body.appendChild(overlay);
+        showCustomAlert('<b>Сценарий #7 успешно завершен!</b><br><br>Теперь вы умеете переключаться между мгновенной осведомленностью (Ярлык), планированием вырезок по физическим габаритам (Реальный) и аналитическими данными (Таблица).');
     }
 
     setTimeout(renderStep, 500);

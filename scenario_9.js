@@ -182,7 +182,7 @@
         {
             delay: 1000,
             targetSelector: '#btn-real',
-            eventType: 'dblclick',
+            eventType: 'click',
             placement: 'top',
             text: `<div class="purpose-text">
                 Частичные дефекты нагляднее демонстрировать не в режиме ярлыков, а в режиме физических размеров. Так мы сможем увидеть, как один большой блок разбивается на мельчайшие точки.

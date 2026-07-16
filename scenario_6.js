@@ -38,6 +38,10 @@
             top: 100%; bottom: auto; left: var(--arrow-pos, 50%); transform: translateX(-50%);
             border-top-color: #0056a4; border-right-color: transparent; border-left-color: transparent;
         }
+        /* Класс убирающий стрелочку, когда плашка прибита к углу экрана */
+        #tutorial-tooltip.no-arrow::after {
+            display: none;
+        }
         .action-badge {
             font-weight: bold;
             font-size: 15px;
@@ -67,16 +71,50 @@
     let currentPlacement = 'right';
     let isTransitioning = false;
 
+    function isInsideAlert(el) {
+        return el && el.closest && el.closest('#tut-alert-overlay');
+    }
+
     document.addEventListener('mousedown', function(e) {
         if (!e.isTrusted) return;
+        if (isInsideAlert(e.target)) return;
         if (isTransitioning) { e.preventDefault(); e.stopPropagation(); return; }
-        if (activeTarget && !activeTarget.contains(e.target)) {
-            e.preventDefault(); e.stopPropagation();
+
+        if (activeTarget) {
+            if (!activeTarget.contains(e.target)) {
+                e.preventDefault(); e.stopPropagation();
+            } else {
+                const step = steps[currentStep];
+                if (step) {
+                    const evtTypes = Array.isArray(step.eventType) ? step.eventType : [step.eventType];
+                    const isGenericMouse = evtTypes.includes('mousedown') || evtTypes.includes('mouseup') || evtTypes.includes('wheel');
+                    const wantsLeft = evtTypes.includes('click') || evtTypes.includes('dblclick');
+                    const wantsRight = evtTypes.includes('contextmenu');
+
+                    if (!isGenericMouse) {
+                        if (wantsLeft && !wantsRight && e.button !== 0) {
+                            if (!window.alertShown) {
+                                window.alertShown = true;
+                                e.preventDefault(); e.stopPropagation();
+                                showCustomAlert('Для данного действия используйте <b>левую</b> кнопку мыши!', () => { window.alertShown = false; });
+                            }
+                        }
+                        else if (wantsRight && !wantsLeft && e.button !== 2) {
+                            if (!window.alertShown) {
+                                window.alertShown = true;
+                                e.preventDefault(); e.stopPropagation();
+                                showCustomAlert('Для данного действия используйте <b>правую</b> кнопку мыши!', () => { window.alertShown = false; });
+                            }
+                        }
+                    }
+                }
+            }
         }
     }, true);
 
     document.addEventListener('click', function(e) {
         if (!e.isTrusted) return;
+        if (isInsideAlert(e.target)) return;
         if (isTransitioning) { e.preventDefault(); e.stopPropagation(); return; }
         if (activeTarget && !activeTarget.contains(e.target)) {
             e.preventDefault(); e.stopPropagation();
@@ -85,13 +123,25 @@
 
     document.addEventListener('contextmenu', function(e) {
         if (!e.isTrusted) return;
+        if (isInsideAlert(e.target)) return;
         if (isTransitioning) { e.preventDefault(); e.stopPropagation(); return; }
-        if (activeTarget && !activeTarget.contains(e.target)) {
-            e.preventDefault(); e.stopPropagation();
+        if (activeTarget) {
+            if (!activeTarget.contains(e.target)) {
+                e.preventDefault(); e.stopPropagation();
+            } else {
+                const step = steps[currentStep];
+                if (step) {
+                    const evtTypes = Array.isArray(step.eventType) ? step.eventType : [step.eventType];
+                    if (!evtTypes.includes('contextmenu')) {
+                        e.preventDefault();
+                    }
+                }
+            }
         }
     }, true);
 
     document.addEventListener('keydown', function(e) {
+        if (isInsideAlert(e.target)) return;
         if (activeTarget && e.key === 'Tab') {
             e.preventDefault(); e.stopPropagation();
             const input = activeTarget.querySelector('input');
@@ -132,14 +182,15 @@
             tooltip.style.top = (rect.top - tooltip.offsetHeight - 15) + 'px';
             tooltip.className = 'arrow-bottom';
         }
+        // НОВЫЙ РЕЖИМ: Жесткая привязка к правому нижнему углу экрана безо всяких стрелочек
+        else if (currentPlacement === 'screen-bottom-right') {
+            tooltip.style.left = (window.innerWidth - tooltip.offsetWidth - 30) + 'px';
+            tooltip.style.top = (window.innerHeight - tooltip.offsetHeight - 40) + 'px';
+            tooltip.className = 'no-arrow';
+        }
         else if (currentPlacement === 'center') {
             tooltip.style.left = (window.innerWidth / 2 - tooltip.offsetWidth / 2) + 'px';
             tooltip.style.top = (window.innerHeight / 2 - tooltip.offsetHeight / 2) + 'px';
-            tooltip.className = '';
-        }
-        else if (currentPlacement === 'bottom-right') {
-            tooltip.style.left = (window.innerWidth - tooltip.offsetWidth - 30) + 'px';
-            tooltip.style.top = (window.innerHeight - tooltip.offsetHeight - 40) + 'px';
             tooltip.className = '';
         }
     }
@@ -147,6 +198,7 @@
 
     function showCustomAlert(message, onOk) {
         const overlay = document.createElement('div');
+        overlay.id = 'tut-alert-overlay';
         overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); z-index: 200000; display: flex; justify-content: center; align-items: center;';
         const win = document.createElement('div');
         win.style.cssText = 'background-color: #f0f0f0; border: 1px solid #a0a0a0; border-radius: 6px; width: 450px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column;';
@@ -170,6 +222,8 @@
 
         footer.appendChild(btn); win.appendChild(header); win.appendChild(body); win.appendChild(footer); overlay.appendChild(win); document.body.appendChild(overlay);
         document.getElementById('tut-alert-close').onclick = closeAlert;
+
+        setTimeout(() => btn.focus(), 10);
     }
 
     // ==========================================
@@ -216,7 +270,9 @@
             delay: 800,
             targetSelector: '#defect-image-box',
             eventType: ['mouseup'],
-            placement: 'center',
+            PLACEMENT_FIXED: true, // Флаг для себя
+            // Вызываем наше новое намертво прибитое к экрану позиционирование:
+            placement: 'screen-bottom-right',
             text: 'Отлично! Картинка увеличилась, и теперь мы можем измерить конкретный участок дефекта.<br><br>Чтобы нарисовать линейку, выполните 3 простых шага:<br><br>1. Наведите курсор мыши на фотографию.<br>2. Нажмите и <b>не отпускайте</b> клавишу <span class="action-badge">Ctrl</span> на клавиатуре.<br>3. <b>Зажмите левую кнопку мыши</b> и потяните курсор в любую сторону (так же, как вы выделяете файлы на рабочем столе).<br><br>Сделайте это прямо сейчас!',
             validate: (e) => {
                 if (document.querySelector('.img-ruler-text')) {
@@ -235,11 +291,11 @@
             },
             targetSelector: '#defect-image-box',
             eventType: ['mouseup'],
-            placement: 'bottom-right',
+            // Тоже намертво прибиваем в угол
+            placement: 'screen-bottom-right',
             text: 'Отличная работа!<br>Обратите внимание на появившиеся цифры. Они показывают физические размеры выделенного отрезка:<br><br>• <span class="action-badge">X (мм)</span> — проекция по ширине листа (поперек движения полосы).<br>• <span class="action-badge">Y (мм)</span> — проекция по длине листа (вдоль кромки рулона).<br>• <span class="action-badge">Длина (мм)</span> — точное расстояние по нарисованной вами диагонали.<br><br>Чтобы сделать новый замер, старый стирать не нужно. <b>Просто зажмите <span class="action-badge">Ctrl</span> и потяните мышку снова.</b><br><br>Закрепим навык: проведите <b>еще одну новую линию</b>.',
             validate: (e) => {
                 const textEl = document.querySelector('.img-ruler-text');
-                // Проверяем, что текст изменился (сделана новая линия)
                 if (textEl && textEl.innerHTML !== window.lastRulerText) {
                     return true;
                 }

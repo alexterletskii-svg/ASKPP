@@ -87,22 +87,59 @@
     }
 
     // ==========================================
-    // БЛОКИРОВЩИК
+    // БЛОКИРОВЩИК (ИСПРАВЛЕННЫЙ)
     // ==========================================
     let activeTarget = null;
     let currentPlacement = 'right';
     let isTransitioning = false;
 
+    // Вспомогательная функция для пропусков кликов на окне оповещения
+    function isInsideAlert(el) {
+        return el && el.closest && el.closest('#tut-alert-overlay');
+    }
+
     document.addEventListener('mousedown', function(e) {
         if (!e.isTrusted) return;
+
+        // Разрешаем клик по алертам
+        if (isInsideAlert(e.target)) return;
+
         if (isTransitioning) { e.preventDefault(); e.stopPropagation(); return; }
-        if (activeTarget && !activeTarget.contains(e.target)) {
-            e.preventDefault(); e.stopPropagation();
+
+        if (activeTarget) {
+            if (!activeTarget.contains(e.target)) {
+                e.preventDefault(); e.stopPropagation();
+            } else {
+                // ПРОВЕРКА НА ПРАВИЛЬНУЮ КНОПКУ МЫШИ
+                const step = steps[currentStep];
+                if (step) {
+                    const evtTypes = Array.isArray(step.eventType) ? step.eventType : [step.eventType];
+                    const wantsLeft = evtTypes.includes('click') || evtTypes.includes('dblclick');
+                    const wantsRight = evtTypes.includes('contextmenu');
+
+                    if (wantsLeft && !wantsRight && e.button !== 0) {
+                        if (!window.alertShown) {
+                            window.alertShown = true;
+                            e.preventDefault(); e.stopPropagation();
+                            showCustomAlert('Для данного действия используйте <b>левую</b> кнопку мыши!', () => { window.alertShown = false; });
+                        }
+                    }
+                    else if (wantsRight && !wantsLeft && e.button !== 2) {
+                        if (!window.alertShown) {
+                            window.alertShown = true;
+                            e.preventDefault(); e.stopPropagation();
+                            showCustomAlert('Для данного действия используйте <b>правую</b> кнопку мыши!', () => { window.alertShown = false; });
+                        }
+                    }
+                }
+            }
         }
     }, true);
 
     document.addEventListener('click', function(e) {
         if (!e.isTrusted) return;
+        if (isInsideAlert(e.target)) return;
+
         if (isTransitioning) { e.preventDefault(); e.stopPropagation(); return; }
         if (activeTarget && !activeTarget.contains(e.target)) {
             e.preventDefault(); e.stopPropagation();
@@ -111,13 +148,26 @@
 
     document.addEventListener('contextmenu', function(e) {
         if (!e.isTrusted) return;
+        if (isInsideAlert(e.target)) return;
+
         if (isTransitioning) { e.preventDefault(); e.stopPropagation(); return; }
-        if (activeTarget && !activeTarget.contains(e.target)) {
-            e.preventDefault(); e.stopPropagation();
+        if (activeTarget) {
+            if (!activeTarget.contains(e.target)) {
+                e.preventDefault(); e.stopPropagation();
+            } else {
+                const step = steps[currentStep];
+                if (step) {
+                    const evtTypes = Array.isArray(step.eventType) ? step.eventType : [step.eventType];
+                    if (!evtTypes.includes('contextmenu')) {
+                        e.preventDefault();
+                    }
+                }
+            }
         }
     }, true);
 
     document.addEventListener('keydown', function(e) {
+        if (isInsideAlert(e.target)) return;
         if (activeTarget && e.key === 'Tab') {
             e.preventDefault(); e.stopPropagation();
             const input = activeTarget.querySelector('input');
@@ -172,6 +222,7 @@
 
     function showCustomAlert(message, onOk) {
         const overlay = document.createElement('div');
+        overlay.id = 'tut-alert-overlay'; // УКАЗЫВАЕМ ID АЛЕРТУ
         overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); z-index: 200000; display: flex; justify-content: center; align-items: center;';
         const win = document.createElement('div');
         win.style.cssText = 'background-color: #f0f0f0; border: 1px solid #a0a0a0; border-radius: 6px; width: 450px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column;';
@@ -195,6 +246,9 @@
 
         footer.appendChild(btn); win.appendChild(header); win.appendChild(body); win.appendChild(footer); overlay.appendChild(win); document.body.appendChild(overlay);
         document.getElementById('tut-alert-close').onclick = closeAlert;
+
+        // Фокус позволяет нажать "Enter" для закрытия
+        setTimeout(() => btn.focus(), 10);
     }
 
     // ==========================================

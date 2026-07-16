@@ -65,22 +65,61 @@
     }
 
     // ==========================================
-    // БЛОКИРОВЩИК
+    // БЛОКИРОВЩИК (ИСПРАВЛЕННЫЙ)
     // ==========================================
     let activeTarget = null;
     let currentPlacement = 'right';
     let isTransitioning = false;
 
+    // Вспомогательная функция для распознавания кликов по модальному окну
+    function isInsideAlert(el) {
+        return el && el.closest && el.closest('#tut-alert-overlay');
+    }
+
     document.addEventListener('mousedown', function(e) {
         if (!e.isTrusted) return;
+
+        // Разрешаем клики по окну оповещения
+        if (isInsideAlert(e.target)) return;
+
         if (isTransitioning) { e.preventDefault(); e.stopPropagation(); return; }
-        if (activeTarget && !activeTarget.contains(e.target)) {
-            e.preventDefault(); e.stopPropagation();
+
+        if (activeTarget) {
+            if (!activeTarget.contains(e.target)) {
+                e.preventDefault(); e.stopPropagation();
+            } else {
+                // ПРОВЕРКА НА ПРАВИЛЬНУЮ КНОПКУ МЫШИ
+                const step = steps[currentStep];
+                if (step) {
+                    const evtTypes = Array.isArray(step.eventType) ? step.eventType : [step.eventType];
+                    const wantsLeft = evtTypes.includes('click') || evtTypes.includes('dblclick');
+                    const wantsRight = evtTypes.includes('contextmenu');
+
+                    // Пользователь нажал не левую (e.button!==0), хотя шаг требует левой
+                    if (wantsLeft && !wantsRight && e.button !== 0) {
+                        if (!window.alertShown) {
+                            window.alertShown = true;
+                            e.preventDefault(); e.stopPropagation();
+                            showCustomAlert('Для данного действия используйте <b>левую</b> кнопку мыши!', () => { window.alertShown = false; });
+                        }
+                    }
+                    // Пользователь нажал не правую (e.button!==2), хотя шаг требует правой
+                    else if (wantsRight && !wantsLeft && e.button !== 2) {
+                        if (!window.alertShown) {
+                            window.alertShown = true;
+                            e.preventDefault(); e.stopPropagation();
+                            showCustomAlert('Для данного действия используйте <b>правую</b> кнопку мыши!', () => { window.alertShown = false; });
+                        }
+                    }
+                }
+            }
         }
     }, true);
 
     document.addEventListener('click', function(e) {
         if (!e.isTrusted) return;
+        if (isInsideAlert(e.target)) return; // Разрешаем взаимодействия с алертом
+
         if (isTransitioning) { e.preventDefault(); e.stopPropagation(); return; }
         if (activeTarget && !activeTarget.contains(e.target)) {
             e.preventDefault(); e.stopPropagation();
@@ -89,13 +128,27 @@
 
     document.addEventListener('contextmenu', function(e) {
         if (!e.isTrusted) return;
+        if (isInsideAlert(e.target)) return;
+
         if (isTransitioning) { e.preventDefault(); e.stopPropagation(); return; }
-        if (activeTarget && !activeTarget.contains(e.target)) {
-            e.preventDefault(); e.stopPropagation();
+        if (activeTarget) {
+            if (!activeTarget.contains(e.target)) {
+                e.preventDefault(); e.stopPropagation();
+            } else {
+                // Отключаем нативное контекстное браузерное меню, если правый клик вообще не требуется
+                const step = steps[currentStep];
+                if (step) {
+                    const evtTypes = Array.isArray(step.eventType) ? step.eventType : [step.eventType];
+                    if (!evtTypes.includes('contextmenu')) {
+                        e.preventDefault();
+                    }
+                }
+            }
         }
     }, true);
 
     document.addEventListener('keydown', function(e) {
+        if (isInsideAlert(e.target)) return;
         if (activeTarget && e.key === 'Tab') {
             e.preventDefault(); e.stopPropagation();
             const input = activeTarget.querySelector('input');
@@ -150,6 +203,7 @@
 
     function showCustomAlert(message, onOk) {
         const overlay = document.createElement('div');
+        overlay.id = 'tut-alert-overlay'; // УКАЗЫВАЕМ ID АЛЕРТУ, чтобы блокировщик его игнорировал
         overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); z-index: 200000; display: flex; justify-content: center; align-items: center;';
         const win = document.createElement('div');
         win.style.cssText = 'background-color: #f0f0f0; border: 1px solid #a0a0a0; border-radius: 6px; width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column;';
@@ -173,6 +227,9 @@
 
         footer.appendChild(btn); win.appendChild(header); win.appendChild(body); win.appendChild(footer); overlay.appendChild(win); document.body.appendChild(overlay);
         document.getElementById('tut-alert-close').onclick = closeAlert;
+
+        // Фокус на кнопку, чтобы можно было закрыть предупреждение по нажатию клавиши Enter
+        setTimeout(() => btn.focus(), 10);
     }
 
     // ==========================================
@@ -186,16 +243,14 @@
         {
             delay: 500,
             onEnter: () => {
-                // Выбираем 4-ю строку сверху (index 3) и берем её номер (колонка 1)
                 const rows = document.querySelectorAll('#coil-tbody tr');
                 if (rows.length > 3) {
-                    window.tutTargetCoil = rows[3].cells[1].innerText;
+                    window.tutTargetCoil = rows[6].cells[1].innerText;
                 } else {
                     window.tutTargetCoil = "Неизвестно";
                 }
             },
             targetSelector: '.panel-left .box.h-35',
-            // ИСПРАВЛЕНИЕ: Теперь сценарий ждет именно двойной клик, чтобы пойти дальше
             eventType: 'dblclick',
             placement: 'right',
             text: () => `Добро пожаловать в обучение!<br><br>Сначала давайте выберем рулон для инспекции.<br>Найдите в таблице рулон <span class="action-badge">
@@ -210,7 +265,6 @@
                         if (!window.alertShown) {
                             window.alertShown = true;
                             e.preventDefault(); e.stopPropagation();
-                            // Текст ошибки тоже адаптирован под двойной клик
                             showCustomAlert(`Вам нужен рулон <b>${window.tutTargetCoil}</b>! Вы сделали двойной клик на ${clickedCoil}.`, () => {
                                 window.alertShown = false;
                             });
@@ -245,13 +299,10 @@
         {
             delay: 300,
             targetSelector: '#subclass-modal > div',
-            // ИСПРАВЛЕНИЕ 1: Добавляем прослушивание нажатия клавиш 'keydown'
             eventType: ['click', 'keydown'],
             placement: 'bottom',
             text: 'В этом меню находятся отдельные подклассы кромочного дефекта.<br><br>Отметьте галочками только <span class="action-badge">Класс: 054</span> и <span class="action-badge">Класс: 030</span>, а затем нажмите <b>Ok</b> или <b>Enter</b>.',
             validate: (e) => {
-                // ИСПРАВЛЕНИЕ 3: Игнорируем списки и инпуты ТОЛЬКО для кликов мышкой.
-                // Если это нажатие клавиши (Enter) внутри списка, мы его пропускаем дальше.
                 if (e.type === 'click' && (e.target.closest('#subclass-list-container') || e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL')) {
                     return false;
                 }
@@ -260,7 +311,6 @@
                 const isOkClick = e.type === 'click' && e.target.tagName === 'BUTTON' && (btnText === 'ок' || btnText === 'ok');
                 const isEnter = e.type === 'keydown' && e.key === 'Enter';
 
-                // ИСПРАВЛЕНИЕ 2: Теперь условие срабатывает и для клика по ОК, и для Enter
                 if (isOkClick || isEnter) {
                     const cbs = document.querySelectorAll('#subclass-list-container input[type="checkbox"]');
                     let has054 = false, has030 = false, other = false;
@@ -306,23 +356,17 @@
             delay: 1000,
             onEnter: () => {
                 window.tutDefectClicks = 0;
-
-                // Считаем, сколько дефектов реально осталось в живых (видимых в таблице)
                 const rows = document.querySelectorAll('#defects-tbody tr');
                 let count = 0;
                 rows.forEach(r => {
-                    // Игнорируем скрытые строки (на случай если система просто скрывает их стилями)
                     const style = window.getComputedStyle(r);
                     if (style.display !== 'none' && !r.classList.contains('hidden')) {
                         count++;
                     }
                 });
-
-                // Если дефектов больше 2, просим кликнуть по 2. Иначе — столько, сколько есть.
                 window.tutTargetClicks = count > 2 ? 2 : count;
             },
             targetSelector: '.workspace',
-            // Добавили слушатель клавиатуры, чтобы позволить пропуск через Enter, если дефектов = 0
             eventType: ['click', 'keydown'],
             placement: 'bottom-right',
             text: () => {
@@ -334,7 +378,6 @@
                 return `На карте остались ТОЛЬКО дефекты классов 054 и 030!<br><br>Кликните по ${word} на карте, чтобы изучить его параметры.<br><br>Осталось кликнуть: <span class="action-badge">${window.tutTargetClicks - window.tutDefectClicks}</span>`;
             },
             validate: (e) => {
-                // СПЕЦИАЛЬНЫЙ СЛУЧАЙ: Если дефектов 0, пропускаем по любому клику или Enter
                 if (window.tutTargetClicks === 0) {
                     if (e.type === 'click' || (e.type === 'keydown' && e.key === 'Enter')) {
                         return true;
@@ -342,7 +385,6 @@
                     return false;
                 }
 
-                // СТАНДАРТНЫЙ СЛУЧАЙ: Считаем клики по дефектам
                 if (e.type === 'click' && (e.target.closest('#defects-tbody tr') || e.target.closest('.defect-lbl') || e.target.closest('.defect-real-block') || e.target.closest('.defect-real-cross'))) {
                     window.tutDefectClicks++;
 
@@ -353,7 +395,6 @@
                         }
                     }, 10);
 
-                    // Сравниваем с нашей вычисленной целью
                     if (window.tutDefectClicks >= window.tutTargetClicks) return true;
                 }
                 return false;
