@@ -1,4 +1,4 @@
-// --- ДВИЖОК ОБУЧАЮЩИХ СЦЕНАРИЕВ: СЦЕНАРИЙ №5 (ИЗОБРАЖЕНИЯ И ЗУМ) ---
+// --- ДВИЖОК ОБУЧАЮЩИХ СЦЕНАРИЕВ: СЦЕНАРИЙ №6 (ИЗОБРАЖЕНИЯ И ЗУМ) ---
 (function initScenarioEngine() {
     const style = document.createElement('style');
     style.innerHTML = `
@@ -64,13 +64,12 @@
     }
 
     // ==========================================
-    // БЛОКИРОВЩИК (ИСПРАВЛЕННЫЙ)
+    // БЛОКИРОВЩИК
     // ==========================================
     let activeTarget = null;
     let currentPlacement = 'right';
     let isTransitioning = false;
 
-    // Функция проверки, находится ли клик внутри окна оповещения
     function isInsideAlert(el) {
         return el && el.closest && el.closest('#tut-alert-overlay');
     }
@@ -83,19 +82,13 @@
         if (activeTarget && !activeTarget.contains(e.target)) {
             e.preventDefault(); e.stopPropagation();
         } else if (activeTarget && activeTarget.contains(e.target)) {
-            // ПРОВЕРКА НАЖАТОЙ КНОПКИ МЫШИ
             const step = steps[currentStep];
             if (step) {
                 const evtTypes = Array.isArray(step.eventType) ? step.eventType : [step.eventType];
-
-                // Если шаг использует 'mousedown', значит мы позволяем скрипту шага самому разбираться с тем,
-                // левая или правая кнопка нужны (как на шаге со свободным масштабированием картинки)
                 const isGenericMouse = evtTypes.includes('mousedown');
-
                 const wantsLeft = evtTypes.includes('click') || evtTypes.includes('dblclick');
                 const wantsRight = evtTypes.includes('contextmenu');
 
-                // Если это не шаг свободного зума, жестко проверяем кнопку
                 if (!isGenericMouse) {
                     if (wantsLeft && !wantsRight && e.button !== 0) {
                         if (!window.alertShown) {
@@ -134,7 +127,6 @@
             if (!activeTarget.contains(e.target)) {
                 e.preventDefault(); e.stopPropagation();
             } else {
-                // Блокируем нативное контекстное меню для тех шагов, где оно не предусмотрено
                 const step = steps[currentStep];
                 if (step) {
                     const evtTypes = Array.isArray(step.eventType) ? step.eventType : [step.eventType];
@@ -148,7 +140,6 @@
 
     document.addEventListener('keydown', function(e) {
         if (isInsideAlert(e.target)) return;
-
         if (activeTarget && e.key === 'Tab') {
             e.preventDefault(); e.stopPropagation();
             const input = activeTarget.querySelector('input');
@@ -204,10 +195,10 @@
 
     function showCustomAlert(message, onOk) {
         const overlay = document.createElement('div');
-        overlay.id = 'tut-alert-overlay'; // ID АЛЕРТА
-        overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); z-index: 200000; display: flex; justify-content: center; align-items: center;';
+        overlay.id = 'tut-alert-overlay';
+        overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 200000; display: flex; justify-content: center; align-items: center;';
         const win = document.createElement('div');
-        win.style.cssText = 'background-color: #f0f0f0; border: 1px solid #a0a0a0; border-radius: 6px; width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column;';
+        win.style.cssText = 'background-color: #f0f0f0; border: 1px solid #a0a0a0; border-radius: 6px; width: 450px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column;';
         const header = document.createElement('div');
         header.style.cssText = 'display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 12px 5px 12px;';
         header.innerHTML = `<span style="color: #000; font-size: 12px; font-family: Tahoma, sans-serif; font-weight: bold;">Уведомление системы</span><button id="tut-alert-close" style="background: transparent; border: none; font-size: 18px; color: #555; cursor: pointer; padding: 0; line-height: 10px;">×</button>`;
@@ -217,8 +208,8 @@
         const footer = document.createElement('div');
         footer.style.cssText = 'display: flex; justify-content: center; padding-bottom: 20px;';
         const btn = document.createElement('button');
-        btn.innerText = 'Ok';
-        btn.style.cssText = 'width: 75px; height: 24px; cursor: pointer; color: black; background: #f0f0f0; border-top: 1px solid white; border-left: 1px solid white; border-bottom: 2px solid #808080; border-right: 2px solid #808080; font-size: 12px; font-family: Tahoma, sans-serif; outline: none;';
+        btn.innerText = 'Хорошо';
+        btn.style.cssText = 'width: 85px; height: 24px; cursor: pointer; color: black; background: #f0f0f0; border-top: 1px solid white; border-left: 1px solid white; border-bottom: 2px solid #808080; border-right: 2px solid #808080; font-size: 12px; font-family: Tahoma, sans-serif; outline: none;';
 
         btn.onmousedown = () => { btn.style.borderTop = '2px solid #808080'; btn.style.borderLeft = '2px solid #808080'; btn.style.borderBottom = '1px solid white'; btn.style.borderRight = '1px solid white'; btn.style.paddingTop = '1px'; btn.style.paddingLeft = '1px'; };
         btn.onmouseup = () => { btn.style.borderTop = '1px solid white'; btn.style.borderLeft = '1px solid white'; btn.style.borderBottom = '2px solid #808080'; btn.style.borderRight = '2px solid #808080'; btn.style.paddingTop = '0'; btn.style.paddingLeft = '0'; };
@@ -229,7 +220,6 @@
         footer.appendChild(btn); win.appendChild(header); win.appendChild(body); win.appendChild(footer); overlay.appendChild(win); document.body.appendChild(overlay);
         document.getElementById('tut-alert-close').onclick = closeAlert;
 
-        // Фокус для закрытия уведомления через клавишу Enter
         setTimeout(() => btn.focus(), 10);
     }
 
@@ -284,13 +274,10 @@
             validate: (e) => {
                 const imgBox = document.getElementById('defect-image-box');
                 if (!imgBox || !imgBox.contains(e.target)) return false;
-
                 if (e.type === 'contextmenu') e.preventDefault();
-
                 let act = false;
                 if (e.type === 'wheel') act = true;
                 if (e.type === 'mousedown' && (e.button === 0 || e.button === 2)) act = true;
-
                 if (act) {
                     window.tutZoomHits++;
                     tooltip.innerHTML = steps[currentStep].text();
@@ -358,24 +345,43 @@
             validate: (e) => (e.key === 'ArrowDown' || e.key === 'ArrowUp')
         },
 
-        // --- 9. ЗАКРЕПЛЕНИЕ ROI: ОТКЛЮЧИТЬ ЧЕРЕЗ SHIFT ---
+        // --- 9. ЗАКРЕПЛЕНИЕ ROI: ОТКЛЮЧИТЬ ЧЕРЕЗ SHIFT (ПЕРВОЕ НАЖАТИЕ) ---
         {
             delay: 50,
             targetSelector: '.workspace',
             eventType: 'keydown',
             placement: 'bottom-right',
-            text: 'Вместо клика по кнопке, РОИ можно быстро скрывать и показывать с помощью клавиатуры.<br><br>Зажмите клавишу <span class="action-badge">Shift</span>, чтобы <b>СКРЫТЬ</b> красную рамку.',
+            text: 'Вместо клика по кнопке, РОИ можно быстро скрывать и показывать с помощью клавиатуры.<br><br>Нажмите клавишу <span class="action-badge">Shift</span>, чтобы <b>СКРЫТЬ</b> красную рамку.',
             validate: (e) => e.key === 'Shift'
         },
 
-        // --- 10. ЗАКРЕПЛЕНИЕ ROI: ВКЛЮЧИТЬ И ЗАВЕРШИТЬ ---
+        // --- 10. ФИНАЛ: ЗАВЕРШЕНИЕ ПО СЛЕДУЮЩЕМУ НАЖАТИЮ SHIFT ---
         {
-            delay: 50,
+            delay: 800,
+            onEnter: () => {
+                // Предохранитель от "зажатой" клавиши. Сценарий будет ждать, пока
+                // пользователь отпустит Shift, и только после этого примет следующее нажатие.
+                window.tutShiftReleased = false;
+                window.tutTempKeyup = (e) => {
+                    if (e.key === 'Shift') window.tutShiftReleased = true;
+                };
+                document.addEventListener('keyup', window.tutTempKeyup);
+            },
             targetSelector: '.workspace',
             eventType: 'keydown',
             placement: 'bottom-right',
-            text: 'Таким образом можно менять видимость дефекта при помощи клавиши<span class="action-badge">Shift</span>.',
-            validate: (e) => e.key === 'Shift'
+            text: `Отлично! Вы можете нажимать или удерживать эту клавишу, чтобы без помех изучить структуру металла.<br><br>
+            Как закончите осмотр, просто нажмите клавишу <span class="action-badge" style="background: rgba(255, 218, 68, 0.2); padding: 4px 8px; border-radius: 4px; border: 1px dashed #ffda44;">Shift ЕЩЁ РАЗ</span> для завершения обучения.`,
+            validate: (e) => {
+                // Шаг засчитается только если: это Shift AND кнопка была отпущена после 9-го шага
+                if (e.key === 'Shift' && window.tutShiftReleased) {
+                    return true;
+                }
+                return false;
+            },
+            onExit: () => {
+                document.removeEventListener('keyup', window.tutTempKeyup);
+            }
         }
     ];
 
@@ -417,7 +423,7 @@
         tooltip.style.display = 'block';
         updateTooltipPosition();
 
-        if (typeof targetEl.focus === 'function' && !step.eventType.includes('keydown')) {
+        if (typeof targetEl.focus === 'function' && !step.eventType.includes('keydown') && !step.eventType.includes('keyup')) {
             targetEl.focus({ preventScroll: true });
         }
 
@@ -425,8 +431,11 @@
 
         activeListener = function(e) {
             if (step.validate(e)) {
+                // Если шаг увенчался успехом, снимаем листнеры
                 eventsToListen.forEach(evt => window.removeEventListener(evt, activeListener, true));
                 if (activeTarget) activeTarget.classList.remove('tutorial-target');
+
+                if (step.onExit) step.onExit();
 
                 setTimeout(() => {
                     currentStep++;
@@ -435,13 +444,14 @@
             }
         };
 
+        // Вешаем листнеры на окно
         eventsToListen.forEach(evt => window.addEventListener(evt, activeListener, true));
     }
 
     function finishScenario() {
         tooltip.style.display = 'none';
         activeTarget = null;
-        showCustomAlert('<b>Сценарий успешно завершен!</b><br><br>Вы научились переключаться в режим детального просмотра дефекта, изменять масштаб картинки, использовать быструю навигацию клавиатурой, а также управлять фильтром <b>ROI</b> (как мышкой, так и горячей клавишей <b>Shift</b>).');
+        showCustomAlert('<b>Сценарий #6 успешно завершен!</b><br><br>Вы научились переключаться в режим детального просмотра дефекта, изменять масштаб картинки, использовать быструю навигацию клавиатурой, а также быстро управлять видимостью рамок <b>ROI</b> при помощи мыши и клавиши Shift.');
     }
 
     setTimeout(renderStep, 500);
