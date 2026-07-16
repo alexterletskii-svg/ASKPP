@@ -13,14 +13,14 @@
             position: absolute;
             background-color: #0056a4;
             color: #ffffff;
-            padding: 15px 20px;
+            padding: 18px 22px;
             border-radius: 6px;
             font-family: 'Tahoma', sans-serif;
             font-size: 13px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             z-index: 100002;
             width: max-content;
-            max-width: 380px;
+            max-width: 440px;
             pointer-events: none;
             line-height: 1.5;
         }
@@ -47,6 +47,15 @@
             font-size: 15px;
             color: #ffda44;
             letter-spacing: 0.5px;
+        }
+        /* Красивый список для перечислений */
+        .tutorial-list {
+            margin: 8px 0 0 16px;
+            padding: 0;
+            list-style-type: disc;
+        }
+        .tutorial-list li {
+            margin-bottom: 6px;
         }
     `;
     document.head.appendChild(style);
@@ -182,7 +191,6 @@
             tooltip.style.top = (rect.top - tooltip.offsetHeight - 15) + 'px';
             tooltip.className = 'arrow-bottom';
         }
-        // НОВЫЙ РЕЖИМ: Жесткая привязка к правому нижнему углу экрана безо всяких стрелочек
         else if (currentPlacement === 'screen-bottom-right') {
             tooltip.style.left = (window.innerWidth - tooltip.offsetWidth - 30) + 'px';
             tooltip.style.top = (window.innerHeight - tooltip.offsetHeight - 40) + 'px';
@@ -199,7 +207,7 @@
     function showCustomAlert(message, onOk) {
         const overlay = document.createElement('div');
         overlay.id = 'tut-alert-overlay';
-        overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); z-index: 200000; display: flex; justify-content: center; align-items: center;';
+        overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 200000; display: flex; justify-content: center; align-items: center;';
         const win = document.createElement('div');
         win.style.cssText = 'background-color: #f0f0f0; border: 1px solid #a0a0a0; border-radius: 6px; width: 450px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column;';
         const header = document.createElement('div');
@@ -211,8 +219,8 @@
         const footer = document.createElement('div');
         footer.style.cssText = 'display: flex; justify-content: center; padding-bottom: 20px;';
         const btn = document.createElement('button');
-        btn.innerText = 'Ok';
-        btn.style.cssText = 'width: 75px; height: 24px; cursor: pointer; color: black; background: #f0f0f0; border-top: 1px solid white; border-left: 1px solid white; border-bottom: 2px solid #808080; border-right: 2px solid #808080; font-size: 12px; font-family: Tahoma, sans-serif; outline: none;';
+        btn.innerText = 'Хорошо';
+        btn.style.cssText = 'width: 85px; height: 24px; cursor: pointer; color: black; background: #f0f0f0; border-top: 1px solid white; border-left: 1px solid white; border-bottom: 2px solid #808080; border-right: 2px solid #808080; font-size: 12px; font-family: Tahoma, sans-serif; outline: none;';
 
         btn.onmousedown = () => { btn.style.borderTop = '2px solid #808080'; btn.style.borderLeft = '2px solid #808080'; btn.style.borderBottom = '1px solid white'; btn.style.borderRight = '1px solid white'; btn.style.paddingTop = '1px'; btn.style.paddingLeft = '1px'; };
         btn.onmouseup = () => { btn.style.borderTop = '1px solid white'; btn.style.borderLeft = '1px solid white'; btn.style.borderBottom = '2px solid #808080'; btn.style.borderRight = '2px solid #808080'; btn.style.paddingTop = '0'; btn.style.paddingLeft = '0'; };
@@ -270,8 +278,6 @@
             delay: 800,
             targetSelector: '#defect-image-box',
             eventType: ['mouseup'],
-            PLACEMENT_FIXED: true, // Флаг для себя
-            // Вызываем наше новое намертво прибитое к экрану позиционирование:
             placement: 'screen-bottom-right',
             text: 'Отлично! Картинка увеличилась, и теперь мы можем измерить конкретный участок дефекта.<br><br>Чтобы нарисовать линейку, выполните 3 простых шага:<br><br>1. Наведите курсор мыши на фотографию.<br>2. Нажмите и <b>не отпускайте</b> клавишу <span class="action-badge">Ctrl</span> на клавиатуре.<br>3. <b>Зажмите левую кнопку мыши</b> и потяните курсор в любую сторону (так же, как вы выделяете файлы на рабочем столе).<br><br>Сделайте это прямо сейчас!',
             validate: (e) => {
@@ -291,12 +297,36 @@
             },
             targetSelector: '#defect-image-box',
             eventType: ['mouseup'],
-            // Тоже намертво прибиваем в угол
             placement: 'screen-bottom-right',
-            text: 'Отличная работа!<br>Обратите внимание на появившиеся цифры. Они показывают физические размеры выделенного отрезка:<br><br>• <span class="action-badge">X (мм)</span> — проекция по ширине листа (поперек движения полосы).<br>• <span class="action-badge">Y (мм)</span> — проекция по длине листа (вдоль кромки рулона).<br>• <span class="action-badge">Длина (мм)</span> — точное расстояние по нарисованной вами диагонали.<br><br>Чтобы сделать новый замер, старый стирать не нужно. <b>Просто зажмите <span class="action-badge">Ctrl</span> и потяните мышку снова.</b><br><br>Закрепим навык: проведите <b>еще одну новую линию</b>.',
+            text: 'Отличная работа!<br>Обратите внимание на цифры. Они показывают физические размеры выделенного отрезка:<br><br>• <span class="action-badge">X (мм)</span> — проекция по ширине листа.<br>• <span class="action-badge">Y (мм)</span> — проекция по длине листа.<br>• <span class="action-badge">Длина (мм)</span> — фактическое расстояние.<br><br>Чтобы сделать новый замер, старый стирать не нужно. <b>Зажмите <span class="action-badge">Ctrl</span> и потяните мышку снова.</b><br><br>Проведите <b>еще одну новую линию</b>.',
             validate: (e) => {
                 const textEl = document.querySelector('.img-ruler-text');
                 if (textEl && textEl.innerHTML !== window.lastRulerText) {
+                    return true;
+                }
+                return false;
+            }
+        },
+
+        // --- 5. СКРЫТИЕ ЛИНЕЙКИ ---
+        {
+            delay: 500,
+            targetSelector: '#defect-image-box',
+            eventType: ['click', 'keydown'],
+            placement: 'screen-bottom-right',
+            text: `Потрясающе!<br><br>Напоследок научимся <b>скрывать линейку</b> с экрана (очищать замеры). Сделать это можно одним из следующих способов:
+            <ul class="tutorial-list">
+                <li><b>Мышью:</b> Зажмите клавишу <span class="action-badge">Ctrl</span> и <b>один раз кликните</b> левой кнопкой мыши по фотографии.</li>
+                <li><b>Через навигацию:</b> Переключитесь на другой дефект с помощью стрелок <span class="action-badge">ВВЕРХ (↑)</span> или <span class="action-badge">ВНИЗ (↓)</span> на клавиатуре.</li>
+            </ul>
+            Выполните <b>любое</b> из этих действий, чтобы завершить обучение.`,
+            validate: (e) => {
+                // Если использован метод Ctrl + ЛКМ
+                if (e.type === 'click' && e.ctrlKey && e.button === 0) {
+                    return true;
+                }
+                // Если использованы стрелки перелистывания
+                if (e.type === 'keydown' && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
                     return true;
                 }
                 return false;
@@ -366,7 +396,8 @@
     function finishScenario() {
         tooltip.style.display = 'none';
         activeTarget = null;
-        showCustomAlert('<b>Сценарий #7 успешно завершен!</b><br><br>Вы научились пользоваться инструментом "Линейка", а также знаете, за что отвечают параметры X, Y и общей длины. Это поможет вам быстро вычислять точные габариты дефектов прямо на фотографиях с камер.');
+        // Исправили номер сценария на #6!
+        showCustomAlert('<b>Сценарий #7 успешно завершен!</b><br><br>Вы научились пользоваться инструментом "Линейка", знаете, за что отвечают параметры X, Y и общей длины, а также освоили быстрые способы скрытия замеров с рабочей области.');
     }
 
     setTimeout(renderStep, 500);
