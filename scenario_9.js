@@ -333,7 +333,7 @@
 
         const body = document.createElement('div');
         body.style.cssText = 'padding: 20px 25px; font-size: 13px; color: black; font-family: Tahoma, sans-serif; text-align: center; line-height: 1.5;';
-        body.innerHTML = '<b>Сценарий #9 успешно пройден!</b><br><br>Теперь вы умеете переключаться между базовым и детализированным отображением информации. Использование режима <b>Реальный</b> в связке с кнопкой <b>Ч.дефекты</b> особенно полезно для изучения составных объектов.';
+        body.innerHTML = '<b>Сценарий #4 успешно пройден!</b><br><br>Теперь вы умеете переключаться между базовым и детализированным отображением информации. Использование режима <b>Реальный</b> в связке с кнопкой <b>Ч.дефекты</b> особенно полезно для изучения составных объектов.';
 
         const footer = document.createElement('div');
         footer.style.cssText = 'display: flex; justify-content: center; padding-bottom: 20px;';
