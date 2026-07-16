@@ -113,7 +113,7 @@
         const header = document.createElement('div');
         header.style.cssText = 'display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 12px 5px 12px;';
         header.innerHTML = `
-            <span style="color: #000; font-size: 12px; font-family: Tahoma, sans-serif; font-weight: bold;">Модуль симуляции завершен</span>
+            <span style="color: #000; font-size: 12px; font-family: Tahoma, sans-serif; font-weight: bold;">Уведомление системы</span>
             <button id="tut-alert-close" style="background: transparent; border: none; font-size: 18px; color: #555; cursor: pointer; padding: 0; line-height: 10px;">×</button>
         `;
 
