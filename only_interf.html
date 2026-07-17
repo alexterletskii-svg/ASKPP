@@ -4021,27 +4021,26 @@ function getDefectImagePath(defect, isROI) {
     };
 
     function toggleCameraGroup(btn, groupName) {
-        const cams = document.querySelectorAll(`#content-cameras .filter-block[data-type="camera"]`);
-        let anyInactive = false;
+    const cams = document.querySelectorAll(`#content-cameras .filter-block[data-type="camera"]`);
+    let anyInactive = false;
 
-        cams.forEach(cam => {
-            if(cam.dataset.value.includes(groupName)) {
-                if(cam.classList.contains('inactive')) anyInactive = true;
-            }
-        });
+    // Проверяем, есть ли хотя бы одна выключенная камера в данной группе
+    cams.forEach(cam => {
+        if(cam.dataset.value.includes(groupName)) {
+            if(cam.classList.contains('inactive')) anyInactive = true;
+        }
+    });
 
-        cams.forEach(cam => {
-            if(cam.dataset.value.includes(groupName)) {
-                cam.classList.remove('active', 'inactive');
-                cam.classList.add(anyInactive ? 'active' : 'inactive');
-            }
-        });
+    // Включаем или выключаем все камеры группы
+    cams.forEach(cam => {
+        if(cam.dataset.value.includes(groupName)) {
+            cam.classList.remove('active', 'inactive', 'yellow');
+            cam.classList.add(anyInactive ? 'active' : 'inactive');
+        }
+    });
 
-        btn.classList.remove('active', 'inactive');
-        btn.classList.add(anyInactive ? 'active' : 'inactive');
-
-        applyFilters();
-    }
+    applyFilters();
+}
 
     function toggleSegment(percent) {
         // При клике на сегмент карты показываем N блоков, начиная с этого сегмента
@@ -4069,6 +4068,8 @@ function getDefectImagePath(defect, isROI) {
     }
 
       function applyFilters() {
+        updateCameraGroupsVisuals();
+
         const activeClasses = Array.from(document.querySelectorAll('#content-classes .filter-block:not(.inactive)')).map(b => b.dataset.value);
         const activeCameras = Array.from(document.querySelectorAll('#content-cameras .filter-block[data-type="camera"]:not(.inactive)')).map(b => b.dataset.value);
 
@@ -6625,6 +6626,44 @@ document.addEventListener('keyup', function(e) {
     window.openClassSelectModal = function() {
     openClassModal();
 };
+
+
+
+    // Функция для обновления визуального статуса кнопок групп камер
+function updateCameraGroupsVisuals() {
+    CAMERA_STRUCTURE.forEach(row => {
+        let activeCount = 0;
+        let totalCount = row.cams.length;
+
+        // Считаем, сколько камер в группе в данный момент включено
+        row.cams.forEach(cam => {
+            const camBlock = document.querySelector(`#content-cameras .filter-block[data-value="${cam}"]`);
+            if (camBlock && !camBlock.classList.contains('inactive')) {
+                activeCount++;
+            }
+        });
+
+        // Находим кнопку группы по тексту названия группы
+        const groupBtnSpan = Array.from(document.querySelectorAll('#content-cameras .camera-row-right .filter-block .fb-name'))
+                                  .find(span => span.innerText.trim() === row.group);
+
+        if (groupBtnSpan) {
+            const groupBtn = groupBtnSpan.parentElement;
+
+            // Удаляем старые статусы
+            groupBtn.classList.remove('active', 'inactive', 'yellow');
+
+            // Назначаем класс цвета в зависимости от количества включённых камер
+            if (activeCount === 0) {
+                groupBtn.classList.add('inactive'); // Красный: все камеры выключены
+            } else if (activeCount === totalCount) {
+                groupBtn.classList.add('active');   // Зелёный: все камеры включены
+            } else {
+                groupBtn.classList.add('yellow');   // Жёлтый: включена хотя бы одна (но не все)
+            }
+        }
+    });
+}
 </script>
 
 
