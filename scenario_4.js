@@ -280,7 +280,8 @@
             delay: 800,
             targetSelector: '.filter-group:nth-child(2) .filter-actions button:nth-child(2)',
             eventType: 'click',
-            placement: 'bottom',
+            placement: 'right',
+//            placement: 'bottom',
             text: 'Обратите внимание на правую панель КАМЕРЫ. Сейчас все группы горят зелёным.<br><br>Нажмите кнопку <span class="action-badge">Все выкл.</span>',
             purpose: 'Вы выключите все камеры. Кнопки групп изменят цвет на <b>красный</b>, сигнализируя, что ни одна камера в их зоне не активна.',
             validate: () => true
