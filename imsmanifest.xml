@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<manifest identifier="com.nlmk.isra_simulator" version="1.0"
+<manifest identifier="com.nlmk.isra_simulator_v3" version="3.0"
           xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
           xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd
                               http://www.imsglobal.org/xsd/imsmd_rootv1p2p1 imsmd_rootv1p2p1.xsd
                               http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
-  <organizations default="ASKPP_TREN_V_1">
-    <organization identifier="ASKPP_TREN_V_1">
+  <organizations default="ASKPP_TREN_V_3">
+    <organization identifier="ASKPP_TREN_V_3">
       <title>Обучающий комплекс. Тренажер для контроллеров за качеством металлов</title>
       <item identifier="ITEM1" identifierref="RESOURCE1">
         <title>Обучающий комплекс</title>

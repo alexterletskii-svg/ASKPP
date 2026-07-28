@@ -172,7 +172,7 @@
             <div id="exam-body">
                 <div class="exam-task" id="task-0">
                     <div class="exam-task-checkbox"></div>
-                    <div class="exam-task-text"><b>Шаг 1:</b> Войдите в систему <b>${targetSystem}</b> (Учетная запись: Admin / Пароль: Admin)</div>
+                    <div class="exam-task-text"><b>Шаг 1:</b> Войдите в систему <b>${targetSystem}</b> (Учётная запись: Admin / Пароль: Admin)</div>
                 </div>
                 <div class="exam-task" id="task-1" style="display: none;">
                     <div class="exam-task-checkbox"></div>

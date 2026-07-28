@@ -423,7 +423,7 @@
     function finishScenario() {
         tooltip.style.display = 'none';
         activeTarget = null;
-        showCustomAlert('<b>Обучение успешно завершено!</b><br><br>Теперь вы знаете, как быстро ориентироваться в массиве камер:<br>• <b style="color:red">Красный</b> — все камеры группы <b>выключены</b><br>• <b style="color:#d4b400">Жёлтый</b> — камеры группы включены <b>частично</b><br>• <b style="color:green">Зелёный</b> — все камеры группы <b>включены</b>.');
+        showCustomAlert('<b>Сценарий #5 успешно завершён!</b><br><br>Теперь вы знаете, как быстро ориентироваться в массиве камер:<br>• <b style="color:red">Красный</b> — все камеры группы <b>выключены</b><br>• <b style="color:#d4b400">Жёлтый</b> — камеры группы включены <b>частично</b><br>• <b style="color:green">Зелёный</b> — все камеры группы <b>включены</b>.');
     }
 
     setTimeout(renderStep, 500);

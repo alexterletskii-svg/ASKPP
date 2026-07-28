@@ -353,7 +353,7 @@ const isEnter = (e.type === 'keyup' || e.type === 'keydown') && e.key === 'Enter
     function finishScenario() {
         tooltip.style.display = 'none';
         activeTarget = null;
-        showCustomAlert('<b>Сценарий #2 успешно пройден!</b><br><br>Вы научились выполнять поиск рулона и просматривать свойства локализованных дефектов.');
+        showCustomAlert('<b>Сценарий #2 успешно завершён!</b><br><br>Вы научились выполнять поиск рулона и просматривать свойства локализованных дефектов.');
     }
 
     setTimeout(renderStep, 500);

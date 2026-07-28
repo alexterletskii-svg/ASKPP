@@ -298,7 +298,7 @@
             targetSelector: '#defect-image-box',
             eventType: ['mouseup'],
             placement: 'screen-bottom-right',
-            text: 'Отличная работа!<br>Обратите внимание на цифры. Они показывают физические размеры выделенного отрезка:<br><br>• <span class="action-badge">X (мм)</span> — проекция по ширине листа.<br>• <span class="action-badge">Y (мм)</span> — проекция по длине листа.<br>• <span class="action-badge">Длина (мм)</span> — фактическое расстояние.<br><br>Чтобы сделать новый замер, старый стирать не нужно. <b>Зажмите <span class="action-badge">Ctrl</span> и потяните мышку снова.</b><br><br>Проведите <b>еще одну новую линию</b>.',
+            text: 'Отличная работа!<br>Обратите внимание на цифры. Они показывают физические размеры выделенного отрезка:<br><br>• <span class="action-badge">X (мм)</span> — проекция по ширине листа.<br>• <span class="action-badge">Y (мм)</span> — проекция по длине листа.<br>• <span class="action-badge">Длина (мм)</span> — фактическое расстояние.<br><br>Чтобы сделать новый замер, старый стирать не нужно. <b>Зажмите <span class="action-badge">Ctrl</span> и потяните мышку снова.</b><br><br>Проведите <b>ещё одну новую линию</b>.',
             validate: (e) => {
                 const textEl = document.querySelector('.img-ruler-text');
                 if (textEl && textEl.innerHTML !== window.lastRulerText) {
@@ -397,7 +397,7 @@
         tooltip.style.display = 'none';
         activeTarget = null;
         // Исправили номер сценария на #6!
-        showCustomAlert('<b>Сценарий #7 успешно завершен!</b><br><br>Вы научились пользоваться инструментом "Линейка", знаете, за что отвечают параметры X, Y и общей длины, а также освоили быстрые способы скрытия замеров с рабочей области.');
+        showCustomAlert('<b>Сценарий #7 успешно завершён!</b><br><br>Вы научились пользоваться инструментом "Линейка", знаете, за что отвечают параметры X, Y и общей длины, а также освоили быстрые способы скрытия замеров с рабочей области.');
     }
 
     setTimeout(renderStep, 500);

@@ -93,11 +93,11 @@
             <div id="exam-body">
                 <div class="exam-task" id="task-0"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 1:</b> Войдите в <b>${targetSystem}</b></div></div>
                 <div class="exam-task" id="task-1" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text" id="task-1-text"><b>Шаг 2:</b> Загрузите рулон <b>...</b></div></div>
-                <div class="exam-task" id="task-2" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 3:</b> Через глобальный фильтр отключите часть подклассов, чтобы любой блок стал <span style="color:#b8860b; font-weight:bold;">желтым</span>.</div></div>
-                <div class="exam-task" id="task-3" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 4:</b> Сбросьте этот желтый блок (кликните по нему).</div></div>
+                <div class="exam-task" id="task-2" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 3:</b> Через глобальный фильтр отключите часть подклассов, чтобы любой блок стал <span style="color:#b8860b; font-weight:bold;">жёлтым</span>.</div></div>
+                <div class="exam-task" id="task-3" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 4:</b> Сбросьте этот жёлтый блок (кликните по нему).</div></div>
                 <div class="exam-task" id="task-4" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 5:</b> Откройте окно фильтра альтернативным путем: через меню <b>"Карта рулона"</b>.</div></div>
                 <div class="exam-task" id="task-5" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 6:</b> Перейдите в режим отображения <span class="highlight"><b>реальный</b></span> (кнопка внизу).</div></div>
-                <div class="exam-task" id="task-6" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 7:</b> Включите разделенные дефекты (кнопка <b>Ч.дефекты</b>).</div></div>
+                <div class="exam-task" id="task-6" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 7:</b> Включите разделённые дефекты (кнопка <b>Ч.дефекты</b>).</div></div>
                 <div id="exam-congratulations">Проверка завершена успешно!</div>
             </div>
         `;
