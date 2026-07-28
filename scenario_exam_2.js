@@ -87,7 +87,7 @@
         examPanel.innerHTML = `
             <div id="exam-header">Режим тестирования: Билет №2</div>
             <div id="exam-body">
-                <div class="exam-task" id="task-0"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 1:</b> Войдите в <b>${targetSystem}</b> (Admin / Admin)</div></div>
+                <div class="exam-task" id="task-0"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 1:</b> Войдите в <b>${targetSystem}</b></div></div>
                 <div class="exam-task" id="task-1" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text" id="task-1-text"><b>Шаг 2:</b> Загрузите рулон <b>...</b></div></div>
                 <div class="exam-task" id="task-2" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text" id="task-2-text"><b>Шаг 3:</b> Оставьте включенными только камеры...</div></div>
                 <div class="exam-task" id="task-3" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 4:</b> Переключитесь в режим отображения <b>"Реальный"</b></div></div>

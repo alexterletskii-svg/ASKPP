@@ -172,11 +172,11 @@
             <div id="exam-body">
                 <div class="exam-task" id="task-0">
                     <div class="exam-task-checkbox"></div>
-                    <div class="exam-task-text"><b>Шаг 1:</b> Войдите в систему <b>${targetSystem}</b> (Учётная запись: Admin / Пароль: Admin)</div>
+                    <div class="exam-task-text"><b>Шаг 1:</b> Войдите в систему <b>${targetSystem}</b></div>
                 </div>
                 <div class="exam-task" id="task-1" style="display: none;">
                     <div class="exam-task-checkbox"></div>
-                    <div class="exam-task-text" id="task-1-text"><b>Шаг 2:</b> Найдите (через таблицу или поиск) и выберите рулон <b>...</b></div>
+                    <div class="exam-task-text" id="task-1-text"><b>Шаг 2:</b> Найдите и выберите рулон <b>...</b></div>
                 </div>
                 <div class="exam-task" id="task-2" style="display: none;">
                     <div class="exam-task-checkbox"></div>
@@ -213,7 +213,7 @@
                         const randomRow = rows[Math.floor(Math.random() * rows.length)];
                         targetCoil = randomRow.cells[1].innerText;
 
-                        document.getElementById('task-1-text').innerHTML = `<b>Шаг 2:</b> Найдите (в таблице или через лупу) и загрузите рулон № <span class="highlight"><b>${targetCoil}</b></span>`;
+                        document.getElementById('task-1-text').innerHTML = `<b>Шаг 2:</b> Найдите и загрузите рулон № <span class="highlight"><b>${targetCoil}</b></span>`;
                         document.getElementById('task-0').classList.add('done');
                         document.getElementById('task-1').style.display = 'flex';
                         currentStep = 1;

@@ -100,7 +100,7 @@
             <div id="exam-body">
                 <div class="exam-task" id="task-0"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 1:</b> Войдите в <b>${targetSystem}</b></div></div>
                 <div class="exam-task" id="task-1" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text" id="task-1-text"><b>Шаг 2:</b> Загрузите рулон <b>...</b></div></div>
-                <div class="exam-task" id="task-2" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 3:</b> Перейдите в режим "Большой" (кнопка внизу)</div></div>
+                <div class="exam-task" id="task-2" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 3:</b> Перейдите в режим "Большой"</div></div>
                 <div class="exam-task" id="task-3" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text" id="task-3-text"><b>Шаг 4:</b> Пролистайте дефекты (стрелки ВВЕРХ/ВНИЗ): <b>0/3</b></div></div>
                 <div class="exam-task" id="task-4" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 5:</b> Переключите видимость ROI (кнопка внизу или Shift)</div></div>
                 <div id="exam-congratulations">Проверка завершена успешно!</div>
