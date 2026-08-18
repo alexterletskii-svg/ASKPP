@@ -94,8 +94,8 @@
                 <div class="exam-task" id="task-0"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 1:</b> Войдите в <b>${targetSystem}</b></div></div>
                 <div class="exam-task" id="task-1" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text" id="task-1-text"><b>Шаг 2:</b> Загрузите рулон <b>...</b></div></div>
                 <div class="exam-task" id="task-2" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 3:</b> Перейдите в режим "Изображение дефекта: Большой"</div></div>
-                <div class="exam-task" id="task-3" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 4:</b> Измените масштаб фотографии (колесом мыши или кликом)</div></div>
-                <div class="exam-task" id="task-4" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text" id="task-4-text"><b>Шаг 5:</b> Пролистайте дефекты стрелками ВВЕРХ/ВНИЗ на клавиатуре.<br>Пролистано: <b>0/${NEEDED_NAV_CLICKS}</b></div></div>
+                <div class="exam-task" id="task-3" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text"><b>Шаг 4:</b> Измените масштаб фотографии</div></div>
+                <div class="exam-task" id="task-4" style="display: none;"><div class="exam-task-checkbox"></div><div class="exam-task-text" id="task-4-text"><b>Шаг 5:</b> Пролистайте дефекты.<br>Пролистано: <b>0/${NEEDED_NAV_CLICKS}</b></div></div>
                 <div id="exam-congratulations">Проверка завершена успешно!</div>
             </div>
         `;
