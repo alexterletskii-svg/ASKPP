@@ -226,16 +226,16 @@
         <div class="launcher-body">
 
             <div class="menu-list">
-                <button class="menu-btn active" onclick="selectMode(1, this)">1. Как работать с тренажером</button>
+                <button class="menu-btn active" onclick="selectMode(1, this)">1. Как работать с тренажёром</button>
                 <button class="menu-btn" onclick="selectMode(2, this)">2. Видеоинструкция (Теория)</button>
-                <button class="menu-btn" onclick="selectMode(3, this)">3. Обучающий тренажер</button>
+                <button class="menu-btn" onclick="selectMode(3, this)">3. Обучающий тренажёр</button>
                 <button class="menu-btn" onclick="selectMode(4, this)">4. Закрепление навыков</button>
                 <button class="menu-btn" onclick="selectMode(5, this)">5. Атлас дефектов</button>
                 <button class="menu-btn" onclick="selectMode(6, this)">6. Свободное ознакомление с интерфейсом</button>
             </div>
 
             <div class="desc-panel">
-                <div id="desc-title" class="desc-title">Как работать с тренажером</div>
+                <div id="desc-title" class="desc-title">Как работать с тренажёром</div>
                 <div id="desc-text" class="desc-text">Справочная информация по навигации внутри симулятора. Ознакомьтесь с техническими требованиями, правилами прохождения модулей и порядком начисления баллов за практические задания.</div>
             </div>
 
@@ -258,7 +258,7 @@
     <script>
         const modes = {
             1: {
-                title: "Как работать с тренажером",
+                title: "Как работать с тренажёром",
                 desc: "Справочная информация по навигации внутри симулятора. Ознакомьтесь с техническими требованиями, правилами прохождения модулей и порядком начисления баллов за практические задания.",
                 url: "help.html"
             },
@@ -268,7 +268,7 @@
                 url: "video.html"
             },
             3: {
-                title: "Обучающий тренажер",
+                title: "Обучающий тренажёр",
                 desc: "Свободная практика в симулированной среде терминала. Доступны все таблицы рулонов и инструменты анализа дефектов без ограничений времени. Идеально для самостоятельного изучения.",
                 url: "select_simulation.html"
             },
@@ -355,7 +355,7 @@
                     if (currentStatus === "not attempted" || currentStatus === "unknown" || currentStatus === "") {
                         pipwerks.SCORM.set(statusParam, "incomplete");
                         pipwerks.SCORM.save();
-                        console.log("Тренажер запущен впервые. Статус изменен на incomplete.");
+                        console.log("Тренажёр запущен впервые. Статус изменен на incomplete.");
                     } else {
                         console.log("Текущий статус: " + currentStatus + ". Изменения не требуются.");
                     }
