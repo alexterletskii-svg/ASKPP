@@ -3577,40 +3577,57 @@ const allFilePathsROI = [
 
 // === ФУНКЦИЯ ПОИСКА НУЖНОГО ФОТО ===
 function getDefectImagePath(defect, isROI) {
-    const paths = isROI ? allFilePathsROI : allFilePaths;
-    if (!paths || paths.length === 0) return null;
-
     let subclassID = null;
     const validSubclasses = SYSTEM_CLASSES_MAP[currentSystem][defect.classCode] || [];
 
-    // Ищем оригинальную строку в SYSTEM_CLASSES_MAP (например: "Класс : 047(a) (ID=46)")
-    // Игнорируем скобки и язык символов, чтобы не спотыкаться о кириллицу/латиницу
+    // Ищем оригинальную строку в SYSTEM_CLASSES_MAP
     const cleanLabel = defect.label.replace(/[\(\)аa]/gi, '');
     const fullSubclassStr = validSubclasses.find(s => s.replace(/[\(\)аa]/gi, '').includes(cleanLabel));
 
     if (fullSubclassStr) {
-        const match = fullSubclassStr.match(/\(ID=(\d+)\)/); // Вытаскиваем само число (46)
+        const match = fullSubclassStr.match(/\(ID=(\d+)\)/);
         if (match) subclassID = match[1];
     }
 
     let matchingPaths = [];
 
-    // 1. Ищем пути, в которых содержится "(ID=46)"
+    // 1. Всегда ищем пути ТОЛЬКО в базовом массиве (без ROI)
     if (subclassID) {
-        matchingPaths = paths.filter(p => p.includes(`(ID=${subclassID})`));
+        matchingPaths = allFilePaths.filter(p => p.includes(`(ID=${subclassID})`));
     }
 
-    // 2. Если по ID не нашли, ищем хотя бы по названию класса (например "Сквозной разрыв")
+    // 2. Если по ID не нашли, ищем по названию класса
     if (matchingPaths.length === 0) {
         const cleanClassName = defect.classCode.toLowerCase().trim();
-        matchingPaths = paths.filter(p => p.toLowerCase().includes(cleanClassName));
+        matchingPaths = allFilePaths.filter(p => p.toLowerCase().includes(cleanClassName));
     }
 
-    // 3. Выбираем фотографию из отфильтрованных
-    // Используем id дефекта для остатка от деления, чтобы для одного и того же дефекта всегда бралась одна и та же картинка
+    // 3. Выбираем базовую фотографию
     if (matchingPaths.length > 0) {
         const pathIndex = defect.id % matchingPaths.length;
-        return matchingPaths[pathIndex];
+        const baseImagePath = matchingPaths[pathIndex];
+
+        // Если ROI не нужен, просто возвращаем базовую фотку
+        if (!isROI) {
+            return baseImagePath;
+        }
+
+        // Если нужен ROI, извлекаем имя файла (например, "1_46_6044099_1066")
+        const fileNameMatch = baseImagePath.match(/\/([^\/]+)\.jpg$/i);
+        if (fileNameMatch) {
+            const baseFileName = fileNameMatch[1];
+
+            // Ищем в массиве ROI файл с точно таким же именем
+            const roiImagePath = allFilePathsROI.find(p => p.includes(baseFileName));
+
+            if (roiImagePath) {
+                return roiImagePath;
+            }
+        }
+
+        // Если в массиве ROI почему-то не оказалось этой копии,
+        // возвращаем оригинал, чтобы окно не оставалось пустым
+        return baseImagePath;
     }
 
     return null; // Фотография не найдена
@@ -4398,6 +4415,8 @@ function markDefectAsViewed(defectId) {
         const isROIActive = defectViewStates.roi && !isShiftPressed;
         const realImagePath = getDefectImagePath(defect, isROIActive);
 
+
+
       if (realImagePath) {
             // ФОТОГРАФИЯ НАЙДЕНА
             // object-fit: fill; - растягивает картинку точно по размеру окна
@@ -4410,6 +4429,7 @@ function markDefectAsViewed(defectId) {
                         ${defect.classCode}
                     </div>
                 </div>`;
+
         } else {
             // ЕСЛИ ФОТОГРАФИИ НЕТ - СТАРАЯ ЗАГЛУШКА
             imgBox.innerHTML = `
