@@ -131,6 +131,7 @@
 
         .defect-class.critical { background: #d32f2f; }
         .defect-class.warning { background: #f57c00; }
+        .defect-class.real { background: #2e7d32; }
 
         .card-title {
             margin: 0 0 8px 0;
@@ -241,6 +242,36 @@
         .close-modal:hover {
             color: #fff;
         }
+
+        /* Метка "Реальный металл" поверх фото в модалке */
+        .modal-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(46, 125, 50, 0.92);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            z-index: 5;
+            display: none;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        }
+
+        .modal-badge.show {
+            display: inline-block;
+        }
+
+        /* Адаптив для мобильных устройств */
+        @media (max-width: 768px) {
+            body { padding: 15px; }
+            .prev-btn { left: 5px; }
+            .next-btn { right: 5px; }
+            .nav-btn { font-size: 28px; padding: 10px; }
+            .slider-container { width: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -315,14 +346,28 @@
                 <p class="card-desc">Скопления мелких светлых точек с металлическим блеском.</p>
             </div>
         </div>
+
+        <!-- КАРТОЧКА 6: Окисление (реальный металл) -->
+        <div class="card" data-gallery="окисление" onclick="openGallery('окисление')">
+            <div class="card-img">
+                <div class="photo-count">6 фото</div>
+                <img src="picture/5. Окисление/окиселениe_реал.png" alt="Окисление">
+            </div>
+            <div class="card-content">
+                <span class="defect-class real">Реальный металл</span>
+                <h3 class="card-title">Окисление</h3>
+                <p class="card-desc">Примеры окисления, зафиксированные на реальном металле (не лабораторный образец).</p>
+            </div>
+        </div>
     </div>
 
     <!-- МОДАЛЬНОЕ ОКНО СО СЛАЙДЕРОМ -->
     <div id="image-modal" class="modal">
         <span class="close-modal" onclick="closeModal()">&times;</span>
-        
+
         <div class="slider-container">
             <button class="nav-btn prev-btn" onclick="prevImage(event)">&#10094;</button>
+            <div id="modal-badge" class="modal-badge"></div>
             <img class="modal-content" id="modal-img" src="" alt="Дефект">
             <button class="nav-btn next-btn" onclick="nextImage(event)">&#10095;</button>
         </div>
@@ -402,7 +447,15 @@
                 "picture/21. Крапчатость/3. Класс 693 (ID=700)/24_700_6044355_250.jpg",
                 "picture/21. Крапчатость/3. Класс 693 (ID=700)/24_700_6044355_251.jpg",
                 "picture/21. Крапчатость/3. Класс 693 (ID=700)/24_700_6044355_72.jpg"
-            ]
+            ],
+            "окисление": [
+    "picture/5. Окисление/окиселениe_реал.png",
+    "picture/5. Окисление/окиселениe_реал_2.png",
+    "picture/5. Окисление/1. Класс 690(а) (ID=10)/6_10_6043579_11200.jpg",
+    "picture/5. Окисление/1. Класс 690(а) (ID=10)/6_10_6043579_12537.jpg",
+    "picture/5. Окисление/1. Класс 690(а) (ID=10)/6_10_6043903_4013.jpg",
+    "picture/5. Окисление/1. Класс 690(а) (ID=10)/6_10_6043718_12497.jpg"
+],
         };
 
         // Заголовки для окна
@@ -411,20 +464,36 @@
             "023": "Код 023 — Пятно слипания сварки",
             "047": "Код 047 — Разрывы по границам зёрен",
             "061": "Код 061 — Сквозной разрыв",
-            "692_693": "Код 692, 693 — Крапчатость"
+            "692_693": "Код 692, 693 — Крапчатость",
+            "окисление": "Окисление — реальный металл"
         };
 
+        // Метки на конкретных фото (индекс соответствует порядку в galleries)
+        const photoLabels = {
+    "окисление": [
+        "✓ Реальный металл",
+        "✓ Реальный металл",
+        "✓ Фото видит система ODIS-Raccs",
+        "✓ Фото видит система ODIS-Raccs",
+        "✓ Фото видит система ODIS-Raccs",
+        "✓ Фото видит система ODIS-Raccs"
+    ]
+};
+
         let currentGallery = [];
+        let currentGalleryLabels = null;
         let currentIndex = 0;
 
         const modal = document.getElementById("image-modal");
         const modalImg = document.getElementById("modal-img");
         const modalCaption = document.getElementById("modal-caption");
         const modalCounter = document.getElementById("modal-counter");
+        const modalBadge = document.getElementById("modal-badge");
 
         // Открытие галереи по ключу (id)
         function openGallery(id) {
             currentGallery = galleries[id] || [];
+            currentGalleryLabels = photoLabels[id] || null;
             if (currentGallery.length === 0) return;
 
             currentIndex = 0;
@@ -435,10 +504,18 @@
             setTimeout(() => modal.classList.add('show'), 10);
         }
 
-        // Обновление картинки и счетчика
+        // Обновление картинки, счетчика и метки
         function updateImage() {
             modalImg.src = currentGallery[currentIndex];
             modalCounter.innerText = `Фото ${currentIndex + 1} из ${currentGallery.length}`;
+
+            const label = currentGalleryLabels ? currentGalleryLabels[currentIndex] : null;
+            if (label) {
+                modalBadge.textContent = label;
+                modalBadge.classList.add('show');
+            } else {
+                modalBadge.classList.remove('show');
+            }
         }
 
         // Кнопка Влево
@@ -471,7 +548,7 @@
         // Клавиатурные события (Влево, Вправо, Esc)
         document.addEventListener('keydown', (e) => {
             if (!modal.classList.contains('show')) return;
-            
+
             if (e.key === 'ArrowLeft') {
                 prevImage();
             } else if (e.key === 'ArrowRight') {
